@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
   push:
     branches: [main]
 
@@ -36,7 +36,7 @@ jobs:
           BASE: ${{ github.base_ref }}
         run: |
           CHANGED=$(git diff --name-only "origin/$BASE...HEAD")
-          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/adr/|docs/OPEN-DECISIONS\.md|CONTEXT\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|docs/DESIGN\.md|src/domain/AGENTS\.md|tests/golden/|package\.json|pnpm-lock\.yaml|\.github/|\.claude/)' || true)
+          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/DESIGN\.md|docs/adr/|docs/OPEN-DECISIONS\.md|CONTEXT\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|src/domain/AGENTS\.md|tests/golden/|\.github/|\.claude/)' || true)
           if [ -n "$PROTECTED" ]; then
             LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
             if ! printf '%s\n' "$LABELS" | grep -qx 'disetujui-pemilik'; then
@@ -45,6 +45,19 @@ jobs:
               exit 1
             fi
           fi
+      - name: Dependency harus ada di daftar izin
+        run: |
+          [ -f package.json ] || exit 0
+          FAIL=0
+          for dep in $(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]' package.json); do
+            OK=0
+            while IFS= read -r pat; do
+              case "$pat" in ''|'#'*) continue;; esac
+              case "$dep" in $pat) OK=1; break;; esac
+            done < .github/dependency-allowlist.txt
+            if [ "$OK" -eq 0 ]; then echo "::error::Dependency di luar daftar izin: $dep"; FAIL=1; fi
+          done
+          exit $FAIL
 
   verify:
     runs-on: ubuntu-latest
@@ -59,14 +72,23 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U mandalika"
           --health-interval 5s --health-timeout 5s --health-retries 10
-    env:
-      DATABASE_URL: postgres://mandalika:mandalika@localhost:5432/mandalika_test
     steps:
       - uses: actions/checkout@v4
       - id: cek
         run: |
           if [ -f package.json ]; then echo "ada=1" >> "$GITHUB_OUTPUT"
           else echo "::notice::Belum ada package.json — menunggu tiket T00."; fi
+      - name: MinIO (storage S3 untuk test)
+        if: steps.cek.outputs.ada == '1'
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio server /data
+          for i in $(seq 1 30); do curl -sf http://localhost:9000/minio/health/live && break; sleep 1; done
+      - name: Muat variabel lingkungan test dari .env.ci
+        if: steps.cek.outputs.ada == '1'
+        run: |
+          if [ -f .env.ci ]; then grep -Ev '^\s*(#|$)' .env.ci >> "$GITHUB_ENV"; fi
       - if: steps.cek.outputs.ada == '1'
         uses: pnpm/action-setup@v4
       - if: steps.cek.outputs.ada == '1'
@@ -78,3 +100,12 @@ jobs:
         run: pnpm install --frozen-lockfile
       - if: steps.cek.outputs.ada == '1'
         run: pnpm verify
+      - name: Test end-to-end (jika ada)
+        if: steps.cek.outputs.ada == '1'
+        run: |
+          if jq -e '.scripts["test:e2e"]' package.json > /dev/null; then
+            pnpm exec playwright install --with-deps chromium
+            pnpm test:e2e
+          else
+            echo "::notice::Belum ada skrip test:e2e."
+          fi

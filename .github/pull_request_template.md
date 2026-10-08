@@ -7,14 +7,14 @@ Closes #
 <!-- Salin dari issue, centang satu per satu. -->
 - [ ]
 
+## Keputusan teknis
+<!-- "Keputusan teknis: <apa> — <alasan> — <risiko jika salah>", atau "tidak ada". -->
+
+## Hasil peninjau
+<!-- Putusan dan ringkasan temuan subagent peninjau. -->
+
 ## Yang sengaja TIDAK dikerjakan
-<!-- Hal yang terpikir tetapi di luar scope issue. Tulis "tidak ada" jika kosong. -->
-
-## Berkas terlindungi yang diubah
-<!-- Tulis "tidak ada", atau sebutkan berkasnya beserta instruksi pemilik yang mengizinkan. -->
-
-## Dependency baru
-<!-- Tulis "tidak ada", atau sebutkan nama, alasan, dan alternatif tanpa dependency. -->
+<!-- Tulis "tidak ada" jika kosong. -->
 
 ## Cara memverifikasi
 - [ ] `pnpm verify` hijau

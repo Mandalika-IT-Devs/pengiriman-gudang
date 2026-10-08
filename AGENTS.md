@@ -9,35 +9,41 @@ Aplikasi web internal: impor penjualan Excel → laporan rata-rata bertahap → 
 - Ketika bekerja di sebuah area: baca ADR terkait di `docs/adr/`.
 - Ketika tiket menyentuh hal yang belum diputuskan: lihat `docs/OPEN-DECISIONS.md`.
 - Ketika menulis kode: ikuti `CODING_STANDARDS.md`.
-- Ketika membuat atau mengubah tampilan: ikuti docs/DESIGN.md.
+- Ketika membuat atau mengubah tampilan: ikuti `docs/DESIGN.md`.
 - Contoh hitungan yang benar: `tests/golden/` (hanya-baca).
 
-## Cara mengerjakan tiket
+## Cara kerja: otomatis
 
-1. Ambil **satu** issue beserta komentarnya. Selesai jika kamu bisa mengutip daftar "Dalam scope" dan "Kriteria penerimaan"-nya.
-2. Baca sumber kebenaran yang relevan dengan issue itu.
-3. Tulis rencana singkat: berkas yang disentuh dan seam yang dites. Minta persetujuan manusia sebelum menulis kode.
-4. Red → green: test dulu (pakai fixture golden yang disebut issue), lalu implementasi minimal sampai hijau.
-5. Jalankan `pnpm verify` sampai hijau.
-6. Buka PR dari branch `t<nomor-tiket>-<slug>`, isi template, sertakan `Closes #<nomor-issue>`.
+Tiket dikerjakan tanpa menunggu manusia, lewat skill proyek `jalankan-tiket`: koordinator → subagent `pelaksana` → subagent `peninjau` → PR → CI → merge. Pemilik produk melakukan UAT di akhir.
 
-Selesai = semua kriteria penerimaan issue tercentang **dan** `pnpm verify` hijau. Tidak ada tambahan setelah itu.
+Satu tiket selesai = semua kriteria penerimaan tercentang, `pnpm verify` hijau, `peninjau` memberi `LULUS`, dan CI hijau. Tidak ada tambahan setelah itu.
+
+### Ketidakjelasan
+
+- **Teknis** (struktur kode, pola, cara menguji): putuskan, lalu catat di PR sebagai `Keputusan teknis: <apa> — <alasan> — <risiko jika salah>`.
+- **Bisnis** (rumus, angka, kewenangan, apa yang dilihat pengguna, perilaku di luar issue/PRD) atau aturan yang tidak jelas/bertentangan: **jangan diputuskan.** Menebak dianggap gagal. Parkir tiket dengan label `needs-info` dan pertanyaan untuk pemilik, lalu lanjut ke tiket lain.
 
 ## Batas scope (pagar keras)
 
 Hasil kerja = persis isi "Dalam scope" issue:
 
-- Tambahkan fitur, halaman, endpoint, tabel, kolom, env var, opsi, abstraksi, dan dependency **hanya** jika issue menyebutnya. Dependency yang terasa perlu: tulis usulannya di PR, lalu tunggu.
+- Tambahkan fitur, halaman, endpoint, tabel, kolom, env var, opsi, dan abstraksi **hanya** jika issue menyebutnya.
+- Dependency hanya dari `.github/dependency-allowlist.txt`. Di luar daftar itu → parkir tiket.
 - Refactor terbatas pada berkas yang memang diperlukan issue.
 - Rumus diimplementasikan persis seperti PRD, termasuk pembulatan per tahap, walaupun terlihat bisa disederhanakan.
-- Aturan tidak jelas atau bertentangan → **berhenti**, tanya manusia, komentari issue, beri label `needs-info`. Menebak dianggap gagal.
-- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `docs/DESIGN.md`, `src/domain/AGENTS.md`, `tests/golden/`, `package.json`, `.github/`.
+- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/DESIGN.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `src/domain/AGENTS.md`, `tests/golden/`, `.github/`, `.claude/`.
 - Test yang merah diperbaiki di kode, bukan di fixture golden.
-- Merge, label `disetujui-pemilik`, dan force-push adalah tindakan manusia.
+- Perubahan masuk ke `main` hanya lewat PR dengan CI hijau. Label `disetujui-pemilik` adalah milik pemilik. Force-push adalah tindakan manusia.
+
+## Lingkungan
+
+- Lokal: `docker compose up -d` (PostgreSQL + MinIO). Docker Desktop harus menyala.
+- CI menyediakan PostgreSQL di `localhost:5432` (user `mandalika`, sandi `mandalika`, db `mandalika_test`) dan MinIO di `localhost:9000` (`minioadmin` / `minioadmin`). Variabel lingkungan untuk test ditulis di `.env.ci` (tanpa rahasia asli); CI memuatnya otomatis.
+- CI menjalankan `pnpm verify`, lalu `pnpm test:e2e` jika skripnya ada.
 
 ## Perintah
 
-`pnpm verify` adalah gerbang wajib sebelum PR. Perintah lain: lihat `package.json`.
+`pnpm verify` adalah gerbang wajib. Perintah lain: lihat `package.json`.
 
 ## Agent skills
 

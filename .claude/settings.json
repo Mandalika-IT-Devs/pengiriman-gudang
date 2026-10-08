@@ -1,27 +1,16 @@
 {
   "permissions": {
-    "ask": [
-      "Edit(docs/PRD.md)",
-      "Edit(docs/adr/**)",
-      "Edit(docs/OPEN-DECISIONS.md)",
-      "Edit(CONTEXT.md)",
-      "Edit(AGENTS.md)",
-      "Edit(CLAUDE.md)",
-      "Edit(CODING_STANDARDS.md)",
-      "Edit(docs/DESIGN.md)",
-      "Edit(src/domain/AGENTS.md)",
-      "Edit(tests/golden/**)",
-      "Edit(package.json)",
-      "Edit(.github/**)"
-    ],
     "deny": [
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
       "Bash(git push origin main:*)",
+      "Bash(git push origin HEAD:main:*)",
       "Bash(git reset --hard:*)",
-      "Bash(gh pr merge:*)",
       "Bash(gh pr edit:*)",
-      "Bash(gh label:*)"
+      "Bash(gh label:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo edit:*)",
+      "Bash(gh repo delete:*)"
     ]
   }
 }

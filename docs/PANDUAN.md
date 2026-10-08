@@ -1,42 +1,51 @@
-# Panduan Kerja (solo, Claude Code)
+# Panduan Kerja (otomatis, Claude Code)
 
-## Urutan tiket
+Peran Anda: **pemilik produk**. Claude Code mengerjakan, meninjau, dan me-merge tiket sendiri. Anda menjawab pertanyaan bisnis saat diminta dan melakukan UAT di akhir.
 
-T00 → T01 → T02 → T06 → T03 → T04 → T05 → T07 → T20 → T21 → T22 → T10 → T11
+## Menjalankan
 
-Ambil tiket berikutnya hanya setelah PR tiket sebelumnya di-merge.
+1. Nyalakan Docker Desktop. Colokkan laptop ke listrik dan matikan mode tidur otomatis selama berjalan.
+2. Di Claude Code (tab Code di Claude Desktop), buka sesi baru di folder repo.
+3. Pilih mode izin **Auto** jika tersedia. Jika tidak, pilih **Bypass permissions** ("Menerima semua izin").
+4. Ketik: `/jalankan-tiket`
+5. Biarkan berjalan. Satu tiket = satu putaran: pelaksana → peninjau → PR → CI → merge.
 
-## Satu tiket = satu sesi baru
+Jika berhenti karena kuota atau laptop mati: buka sesi baru dan ketik `/jalankan-tiket` lagi. Pekerjaan berlanjut dari keadaan di GitHub.
 
-Buka sesi baru di Claude Code, ganti `T01` dengan nomor tiket, lalu kirim:
+## Saat berhenti dengan laporan akhir
+
+- **Ada tiket yang diparkir (`needs-info`)**: laporan berisi pertanyaannya. Jawab di sesi Claude Code:
+
+  ```
+  Ini jawaban saya sebagai pemilik produk untuk tiket yang diparkir:
+  [Txx]: ...
+  Catat sebagai keputusan di docs/OPEN-DECISIONS.md (Selesai) dan docs/PRD.md (▶ Keputusan),
+  perbarui issue-nya, hapus label needs-info, commit lewat PR dengan label disetujui-pemilik
+  (instruksi eksplisit saya), lalu jalankan /jalankan-tiket.
+  ```
+
+- **Semua tiket tahap ini tertutup**: rencanakan tahap berikutnya (bagian bawah), lalu jalankan `/jalankan-tiket` lagi.
+
+## Merencanakan tahap berikutnya (interaktif, sekali per tahap)
+
+Ini satu-satunya sesi yang membutuhkan Anda aktif menjawab:
 
 ```
-/implement Kerjakan tiket [T01] dari GitHub Issues.
-
-1. git checkout main && git pull, lalu buat branch t01-<nama-singkat>.
-2. Baca issue lengkap (gh issue list --search "[T01] in:title", lalu gh issue view <nomor>
-   --comments), AGENTS.md, dan dokumen yang ditunjuknya.
-3. Sebelum menulis kode, jelaskan ke saya dengan bahasa sederhana: apa yang akan dibuat,
-   berkas yang disentuh, dan test apa yang ditulis. Tunggu sampai saya bilang "lanjut".
-4. Kerjakan hanya isi "Dalam scope". Jika ada aturan yang tidak jelas, berhenti dan tanya saya.
-5. Selesai = semua kriteria penerimaan tercentang + pnpm verify hijau. Lalu push branch dan
-   buka PR dengan template (Closes #<nomor>), dan berikan link PR-nya.
+/to-tickets Baca docs/PRD.md, docs/OPEN-DECISIONS.md, dan kode yang sudah ada. Buat tiket untuk
+SISA seluruh aplikasi (M2 dan M3):
+- M2: cache hasil hitung + hitung ulang, halaman Ringkasan (filter, Terapkan, periode aktif),
+  penelusuran angka sampai sel, ekspor seluruh hasil filter, kalender, sinkronisasi snapshot libur,
+  perubahan kategori, pemetaan keluarga aroma.
+- M3: periode sumber gudang, jadwal + usulan + persetujuan, template jadwal, ranking pusat,
+  input stok, draft + hitung ulang, finalisasi + snapshot, ekspor rencana.
+- Tiket terakhir [T99] Paket UAT lokal: satu perintah `pnpm uat` (docker compose up, migrasi,
+  seed admin + 5 gudang + 25 toko), dan docs/UAT.md berisi skenario uji per bagian PRD dalam
+  bahasa sederhana. Blocked by semua tiket lain.
+Tanyakan saya untuk setiap butir OPEN-DECISIONS yang masih terbuka sebelum membuat tiket yang
+bergantung padanya. Setiap tiket memakai format issue yang sudah ada (Dalam scope, Di luar scope,
+Kriteria penerimaan, Rujukan, Blocked by) dan label ready-for-agent.
 ```
 
-Lalu:
-1. Rencana masuk akal → balas "lanjut". Tawaran di luar tiket → jawab "Tidak, sesuai tiket saja."
-2. Buka link PR, tunggu CI hijau.
-3. CI merah karena "berkas terlindungi" dan tiket memang mengizinkannya → beri label `disetujui-pemilik`.
-4. Squash and merge, lalu tutup sesi.
+## UAT di akhir
 
-Docker Desktop harus menyala.
-
-## Situasi khusus
-
-| Situasi | Ketik |
-|---|---|
-| Claude bertanya aturan bisnis | Jawab, lalu: "Catat jawaban saya sebagai keputusan di docs/OPEN-DECISIONS.md (Selesai) dan docs/PRD.md (▶ Keputusan), komentari issue-nya, lalu lanjutkan tiket." |
-| Sesi terlalu panjang | `/handoff`, lalu tempel hasilnya di sesi baru |
-| Error yang tidak beres | `/diagnosing-bugs` + penjelasan error |
-| Ingin rencana diuji | `/grill-me` + rencananya |
-| Semua tiket M1 selesai | `/to-tickets` untuk M2 (laporan, kalender, cache hitung, ekspor) |
+Setelah T99 selesai: `pnpm uat`, buka `http://localhost:3000`, lalu ikuti `docs/UAT.md`. Temuan UAT dilaporkan ke Claude Code sebagai tiket perbaikan baru.
