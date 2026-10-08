@@ -9,7 +9,5 @@
 /docs/DESIGN.md           @mandalikadev
 /src/domain/AGENTS.md      @mandalikadev
 /tests/golden/             @mandalikadev
-/package.json              @mandalikadev
-/pnpm-lock.yaml            @mandalikadev
 /.github/                  @mandalikadev
 /.claude/                  @mandalikadev
