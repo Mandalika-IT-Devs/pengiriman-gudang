@@ -36,7 +36,7 @@ jobs:
           BASE: ${{ github.base_ref }}
         run: |
           CHANGED=$(git diff --name-only "origin/$BASE...HEAD")
-          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/adr/|docs/OPEN-DECISIONS\.md|CONTEXT\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|src/domain/AGENTS\.md|tests/golden/|package\.json|pnpm-lock\.yaml|\.github/|\.claude/)' || true)
+          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/adr/|docs/OPEN-DECISIONS\.md|CONTEXT\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|docs/DESIGN\.md|src/domain/AGENTS\.md|tests/golden/|package\.json|pnpm-lock\.yaml|\.github/|\.claude/)' || true)
           if [ -n "$PROTECTED" ]; then
             LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
             if ! printf '%s\n' "$LABELS" | grep -qx 'disetujui-pemilik'; then

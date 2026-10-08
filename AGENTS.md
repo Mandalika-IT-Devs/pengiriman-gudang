@@ -9,6 +9,7 @@ Aplikasi web internal: impor penjualan Excel → laporan rata-rata bertahap → 
 - Ketika bekerja di sebuah area: baca ADR terkait di `docs/adr/`.
 - Ketika tiket menyentuh hal yang belum diputuskan: lihat `docs/OPEN-DECISIONS.md`.
 - Ketika menulis kode: ikuti `CODING_STANDARDS.md`.
+- Ketika membuat atau mengubah tampilan: ikuti docs/DESIGN.md.
 - Contoh hitungan yang benar: `tests/golden/` (hanya-baca).
 
 ## Cara mengerjakan tiket
@@ -30,7 +31,7 @@ Hasil kerja = persis isi "Dalam scope" issue:
 - Refactor terbatas pada berkas yang memang diperlukan issue.
 - Rumus diimplementasikan persis seperti PRD, termasuk pembulatan per tahap, walaupun terlihat bisa disederhanakan.
 - Aturan tidak jelas atau bertentangan → **berhenti**, tanya manusia, komentari issue, beri label `needs-info`. Menebak dianggap gagal.
-- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `src/domain/AGENTS.md`, `tests/golden/`, `package.json`, `.github/`.
+- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `docs/DESIGN.md`, `src/domain/AGENTS.md`, `tests/golden/`, `package.json`, `.github/`.
 - Test yang merah diperbaiki di kode, bukan di fixture golden.
 - Merge, label `disetujui-pemilik`, dan force-push adalah tindakan manusia.
 

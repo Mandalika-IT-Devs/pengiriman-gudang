@@ -6,6 +6,7 @@
 /AGENTS.md                 @mandalikadev
 /CLAUDE.md                 @mandalikadev
 /CODING_STANDARDS.md       @mandalikadev
+/docs/DESIGN.md           @mandalikadev
 /src/domain/AGENTS.md      @mandalikadev
 /tests/golden/             @mandalikadev
 /package.json              @mandalikadev

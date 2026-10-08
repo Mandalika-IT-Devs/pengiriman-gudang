@@ -121,7 +121,7 @@
     },
     {
       "nilai": -1,
-      "hasil": "error: menunggu keputusan OD-01",
+      "hasil": "error: kuantitas negatif, perbaiki di Excel sebelum impor (OD-01)",
       "contohData": "APRIL (S)!MY29 (BXC, 17-04-2026, A10M-IRR) dan MEI (S)!PJ346 (KOKAS, 18-05-2026, V2P-SED)"
     }
   ]
