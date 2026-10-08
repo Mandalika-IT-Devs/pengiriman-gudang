@@ -18,7 +18,6 @@ Daftar hal yang **belum diputuskan pemilik**. Agen tidak mengimplementasikan per
 | ID | Tindakan |
 |---|---|
 | TP-01 | Perbaiki workbook: `SEPTEMBER (S)` memiliki 749 sel berisi penjualan pada kolom `31/9` (contoh: PMS `AJ11`, SENTUL `AAP4`). Impor September tertahan sampai diperbaiki. |
-| TP-02 | Ganti `@GANTI-PEMILIK` di `.github/CODEOWNERS` dengan username GitHub pemilik. |
 
 ## Ditunda (di luar scope tahap ini)
 
@@ -40,3 +39,4 @@ Daftar hal yang **belum diputuskan pemilik**. Agen tidak mengimplementasikan per
 | OD-08: definisi penanda kelengkapan sesuai usulan (2026-10-09) | PRD A2; T04 |
 | OD-09: angka harapan `laporan-15GL-GOR-PMS-juni.json` (Senin–Kamis 1, Jumat 0, Sabtu 1, Minggu 0) benar (2026-10-09) | PRD A2; T04 |
 | OD-10: hanya admin yang boleh mengunggah dan mengaktifkan impor (2026-10-09) | PRD A3; T11 |
+| TP-02: `@GANTI-PEMILIK` di `.github/CODEOWNERS` diganti `@mandalikadev` (2026-10-09) | `.github/CODEOWNERS` |
