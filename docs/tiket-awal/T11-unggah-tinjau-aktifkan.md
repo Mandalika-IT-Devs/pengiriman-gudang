@@ -12,7 +12,7 @@ Alur end-to-end untuk admin: unggah workbook → pilih sheet dan tahun/bulan imp
 - Halaman tinjau: ringkasan per toko, daftar masalah (lokasi sel + cara memperbaiki), dan daftar produk baru.
 - Aktifkan: hanya bila tidak ada error. Dalam satu transaksi, impor aktif lama untuk bulan yang sama diarsipkan dan produk baru didaftarkan.
 - Form menampilkan keadaan sesuai CODING_STANDARDS. Aktivasi yang hasilnya belum pasti tidak diulang otomatis.
-- Hanya admin (usulan OD-10).
+- Hanya admin (OD-10).
 
 ## Di luar scope
 Cache hasil hitung dan hitung ulang (tiket M2), halaman laporan, pemetaan keluarga aroma, dan impor sheet MP/BARDAT.

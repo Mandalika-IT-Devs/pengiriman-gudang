@@ -11,7 +11,7 @@ Modul server (tanpa database) yang membaca satu sheet penjualan dari workbook da
 - Header tanggal: DD/MM, DD/MM/YYYY, atau nomor seri Excel, mengikuti `tests/golden/tanggal-impor.json`.
 - Output: blok toko, kolom tanggal (valid / invalid / di luar bulan impor), sel bernilai (termasuk nol yang diketik) dengan alamat sel, dan daftar masalah (error / peringatan).
 - Validasi:
-  - Error: sheet berawalan `MP ` ("di luar cakupan saat ini"); A1 bukan `SALES`; nama toko tidak ada di master; blok toko ganda; kode produk ganda; tanggal ganda dalam satu blok; tanggal di luar bulan impor; kuantitas bukan angka atau bukan bilangan bulat; kuantitas negatif ("menunggu keputusan OD-01"); kolom tanggal invalid yang berisi angka apa pun.
+  - Error: sheet berawalan `MP ` ("di luar cakupan saat ini"); A1 bukan `SALES`; nama toko tidak ada di master; blok toko ganda; kode produk ganda; tanggal ganda dalam satu blok; tanggal di luar bulan impor; kuantitas bukan angka atau bukan bilangan bulat; kuantitas negatif (salah input; pesan: "perbaiki di Excel sebelum impor", OD-01); kolom tanggal invalid yang berisi angka apa pun.
   - Peringatan: kolom tanggal invalid yang kosong (dilewati).
 
 ## Di luar scope

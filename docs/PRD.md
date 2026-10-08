@@ -24,7 +24,7 @@ Bedakan nol dengan data yang tidak tersedia. Sel penjualan kosong pada tanggal v
 
 > ▶ Keputusan (ADR-0005): sumber impor tahap ini hanya sheet berpola `<BULAN> (S)`. Sheet `MP …` dan sheet BARDAT (tanpa "(S)") di luar scope.
 > ▶ Keputusan (ADR-0002): satu impor aktif per bulan impor; tanggal di sheet harus berada di bulan impor yang dipilih.
-> ▶ Terbuka (OD-01): perlakuan kuantitas negatif.
+> ▶ Keputusan (OD-01): kuantitas negatif di sel penjualan adalah salah input dan harus diperbaiki di Excel sebelum impor. Pembaca sheet menolaknya sebagai error sehingga impor tidak bisa diaktifkan.
 
 ### A2. Ketika saya membaca laporan penjualan
 
@@ -53,7 +53,8 @@ Data parsial tetap dihitung berdasarkan pengamatan yang tersedia dan diberi pena
 Untuk Senin–Kamis, penempatan minggu dan bulan laporan mengikuti hari Kamis dalam minggu yang sama. Jumat–Minggu mengikuti tanggalnya sendiri. Perubahan kategori hari tidak boleh diam-diam mengubah bulan laporan yang sudah ditetapkan. Minta contoh tanggal dan hasil yang diharapkan untuk memastikan penomoran minggu serta perlakuan hari libur; jangan mengasumsikan aturan kalender yang belum disepakati.
 
 > ▶ Keputusan: contoh tanggal, penomoran minggu, dan perlakuan hari libur ditetapkan di **Bagian B** (ADR-0004). Contoh terhitung: `tests/golden/kalender-minggu-laporan.json`, `tests/golden/laporan-15GL-GOR-PMS-juni.json`.
-> ▶ Terbuka (OD-08): definisi persis "penanda kelengkapan".
+> ▶ Keputusan (OD-08): penanda kelengkapan. Kelompok mingguan *parsial* jika ada tanggal anggotanya yang tidak teramati (contoh: Senin–Kamis Juli M1 baru teramati 29–30 Juni). Rata-rata bulanan *parsial* jika ada kelompok mingguan pembentuknya yang parsial.
+> ▶ Keputusan (OD-09): angka harapan di `tests/golden/laporan-15GL-GOR-PMS-juni.json` (Senin–Kamis 1, Jumat 0, Sabtu 1, Minggu 0) dikonfirmasi benar oleh pemilik.
 
 ### A3. Ketika saya mengelola gudang dan pengguna
 
@@ -65,7 +66,10 @@ Admin tidak otomatis menjadi operator pengiriman. Setiap tindakan harus mengikut
 
 Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan satu tombol. Toko yang sudah terhubung, nonaktif, atau terkait gudang lain harus mempunyai keterangan yang jelas. Jika hanya sebagian berhasil ditambahkan, tampilkan hasil per toko. Jangan mengulang otomatis tindakan yang hasil penyimpanannya belum pasti.
 
-> ▶ Terbuka: OD-02 (nama empat gudang), OD-03 (satu toko di lebih dari satu gudang?), OD-07 (cakupan laporan viewer), OD-10 (siapa yang boleh impor).
+> ▶ Keputusan (OD-02, bagian nama): empat gudang selain Pusat adalah Gudang Bali, Gudang Bandung, Gudang Cibubur, dan Gudang Jabodetabek.
+> ▶ Keputusan (OD-03, ADR-0009): satu toko tidak boleh terhubung ke lebih dari satu gudang.
+> ▶ Keputusan (OD-10): hanya admin yang boleh mengunggah dan mengaktifkan impor penjualan.
+> ▶ Terbuka: OD-12 (toko mana terhubung ke gudang mana), OD-07 (cakupan laporan viewer).
 
 ### A4. Ketika saya menentukan sumber perhitungan gudang
 

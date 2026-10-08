@@ -11,7 +11,7 @@ Fungsi domain murni yang menghitung laporan untuk satu pasangan produk–toko, d
 - Tahap 3, Ringkasan = ⌈Σ rata-rata bulanan / jumlah bulan pilihan yang punya hasil⌉. Bulan tanpa hasil tidak menambah pembagi.
 - Perbandingan minggu sama antarbulan = ⌈Σ nilai pada indeks minggu sama / jumlah bulan yang punya nilai itu⌉.
 - Total penjualan mentah per bulan laporan, sebagai field terpisah dengan nama berbeda dari hasil rata-rata.
-- Penanda kelengkapan sesuai usulan OD-08 (lihat docs/OPEN-DECISIONS.md).
+- Penanda kelengkapan sesuai OD-08 (definisi: PRD A2).
 - Semua pembulatan lewat modul angka (T01).
 
 ## Di luar scope
@@ -25,7 +25,7 @@ Penyimpanan cache, query database, UI, dan ekspor.
 - [ ] `pnpm verify` hijau.
 
 ## Rujukan
-PRD A2, B5–B7; ADR-0002; OD-08, OD-09
+PRD A2, B5–B7; ADR-0002; OD-08, OD-09 (keduanya sudah diputuskan)
 
 ## Blocked by
 - [T01], [T02], [T03]

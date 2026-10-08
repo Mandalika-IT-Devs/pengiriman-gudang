@@ -6,17 +6,12 @@ Daftar hal yang **belum diputuskan pemilik**. Agen tidak mengimplementasikan per
 
 | ID | Pertanyaan | Menahan | Usulan sementara (berlaku hanya jika ditulis di tiket) |
 |---|---|---|---|
-| OD-01 | Bagaimana kuantitas **negatif** di sel penjualan diperlakukan (retur? koreksi?). Data: `APRIL (S)!MY29` (BXC, 17-04-2026, A10M-IRR, −1) dan `MEI (S)!PJ346` (KOKAS, 18-05-2026, V2P-SED, −1). | T10: impor April & Mei | Error yang menahan publikasi, dengan pesan "menunggu keputusan OD-01". |
-| OD-02 | Nama empat gudang selain Pusat, dan toko mana terhubung ke gudang mana. | T21: data awal | — (data, bukan kode) |
-| OD-03 | Bolehkah satu toko terhubung ke lebih dari satu gudang? | T21: tambah toko massal | — |
 | OD-04 | Penyedia hosting. Syarat: worker yang hidup lama, PostgreSQL region Singapura, storage S3. | Deploy (bukan M1) | — |
 | OD-05 | Struktur file ranking pusat: kolom apa, dan bagaimana keluarga aroma ditulis di dalamnya. | Tiket ranking (M3) | — |
 | OD-06 | Siapa yang berwenang atas "pengaturan langsung Pusat" untuk jadwal (PRD A5). | Tiket jadwal (M3) | — |
 | OD-07 | Cakupan laporan untuk viewer: semua toko, atau toko gudang tertentu? | Tiket laporan (M2) | — |
-| OD-08 | Definisi persis **penanda kelengkapan**. | T04 | Kelompok mingguan *parsial* jika ada tanggal anggotanya yang tidak teramati (contoh: Senin–Kamis Juli M1 baru teramati 29–30 Juni). Rata-rata bulanan *parsial* jika ada kelompok mingguan pembentuknya yang parsial. |
-| OD-09 | Konfirmasi angka harapan di `tests/golden/laporan-15GL-GOR-PMS-juni.json` (Senin–Kamis 1, Jumat 0, Sabtu 1, Minggu 0). | T04 (golden) | Dipakai; ditandai menunggu konfirmasi. |
-| OD-10 | Siapa yang boleh mengunggah dan mengaktifkan impor penjualan? | T11 | Admin saja. |
 | OD-11 | Konfirmasi target performa di PRD C1. | — | Dipakai sebagai target. |
+| OD-12 | Toko mana terhubung ke gudang mana (sisa OD-02). Menyusul dari pemilik sebagai data. | Data awal hubungan toko–gudang (tidak menahan kode T21) | — (data, bukan kode) |
 
 ## Tindakan pemilik (bukan keputusan)
 
@@ -39,3 +34,9 @@ Daftar hal yang **belum diputuskan pemilik**. Agen tidak mengimplementasikan per
 | Keluarga aroma dan rework | ADR-0006 |
 | Fokus sheet `(S)`; sheet MP ditunda | ADR-0005 |
 | "ASOY" adalah salah ketik | PRD B2 |
+| OD-01: kuantitas negatif di sel penjualan adalah salah input; harus diperbaiki di Excel sebelum impor (2026-10-09) | PRD A1; T10 |
+| OD-02 (bagian nama): lima gudang = Pusat, Gudang Bali, Gudang Bandung, Gudang Cibubur, Gudang Jabodetabek (2026-10-09). Pemetaan toko ke gudang → OD-12 | PRD A3; T21 |
+| OD-03: satu toko tidak boleh terhubung ke lebih dari satu gudang (2026-10-09) | ADR-0009, PRD A3; T21 |
+| OD-08: definisi penanda kelengkapan sesuai usulan (2026-10-09) | PRD A2; T04 |
+| OD-09: angka harapan `laporan-15GL-GOR-PMS-juni.json` (Senin–Kamis 1, Jumat 0, Sabtu 1, Minggu 0) benar (2026-10-09) | PRD A2; T04 |
+| OD-10: hanya admin yang boleh mengunggah dan mengaktifkan impor (2026-10-09) | PRD A3; T11 |
