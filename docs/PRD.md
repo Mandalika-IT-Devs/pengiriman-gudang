@@ -1,0 +1,345 @@
+# PRD — Dashboard Penjualan MANDALIKA
+
+Dokumen ini adalah **satu-satunya sumber aturan bisnis dan rumus**. Bagian A dan B adalah teks pemilik produk, disalin apa adanya. Koreksi dan keputusan sesudahnya ditandai dengan blok `▶ Keputusan` atau `▶ Revisi`, beserta rujukan ADR, tanpa menghapus teks aslinya. Bagian C berisi kebutuhan non-fungsional dan batas scope.
+
+Pemilik produk: tim MANDALIKA. Perubahan pada berkas ini hanya oleh atau atas instruksi pemilik.
+
+---
+
+## Bagian A — User story utama (teks pemilik, 2026-10-08)
+
+Saya ingin membangun web Dashboard Penjualan MANDALIKA dari awal. Aplikasi ini membantu usaha dengan banyak toko mengolah data penjualan menjadi laporan yang dapat dipercaya, lalu menggunakan laporan tersebut untuk merencanakan kebutuhan pengiriman barang dari gudang ke toko.
+
+Saya ingin aplikasi yang mudah dipakai pegawai operasional. Pengguna harus memahami angka yang ditampilkan, asal perhitungannya, tindakan yang perlu dilakukan, dan apakah perubahan berhasil disimpan. Gunakan cerita berikut sebagai acuan bisnis. Jangan mengubah rumus atau menebak keputusan yang belum jelas hanya untuk mempermudah implementasi.
+
+### A1. Ketika saya memasukkan data penjualan
+
+Saya memiliki file Excel berisi penjualan beberapa toko dan produk. Saya ingin mengunggah file, memilih sheet yang digunakan, lalu memeriksa hasil pembacaannya sebelum menjadikannya sumber laporan aktif.
+
+Tanggal, kuantitas, identitas toko, produk, dan kemungkinan duplikasi perlu diperiksa. Jika ada kesalahan, tunjukkan bagian yang bermasalah dan cara memperbaikinya. Impor yang belum selesai atau gagal tidak boleh menggantikan data aktif yang sebelumnya sudah benar.
+
+Setiap angka laporan harus bisa ditelusuri sampai file, sheet, tanggal, dan sel sumber. Pengguna juga perlu melihat jumlah penjualan serta pembagi yang menghasilkan suatu rata-rata.
+
+Bedakan nol dengan data yang tidak tersedia. Sel penjualan kosong pada tanggal valid dalam sheet yang dipilih diperlakukan sebagai nol. Namun tanggal tanpa pengamatan tidak boleh dibuat menjadi nol. Nilai nol yang benar-benar teramati tetap masuk perhitungan.
+
+> ▶ Keputusan (ADR-0005): sumber impor tahap ini hanya sheet berpola `<BULAN> (S)`. Sheet `MP …` dan sheet BARDAT (tanpa "(S)") di luar scope.
+> ▶ Keputusan (ADR-0002): satu impor aktif per bulan impor; tanggal di sheet harus berada di bulan impor yang dipilih.
+> ▶ Terbuka (OD-01): perlakuan kuantitas negatif.
+
+### A2. Ketika saya membaca laporan penjualan
+
+Saya ingin melihat laporan per produk dan toko, menyaring toko, kategori, produk, serta memilih bulan yang diperlukan. Bulan yang tersedia mengikuti data, tidak dibatasi pada empat bulan tertentu. Pengguna dapat memilih 1–12 bulan, termasuk bulan yang tidak berurutan.
+
+Pilihan yang sedang diedit baru memengaruhi hasil setelah tombol Terapkan ditekan. Periode yang benar-benar sedang digunakan harus terlihat jelas. Ekspor mencakup seluruh hasil filter, bukan hanya baris pada halaman tabel yang sedang dibuka.
+
+Laporan membagi hari menjadi kategori `Senin–Kamis`, `Jumat`, `Sabtu`, dan `Minggu`. Perhitungan dilakukan bertahap untuk setiap pasangan produk–toko dan kategori hari.
+
+a. Tahap pertama adalah menghitung nilai mingguan dalam setiap bulan:
+- Senin–Kamis: total kuantitas dibagi jumlah tanggal berbeda yang memiliki pengamatan valid, lalu dibulatkan ke atas.
+- Jumat, Sabtu, dan Minggu: gunakan total kuantitas kategori tersebut pada minggu terkait.
+
+b. Tahap kedua adalah menghitung rata-rata bulanan:
+Rata-rata bulanan = pembulatan ke atas dari jumlah nilai mingguan dibagi jumlah minggu yang memiliki pengamatan.
+
+c. Tahap ketiga adalah menghitung Ringkasan lintas bulan:
+Rata-rata Ringkasan = pembulatan ke atas dari jumlah rata-rata bulanan dibagi jumlah bulan pilihan yang memiliki hasil.
+
+Saya juga membutuhkan perbandingan minggu yang sama antarbulan. Untuk laporan ini, jumlahkan nilai pada indeks minggu yang sama, bagi dengan jumlah bulan yang memiliki nilai tersebut, lalu bulatkan ke atas.
+
+Jangan mengganti perhitungan bertahap ini dengan total seluruh penjualan dibagi seluruh hari. Pembulatan dilakukan pada setiap tahap yang disebutkan. Minggu dan bulan mempunyai bobot sama pada tahap rata-ratanya.
+
+Data parsial tetap dihitung berdasarkan pengamatan yang tersedia dan diberi penanda kelengkapan. Bulan tanpa hasil tidak menambah pembagi. Nol yang teramati tetap dihitung. Total penjualan mentah dan penjumlahan angka rata-rata harus diberi label berbeda agar tidak menyesatkan.
+
+Untuk Senin–Kamis, penempatan minggu dan bulan laporan mengikuti hari Kamis dalam minggu yang sama. Jumat–Minggu mengikuti tanggalnya sendiri. Perubahan kategori hari tidak boleh diam-diam mengubah bulan laporan yang sudah ditetapkan. Minta contoh tanggal dan hasil yang diharapkan untuk memastikan penomoran minggu serta perlakuan hari libur; jangan mengasumsikan aturan kalender yang belum disepakati.
+
+> ▶ Keputusan: contoh tanggal, penomoran minggu, dan perlakuan hari libur ditetapkan di **Bagian B** (ADR-0004). Contoh terhitung: `tests/golden/kalender-minggu-laporan.json`, `tests/golden/laporan-15GL-GOR-PMS-juni.json`.
+> ▶ Terbuka (OD-08): definisi persis "penanda kelengkapan".
+
+### A3. Ketika saya mengelola gudang dan pengguna
+
+MANDALIKA memiliki lima gudang operasional, yaitu Pusat dan empat gudang lainnya. Pusat adalah nama gudang, bukan sinonim untuk peran admin.
+
+Admin mengelola konfigurasi gudang, hubungan toko, penugasan operator, hak tindakan, ranking pusat, serta persetujuan jadwal. Operator bekerja pada gudang yang ditugaskan kepadanya untuk mengelola usulan jadwal, memasukkan stok, menghitung kebutuhan, memfinalisasi rencana, dan mengekspor sesuai izin. Viewer dapat melihat laporan sesuai haknya, tanpa otomatis mendapat akses operasional gudang.
+
+Admin tidak otomatis menjadi operator pengiriman. Setiap tindakan harus mengikuti kewenangan pengguna.
+
+Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan satu tombol. Toko yang sudah terhubung, nonaktif, atau terkait gudang lain harus mempunyai keterangan yang jelas. Jika hanya sebagian berhasil ditambahkan, tampilkan hasil per toko. Jangan mengulang otomatis tindakan yang hasil penyimpanannya belum pasti.
+
+> ▶ Terbuka: OD-02 (nama empat gudang), OD-03 (satu toko di lebih dari satu gudang?), OD-07 (cakupan laporan viewer), OD-10 (siapa yang boleh impor).
+
+### A4. Ketika saya menentukan sumber perhitungan gudang
+
+Halaman Pengiriman Gudang harus memiliki kartu Periode sumber penjualan yang jelas dan mudah ditemukan. Pilihan bulan di sini harus mandiri dari filter Ringkasan. Mengubah bulan pada Ringkasan tidak boleh mengubah dasar perhitungan gudang secara diam-diam.
+
+Ada satu keputusan yang masih perlu saya tentukan: apakah admin menetapkan periode bersama untuk seluruh operator suatu gudang, atau operator boleh menentukan periodenya sendiri. Tanyakan keputusan ini sebelum menetapkan perilakunya. Jika dipilih pengaturan bersama, pilihan admin harus benar-benar digunakan operator, bukan hanya tersimpan pada tampilan admin.
+
+> ▶ Keputusan (ADR-0003): **admin menetapkan satu periode sumber untuk semua operator di satu gudang.** Operator melihatnya hanya-baca. Jika belum ditetapkan, perhitungan tidak berjalan dan pesan "Periode sumber belum ditetapkan admin" tampil.
+
+Bedakan bulan sumber penjualan, bulan ranking, dan tanggal kirim. Ketiganya mempunyai fungsi berbeda.
+
+### A5. Ketika operator menyiapkan jadwal
+
+Setiap toko mempunyai satu jadwal aktif yang dapat berisi beberapa hari pengiriman. Pengiriman menggunakan Senin–Sabtu, dengan pola mingguan, dua atau tiga kali seminggu, atau dua mingguan. Pola dua mingguan membutuhkan tanggal jangkar agar pekan pengirimannya jelas.
+
+Setiap hari pengiriman dapat memiliki persiapan H, H−1, atau H−2. Operator dapat menyalin template jadwal ke beberapa toko, tetapi masing-masing toko tetap memiliki pengaturan dan status persetujuan sendiri.
+
+Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerlukan persetujuan admin. Pengaturan langsung Pusat mengikuti kewenangan yang telah ditetapkan. Usulan yang belum disetujui tidak menggantikan jadwal aktif.
+
+> ▶ Terbuka (OD-06): siapa yang berwenang atas "pengaturan langsung Pusat".
+
+Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
+
+### A6. Ketika sistem menghitung kebutuhan dan jumlah kirim
+
+Perhitungan dilakukan per toko dan varian produk yang tepat. Jangan mencampurkan stok antarvarian atau menebak produk berdasarkan kemiripan nama. Pencocokan nama dan alias harus mengikuti identitas produk yang telah disepakati.
+
+> ▶ Keputusan (ADR-0006): identitas produk = kode produk. Keluarga aroma lewat tabel pemetaan yang dikonfirmasi admin. Varian rework adalah varian terpisah dalam keluarga aroma yang sama.
+
+Misalkan H adalah tanggal kirim, p adalah jumlah hari persiapan, dan L adalah panjang cakupan. L bernilai 7 untuk pengiriman mingguan, termasuk jadwal dua atau tiga kali seminggu. L bernilai 14 untuk pengiriman dua mingguan.
+
+Cakupan dihitung dari H−p sampai H+L−1, termasuk kedua tanggal tersebut. Jadi jumlah hari cakupan adalah L+p. Setiap pengiriman tetap memakai cakupan penuh, meskipun jadwal pengiriman berikutnya lebih dekat atau cakupannya bertumpang tindih.
+
+Kebutuhan barang adalah penjumlahan rata-rata penjualan sesuai kategori efektif setiap tanggal dalam cakupan tersebut.
+
+Jumlah kirim = nilai terbesar antara 0 dan pembulatan ke atas dari:
+(Kebutuhan barang − Stok akhir) × (1 + Buffer).
+Stok dikurangkan tepat satu kali sebelum buffer diterapkan.
+
+> ▶ Keputusan (ADR-0008): semua pembulatan dan buffer dihitung dengan aritmetika bilangan bulat.
+
+Ranking pusat berasal dari file yang dipublikasikan admin dengan bulan dan versi tertentu, serta berlaku lintas gudang. Tujuh keluarga aroma teratas mendapatkan buffer 20% untuk varian yang cocok dengan keluarga tersebut. Produk otomatis lainnya mendapatkan buffer 10%.
+
+> ▶ Terbuka (OD-05): struktur file ranking pusat.
+
+Contoh: rata-rata Senin–Kamis adalah 4, Jumat 4, Sabtu 10, dan Minggu 8. Pengiriman Senin dengan persiapan dua hari mencakup Sabtu sebelumnya sampai Minggu berikutnya, sebanyak sembilan hari.
+Kebutuhan = (4 × 4) + (1 × 4) + (2 × 10) + (2 × 8) = 56 unit.
+Jika stok akhir 20 dan aromanya termasuk tujuh besar:
+Jumlah kirim = pembulatan ke atas dari (56−20) × 1,20 = 44 unit.
+
+> ▶ Golden: `tests/golden/jumlah-kirim.json`.
+
+Stok yang belum diisi berarti belum diketahui, bukan nol. Stok negatif untuk produk otomatis, identitas ambigu, duplikasi, atau kebutuhan yang tidak tersedia harus diselesaikan sebelum finalisasi.
+
+Display, display tester, dan kertas tester ditangani manual tanpa jumlah kirim atau buffer otomatis. Jangan menganggap semua produk dengan kata “tester” memiliki perlakuan yang sama tanpa konfirmasi.
+
+> ▶ Revisi (2026-10-08, ADR-0007): pemilik mengoreksi kalimat di atas. **Yang ditangani manual hanya display tester (kode berakhiran `-T`) dan kertas tester (kategori `KTP`/`KTL`).** Display biasa, display dummy, display rework, ATOMIZER, GIFT SET, HAMPERS, KEMASAN, VIAL, dan ALKOHOL dihitung otomatis. Golden: `tests/golden/klasifikasi-produk.json`.
+
+### A7. Ketika saya menyimpan dan memfinalisasi
+
+Setiap form harus membedakan kondisi belum disimpan, sedang menyimpan, berhasil, dan gagal. Tampilkan pesan dekat bagian yang dikerjakan; notifikasi singkat dapat menjadi tambahan. Jika penyimpanan berhasil tetapi tampilan gagal dimuat ulang, jelaskan keadaan itu agar pengguna tidak mengulangi tindakan yang sebenarnya sudah berhasil.
+
+Lindungi draft ketika pengguna berpindah halaman atau mengalami gangguan akses sementara. Perubahan sumber, jadwal, atau konfigurasi harus menandai hasil lama sebagai perlu dihitung ulang, tanpa menghapus stok yang sudah dimasukkan.
+
+Saat finalisasi, simpan rencana beserta keadaan sumber penjualan, stok, ranking dan versinya, jadwal, kalender, tanggal cakupan, serta identitas file yang digunakan. Riwayat final harus tetap dapat dijelaskan dan tidak berubah akibat pembaruan data berikutnya.
+
+Finalisasi hanya menyatakan rencana kebutuhan barang telah disimpan. Jangan menyamakannya dengan konfirmasi pengiriman fisik atau penerimaan barang.
+
+Saya ingin alur akhirnya terasa sederhana: data penjualan yang valid menghasilkan laporan yang jelas; operator memakai sumber, jadwal, ranking, dan stok yang benar; sistem memperlihatkan perhitungan; pengguna memeriksa dan memfinalisasi rencana; kemudian hasilnya dapat diekspor dan ditelusuri kembali.
+
+---
+
+## Bagian B — Kalender & Kategori Hari (teks pemilik, 2026-10-08)
+
+### B1. Tujuan fitur Kalender
+
+Saya membutuhkan fitur **Kalender & Kategori Hari** untuk melihat kalender bisnis, informasi hari libur, dan kategori hari yang digunakan dalam laporan penjualan serta perhitungan kebutuhan pengiriman.
+
+Kalender menampilkan:
+- Bulan dan tahun, dengan navigasi ke periode lain.
+- Susunan hari Senin–Minggu dan penanda hari ini.
+- Kategori dasar dan kategori efektif setiap tanggal.
+- Nama serta jenis hari libur.
+- Penanda perubahan kategori, alasan, dan cakupan tokonya.
+- Detail tanggal, bulan laporan, dan nomor minggu laporan.
+
+Pengguna harus dapat membedakan hari sebenarnya, informasi libur, dan kategori yang dipakai untuk menghitung.
+
+### B2. Sumber API Hari Libur
+
+Gunakan API Hari Libur Indonesia:
+https://api-hari-libur.vercel.app/
+
+Pengambilan satu tahun:
+GET https://api-hari-libur.vercel.app/api?year=2026
+
+Parameter `year` mengikuti tahun yang dipilih admin. Untuk snapshot tahunan, ambil satu tahun penuh.
+
+Respons memuat daftar pada `data`, dengan setiap entri berisi:
+- `date`: tanggal dalam format YYYY-MM-DD.
+- `description`: nama atau keterangan hari libur.
+
+Jangan memakai pemetaan field provider lama (`tanggal`, `keterangan`, `is_cuti`). Respons yang diperiksa tidak menyediakan penanda cuti bersama terpisah. Jika klasifikasi diperlukan, keterangan “Cuti Bersama” dapat menjadi petunjuk awal untuk ditinjau admin; jangan menganggap klasifikasi yang ambigu sudah pasti.
+
+Validasi respons, tanggal, tahun, dan duplikasi. Simpan hasil sebagai snapshot tahunan menunggu persetujuan admin. Jangan langsung mengganti daftar aktif.
+
+API ini merupakan sumber pihak ketiga, bukan jaminan kebenaran penetapan pemerintah. Admin tetap meninjau data sebelum aktivasi. Jika pengambilan gagal, pertahankan snapshot aktif terakhir dan tampilkan kegagalan sinkronisasi.
+
+API hanya menyediakan informasi libur. Nama hari, nomor minggu, dan bulan laporan tetap dihitung dari aturan kalender ASOY. Libur tidak otomatis menjadi kategori Minggu atau menggeser jadwal pengiriman.
+
+> ▶ Revisi (2026-10-08): "ASOY" adalah salah ketik pemilik. Maksudnya: aturan kalender pada §B5.
+
+### B3. Peninjauan dan persetujuan hasil sinkronisasi
+
+Hasil sinkronisasi disimpan sebagai **snapshot tahunan berstatus menunggu persetujuan**, bukan langsung mengganti kalender aktif.
+
+Admin dapat meninjau:
+- Tahun dan daftar tanggal libur.
+- Nama serta jenis libur.
+- Sumber dan waktu sinkronisasi.
+- Status snapshot.
+- Perubahan dibandingkan daftar aktif sebelumnya.
+
+Setelah admin menyetujui dan mengaktifkannya, snapshot tersebut menjadi daftar libur aktif untuk tahun terkait. Snapshot aktif sebelumnya menjadi arsip tanpa dihapus.
+
+Sediakan riwayat sinkronisasi, persetujuan, dan aktivasi ulang. Simpan identitas serta waktu persetujuan pertama; aktivasi berikutnya dicatat sebagai kejadian tersendiri. Data yang berubah setelah ditinjau harus diperiksa kembali sebelum diaktifkan.
+
+Persetujuan snapshot hanya menentukan informasi libur yang ditampilkan pada kalender. Persetujuan ini **tidak otomatis mengubah kategori perhitungan** dan tidak membuat perubahan kategori manual.
+
+### B4. Kategori dasar dan perubahan kategori manual
+
+Kategori dasar mengikuti tanggal sebenarnya:
+- Senin–Kamis
+- Jumat
+- Sabtu
+- Minggu
+
+Libur nasional dan cuti bersama **tidak otomatis menjadi kategori Minggu**. Senin yang bertepatan dengan libur tetap termasuk Senin–Kamis, kecuali admin menetapkan kategori pengganti.
+
+Admin boleh mengubah kategori suatu tanggal dengan alasan dan cakupan:
+- Seluruh toko; atau
+- Toko tertentu.
+
+Urutan kategori efektif yang digunakan adalah:
+1. Perubahan aktif khusus toko tersebut.
+2. Perubahan aktif untuk seluruh toko.
+3. Kategori dasar tanggal.
+
+Jika terdapat beberapa revisi pada tanggal dan cakupan yang sama, gunakan revisi aktif terbaru secara konsisten.
+
+Perubahan khusus toko tidak boleh memengaruhi toko lain. Tampilan kalender harus mengikuti cakupan yang sedang dilihat, bukan mewarnai seluruh kalender berdasarkan perubahan salah satu toko.
+
+Hanya admin yang boleh membuat atau membatalkan perubahan kategori. Simpan tanggal, cakupan, kategori sebelum/sesudah, alasan, pelaku, waktu, revisi, dan statusnya. Pembatalan mempertahankan jejak perubahan.
+
+Sinkronisasi daftar libur tidak boleh menimpa perubahan kategori manual.
+
+Bedakan tiga tindakan berikut:
+- Persetujuan snapshot hasil sinkronisasi libur.
+- Perubahan kategori tanggal secara manual oleh admin.
+- Persetujuan jadwal Pengiriman Gudang.
+
+Ketiganya bukan satu alur persetujuan yang sama.
+
+> ▶ Golden: `tests/golden/kategori-efektif.json`.
+
+### B5. Aturan bulan dan nomor minggu laporan
+
+**Senin–Kamis.** Gunakan **Kamis pada minggu yang sama** sebagai tanggal acuan.
+- Bulan dan tahun laporan mengikuti Kamis tersebut.
+- Nomor minggu = pembulatan ke atas dari tanggal Kamis dalam bulan dibagi 7.
+
+**Jumat, Sabtu, dan Minggu.** Gunakan tanggal masing-masing sebagai acuan.
+- Bulan dan tahun laporan mengikuti tanggalnya sendiri.
+- Nomor minggu = pembulatan ke atas dari tanggal dalam bulan dibagi 7.
+
+Nomor minggu ini bukan ISO week tahunan dan bukan nomor baris pada kisi kalender.
+
+Contoh yang harus menghasilkan pengelompokan berikut:
+
+| Tanggal sebenarnya | Bulan laporan | Minggu laporan |
+|---|---|---:|
+| 27–30 April 2026 | April 2026 | 5 |
+| 1–3 Mei 2026 | Mei 2026 | 1 |
+| 4–7 Mei 2026 | Mei 2026 | 1 |
+| 8–10 Mei 2026 | Mei 2026 | 2 |
+| 29–30 Juni dan 1–2 Juli 2026 | Juli 2026 | 1 |
+| 29–31 Desember 2025 dan 1 Januari 2026 | Januari 2026 | 1 |
+| 28–31 Desember 2026 | Desember 2026 | 5 |
+| 1–3 Januari 2027 | Januari 2027 | 1 |
+
+Satu baris kalender dapat memiliki dua nomor minggu laporan. Contohnya, dalam baris 4–10 Mei, Senin–Kamis masuk Minggu 1, sedangkan Jumat–Minggu masuk Minggu 2. Jangan memberikan satu label minggu untuk seluruh baris jika hasilnya menyesatkan.
+
+> ▶ Golden: `tests/golden/kalender-minggu-laporan.json` (setiap tanggal di tabel dijabarkan).
+
+### B6. Perubahan kategori tidak memindahkan tanggal asal
+
+Perubahan kategori hanya mengganti **kategori efektif** yang digunakan untuk pengelompokan perhitungan.
+
+Tanggal asli, bulan laporan, dan nomor minggu asal tetap mengikuti aturan tanggal dasar. Jangan menghitung ulang posisi bulan/minggu berdasarkan kategori pengganti.
+
+Contoh: Selasa, 30 Juni 2026, termasuk laporan Juli Minggu 1 karena mengikuti Kamis, 2 Juli. Jika admin mengubah kategorinya menjadi Jumat, tanggal tersebut tetap berada pada laporan Juli Minggu 1.
+
+### B7. Bedakan bulan sumber impor dan bulan laporan
+
+Data 29–30 Juni yang berasal dari sheet Juni tetap disimpan dengan tanggal aslinya, tetapi termasuk kelompok laporan Juli.
+
+Artinya:
+- Mengimpor sheet Juni tetap menyimpan kedua tanggal tersebut.
+- Filter laporan Juni tidak memasukkannya.
+- Filter laporan Juli dapat memakainya jika datanya sudah diimpor.
+
+Ini bukan penghapusan penjualan. Jangan otomatis mengimpor sheet Juli atau menciptakan tanggal lain yang belum tersedia.
+
+### B8. Pembacaan dan validasi tanggal
+
+Tanggal Excel dibaca sebagai **DD/MM**, **DD/MM/YYYY**, atau tanggal numerik Excel yang valid. Tahun untuk format tanpa tahun berasal dari tahun impor yang dipilih.
+
+Jangan menafsirkan `12/6` sebagai 6 Desember. Tanggal bisnis tidak boleh bergeser akibat konversi zona waktu. Tampilan pengguna memakai format Indonesia, misalnya **Jumat, 05-06-2026**.
+
+Tanggal seperti `31/6` dan `31/4` tidak valid:
+- Jika kolom tersebut berisi penjualan, tampilkan error beserta lokasi sheet/sel dan tahan publikasi sampai diperbaiki.
+- Jika seluruh kolom merupakan template kosong, tampilkan peringatan dan lewati kolom itu; kolom valid tetap diproses.
+- Nilai nol yang benar-benar terisi tetap merupakan data, bukan kolom kosong.
+
+Jangan memindahkan angka tersebut ke bulan berikutnya atau mengabaikannya diam-diam. Catatan dan formula pada workbook tidak otomatis menggantikan aturan bisnis ini.
+
+> ▶ Keputusan (ADR-0005): kolom tanggal invalid yang hanya berisi nol yang diketik = berisi data → error.
+> ▶ Temuan data 2026-10-08: `SEPTEMBER (S)` memiliki 749 sel berisi penjualan pada kolom `31/9`. Impor September tertahan sampai file diperbaiki (tindakan pemilik, lihat OPEN-DECISIONS).
+> ▶ Golden: `tests/golden/tanggal-impor.json`.
+
+### B9. Dampak terhadap laporan dan pengiriman
+
+Perubahan kategori memperbarui laporan dan draft perhitungan yang terdampak. Perhitungan pengiriman yang telah ditinjau perlu diperiksa atau dihitung ulang ketika aturan kalender relevannya berubah. Input stok tetap dipertahankan.
+
+Rencana pengiriman yang sudah final tetap menggunakan snapshot kalender dan sumber pada saat finalisasi. Jangan mengubah hasil final secara retroaktif.
+
+Informasi libur juga tidak otomatis menggeser tanggal kirim, menghapus hari dari cakupan kebutuhan, atau menjadikan kebutuhan hari tersebut nol. Jangan menambahkan perilaku itu tanpa keputusan bisnis tersendiri.
+
+### B10. Batas klarifikasi
+
+Aturan penomoran minggu, perlakuan hari libur, dan tanggal invalid telah dijelaskan di atas; tidak perlu meminta saya menentukannya kembali.
+
+Keputusan lain yang belum jelas tetap perlu ditanyakan secara terpisah, termasuk kewenangan periode sumber gudang, klasifikasi kode produk tertentu, perlakuan rework, dan hubungan sheet MP dengan toko atau gudang. Jangan menyimpulkan hubungan tersebut hanya dari kemiripan nama.
+
+> ▶ Keputusan: periode sumber → ADR-0003; klasifikasi kode → ADR-0007; rework → ADR-0006; sheet MP → ditunda (ADR-0005).
+
+---
+
+## Bagian C — Kebutuhan non-fungsional dan batas scope
+
+### C1. Target performa (usulan, menunggu konfirmasi pemilik)
+
+Diukur dengan data 12 bulan, 25 toko, ±360 produk, server database di region Singapura.
+
+| Kegiatan | Target |
+|---|---|
+| Membuka halaman laporan, filter 1–12 bulan | p95 < 1 detik |
+| Membaca dan memvalidasi satu sheet penjualan setelah unggah selesai | < 60 detik, dengan status progres terlihat |
+| Membuka halaman Pengiriman Gudang untuk satu gudang | p95 < 1,5 detik |
+
+Membaca Excel dan menghitung rata-rata bertahap tidak dilakukan saat halaman dibuka. Lihat ADR-0002.
+
+### C2. Bahasa dan tampilan
+
+Antarmuka berbahasa Indonesia. Tanggal ditampilkan sebagai `Jumat, 05-06-2026`. Istilah layar mengikuti `CONTEXT.md`.
+
+### C3. Di luar scope
+
+Hal-hal berikut tidak dibangun sampai pemilik menambahkannya ke dokumen ini:
+
+- Sheet `MP …` dan sheet BARDAT pada workbook.
+- Model safety stock / nilai Z / service level dari sheet `Uji Perhitungan`, `Safety Stock`, `Ringkasan Safety Stock`, dan `Panduan PPIC`.
+- Konfirmasi pengiriman fisik dan penerimaan barang.
+- Penggeseran tanggal kirim, penghapusan hari dari cakupan, atau kebutuhan nol karena hari libur.
+- Pencocokan produk, toko, atau keluarga aroma berdasarkan kemiripan nama (fuzzy).
+- Pendaftaran akun mandiri oleh pengguna.
+- Impor otomatis sheet lain di luar sheet yang dipilih pengguna.

@@ -1,0 +1,270 @@
+{
+  "sumber": "docs/PRD.md Bagian B §5 — tabel contoh dari pemilik (2026-10-08). Semua tanggal pada rentang tabel dijabarkan satu per satu.",
+  "format": {
+    "contoh": "Jumat, 05-06-2026",
+    "catatan": "Format tampilan tanggal untuk pengguna (PRD B §8)."
+  },
+  "kasus": [
+    {
+      "tanggal": "2026-04-27",
+      "hari": "Senin",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-04-30",
+      "bulanLaporan": "2026-04",
+      "mingguLaporan": 5,
+      "baris": "27–30 April 2026"
+    },
+    {
+      "tanggal": "2026-04-28",
+      "hari": "Selasa",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-04-30",
+      "bulanLaporan": "2026-04",
+      "mingguLaporan": 5,
+      "baris": "27–30 April 2026"
+    },
+    {
+      "tanggal": "2026-04-29",
+      "hari": "Rabu",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-04-30",
+      "bulanLaporan": "2026-04",
+      "mingguLaporan": 5,
+      "baris": "27–30 April 2026"
+    },
+    {
+      "tanggal": "2026-04-30",
+      "hari": "Kamis",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-04-30",
+      "bulanLaporan": "2026-04",
+      "mingguLaporan": 5,
+      "baris": "27–30 April 2026"
+    },
+    {
+      "tanggal": "2026-05-01",
+      "hari": "Jumat",
+      "kategoriDasar": "Jumat",
+      "tanggalAcuan": "2026-05-01",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "1–3 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-02",
+      "hari": "Sabtu",
+      "kategoriDasar": "Sabtu",
+      "tanggalAcuan": "2026-05-02",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "1–3 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-03",
+      "hari": "Minggu",
+      "kategoriDasar": "Minggu",
+      "tanggalAcuan": "2026-05-03",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "1–3 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-04",
+      "hari": "Senin",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-05-07",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "4–7 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-05",
+      "hari": "Selasa",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-05-07",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "4–7 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-06",
+      "hari": "Rabu",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-05-07",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "4–7 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-07",
+      "hari": "Kamis",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-05-07",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 1,
+      "baris": "4–7 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-08",
+      "hari": "Jumat",
+      "kategoriDasar": "Jumat",
+      "tanggalAcuan": "2026-05-08",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 2,
+      "baris": "8–10 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-09",
+      "hari": "Sabtu",
+      "kategoriDasar": "Sabtu",
+      "tanggalAcuan": "2026-05-09",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 2,
+      "baris": "8–10 Mei 2026"
+    },
+    {
+      "tanggal": "2026-05-10",
+      "hari": "Minggu",
+      "kategoriDasar": "Minggu",
+      "tanggalAcuan": "2026-05-10",
+      "bulanLaporan": "2026-05",
+      "mingguLaporan": 2,
+      "baris": "8–10 Mei 2026"
+    },
+    {
+      "tanggal": "2026-06-29",
+      "hari": "Senin",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-07-02",
+      "bulanLaporan": "2026-07",
+      "mingguLaporan": 1,
+      "baris": "29–30 Juni dan 1–2 Juli 2026"
+    },
+    {
+      "tanggal": "2026-06-30",
+      "hari": "Selasa",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-07-02",
+      "bulanLaporan": "2026-07",
+      "mingguLaporan": 1,
+      "baris": "29–30 Juni dan 1–2 Juli 2026"
+    },
+    {
+      "tanggal": "2026-07-01",
+      "hari": "Rabu",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-07-02",
+      "bulanLaporan": "2026-07",
+      "mingguLaporan": 1,
+      "baris": "29–30 Juni dan 1–2 Juli 2026"
+    },
+    {
+      "tanggal": "2026-07-02",
+      "hari": "Kamis",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-07-02",
+      "bulanLaporan": "2026-07",
+      "mingguLaporan": 1,
+      "baris": "29–30 Juni dan 1–2 Juli 2026"
+    },
+    {
+      "tanggal": "2025-12-29",
+      "hari": "Senin",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-01-01",
+      "bulanLaporan": "2026-01",
+      "mingguLaporan": 1,
+      "baris": "29–31 Desember 2025 dan 1 Januari 2026"
+    },
+    {
+      "tanggal": "2025-12-30",
+      "hari": "Selasa",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-01-01",
+      "bulanLaporan": "2026-01",
+      "mingguLaporan": 1,
+      "baris": "29–31 Desember 2025 dan 1 Januari 2026"
+    },
+    {
+      "tanggal": "2025-12-31",
+      "hari": "Rabu",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-01-01",
+      "bulanLaporan": "2026-01",
+      "mingguLaporan": 1,
+      "baris": "29–31 Desember 2025 dan 1 Januari 2026"
+    },
+    {
+      "tanggal": "2026-01-01",
+      "hari": "Kamis",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-01-01",
+      "bulanLaporan": "2026-01",
+      "mingguLaporan": 1,
+      "baris": "29–31 Desember 2025 dan 1 Januari 2026"
+    },
+    {
+      "tanggal": "2026-12-28",
+      "hari": "Senin",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-12-31",
+      "bulanLaporan": "2026-12",
+      "mingguLaporan": 5,
+      "baris": "28–31 Desember 2026"
+    },
+    {
+      "tanggal": "2026-12-29",
+      "hari": "Selasa",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-12-31",
+      "bulanLaporan": "2026-12",
+      "mingguLaporan": 5,
+      "baris": "28–31 Desember 2026"
+    },
+    {
+      "tanggal": "2026-12-30",
+      "hari": "Rabu",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-12-31",
+      "bulanLaporan": "2026-12",
+      "mingguLaporan": 5,
+      "baris": "28–31 Desember 2026"
+    },
+    {
+      "tanggal": "2026-12-31",
+      "hari": "Kamis",
+      "kategoriDasar": "Senin–Kamis",
+      "tanggalAcuan": "2026-12-31",
+      "bulanLaporan": "2026-12",
+      "mingguLaporan": 5,
+      "baris": "28–31 Desember 2026"
+    },
+    {
+      "tanggal": "2027-01-01",
+      "hari": "Jumat",
+      "kategoriDasar": "Jumat",
+      "tanggalAcuan": "2027-01-01",
+      "bulanLaporan": "2027-01",
+      "mingguLaporan": 1,
+      "baris": "1–3 Januari 2027"
+    },
+    {
+      "tanggal": "2027-01-02",
+      "hari": "Sabtu",
+      "kategoriDasar": "Sabtu",
+      "tanggalAcuan": "2027-01-02",
+      "bulanLaporan": "2027-01",
+      "mingguLaporan": 1,
+      "baris": "1–3 Januari 2027"
+    },
+    {
+      "tanggal": "2027-01-03",
+      "hari": "Minggu",
+      "kategoriDasar": "Minggu",
+      "tanggalAcuan": "2027-01-03",
+      "bulanLaporan": "2027-01",
+      "mingguLaporan": 1,
+      "baris": "1–3 Januari 2027"
+    }
+  ]
+}

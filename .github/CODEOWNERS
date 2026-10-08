@@ -1,0 +1,15 @@
+# Berkas terlindungi: PR yang mengubahnya wajib disetujui pemilik.
+# TP-02: ganti @GANTI-PEMILIK dengan username GitHub pemilik (boleh lebih dari satu, dipisah spasi).
+/docs/PRD.md               @GANTI-PEMILIK
+/docs/adr/                 @GANTI-PEMILIK
+/docs/OPEN-DECISIONS.md    @GANTI-PEMILIK
+/CONTEXT.md                @GANTI-PEMILIK
+/AGENTS.md                 @GANTI-PEMILIK
+/CLAUDE.md                 @GANTI-PEMILIK
+/CODING_STANDARDS.md       @GANTI-PEMILIK
+/src/domain/AGENTS.md      @GANTI-PEMILIK
+/tests/golden/             @GANTI-PEMILIK
+/package.json              @GANTI-PEMILIK
+/pnpm-lock.yaml            @GANTI-PEMILIK
+/.github/                  @GANTI-PEMILIK
+/.claude/                  @GANTI-PEMILIK

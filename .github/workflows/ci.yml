@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
+  push:
+    branches: [main]
+
+jobs:
+  kebersihan-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: PR wajib menutup satu issue
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if ! printf '%s' "$BODY" | grep -Eiq '(closes|fixes|resolves) #[0-9]+'; then
+            echo "::error::Deskripsi PR wajib memuat 'Closes #<nomor-issue>'."
+            exit 1
+          fi
+      - name: Peringatan ukuran PR
+        env:
+          ADD: ${{ github.event.pull_request.additions }}
+          DEL: ${{ github.event.pull_request.deletions }}
+        run: |
+          TOTAL=$((ADD + DEL))
+          if [ "$TOTAL" -gt 400 ]; then
+            echo "::warning::PR mengubah $TOTAL baris (>400). Pastikan isinya hanya satu tiket."
+          fi
+      - name: Berkas terlindungi butuh label disetujui-pemilik
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          CHANGED=$(git diff --name-only "origin/$BASE...HEAD")
+          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/adr/|docs/OPEN-DECISIONS\.md|CONTEXT\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|src/domain/AGENTS\.md|tests/golden/|package\.json|pnpm-lock\.yaml|\.github/|\.claude/)' || true)
+          if [ -n "$PROTECTED" ]; then
+            LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
+            if ! printf '%s\n' "$LABELS" | grep -qx 'disetujui-pemilik'; then
+              echo "::error::PR mengubah berkas terlindungi tanpa label 'disetujui-pemilik':"
+              printf '%s\n' "$PROTECTED"
+              exit 1
+            fi
+          fi
+
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mandalika
+          POSTGRES_PASSWORD: mandalika
+          POSTGRES_DB: mandalika_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U mandalika"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://mandalika:mandalika@localhost:5432/mandalika_test
+    steps:
+      - uses: actions/checkout@v4
+      - id: cek
+        run: |
+          if [ -f package.json ]; then echo "ada=1" >> "$GITHUB_OUTPUT"
+          else echo "::notice::Belum ada package.json — menunggu tiket T00."; fi
+      - if: steps.cek.outputs.ada == '1'
+        uses: pnpm/action-setup@v4
+      - if: steps.cek.outputs.ada == '1'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - if: steps.cek.outputs.ada == '1'
+        run: pnpm install --frozen-lockfile
+      - if: steps.cek.outputs.ada == '1'
+        run: pnpm verify

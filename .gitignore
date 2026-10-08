@@ -1,0 +1,15 @@
+# Data bisnis asli tidak di-commit
+*.xlsx
+*.xls
+*.csv
+!tests/**/*.csv
+
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+coverage/
+playwright-report/
+test-results/
+.DS_Store

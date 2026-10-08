@@ -1,0 +1,118 @@
+{
+  "sumber": "docs/PRD.md Bagian A §6 — contoh pemilik (Senin, persiapan 2 hari, kebutuhan 56, stok 20, tujuh besar → 44). Tanggal kirim konkret dipilih: Senin 2026-06-08.",
+  "rataRata": {
+    "Senin–Kamis": 4,
+    "Jumat": 4,
+    "Sabtu": 10,
+    "Minggu": 8
+  },
+  "kasusCakupan": {
+    "tanggalKirim": "2026-06-08",
+    "persiapanHari": 2,
+    "panjangCakupan": 7,
+    "tanggalCakupan": [
+      {
+        "tanggal": "2026-06-06",
+        "hari": "Sabtu",
+        "kategoriEfektif": "Sabtu"
+      },
+      {
+        "tanggal": "2026-06-07",
+        "hari": "Minggu",
+        "kategoriEfektif": "Minggu"
+      },
+      {
+        "tanggal": "2026-06-08",
+        "hari": "Senin",
+        "kategoriEfektif": "Senin–Kamis"
+      },
+      {
+        "tanggal": "2026-06-09",
+        "hari": "Selasa",
+        "kategoriEfektif": "Senin–Kamis"
+      },
+      {
+        "tanggal": "2026-06-10",
+        "hari": "Rabu",
+        "kategoriEfektif": "Senin–Kamis"
+      },
+      {
+        "tanggal": "2026-06-11",
+        "hari": "Kamis",
+        "kategoriEfektif": "Senin–Kamis"
+      },
+      {
+        "tanggal": "2026-06-12",
+        "hari": "Jumat",
+        "kategoriEfektif": "Jumat"
+      },
+      {
+        "tanggal": "2026-06-13",
+        "hari": "Sabtu",
+        "kategoriEfektif": "Sabtu"
+      },
+      {
+        "tanggal": "2026-06-14",
+        "hari": "Minggu",
+        "kategoriEfektif": "Minggu"
+      }
+    ],
+    "jumlahHari": 9,
+    "kebutuhan": 56
+  },
+  "kasusJumlahKirim": [
+    {
+      "kebutuhan": 56,
+      "stokAkhir": 20,
+      "persenBuffer": 20,
+      "jumlahKirim": 44,
+      "catatan": "Contoh pemilik: ⌈36 × 1,20⌉ = ⌈43,2⌉ = 44."
+    },
+    {
+      "kebutuhan": 56,
+      "stokAkhir": 20,
+      "persenBuffer": 10,
+      "jumlahKirim": 40,
+      "catatan": "Produk otomatis di luar tujuh besar: ⌈36 × 1,10⌉ = ⌈39,6⌉ = 40."
+    },
+    {
+      "kebutuhan": 30,
+      "stokAkhir": 20,
+      "persenBuffer": 10,
+      "jumlahKirim": 11,
+      "catatan": "Jebakan float: 10 × 1.1 di JavaScript = 11.000000000000002 → Math.ceil = 12 (SALAH). Benar: 11."
+    },
+    {
+      "kebutuhan": 56,
+      "stokAkhir": 60,
+      "persenBuffer": 20,
+      "jumlahKirim": 0,
+      "catatan": "Stok melebihi kebutuhan → max(0, …) = 0."
+    },
+    {
+      "kebutuhan": 56,
+      "stokAkhir": 56,
+      "persenBuffer": 20,
+      "jumlahKirim": 0,
+      "catatan": "Stok sama dengan kebutuhan → 0."
+    }
+  ],
+  "kasusStatus": [
+    {
+      "stokAkhir": null,
+      "status": "stok-belum-diisi",
+      "catatan": "Stok kosong = belum diketahui, bukan nol. Tidak ada jumlah kirim; menahan finalisasi."
+    },
+    {
+      "stokAkhir": -3,
+      "klasifikasi": "otomatis",
+      "status": "stok-negatif",
+      "catatan": "Stok negatif produk otomatis harus diselesaikan sebelum finalisasi."
+    },
+    {
+      "klasifikasi": "manual",
+      "status": "manual",
+      "catatan": "Display tester & kertas tester: tanpa jumlah kirim dan tanpa buffer otomatis."
+    }
+  ]
+}

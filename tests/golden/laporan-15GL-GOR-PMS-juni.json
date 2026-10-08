@@ -1,0 +1,431 @@
+{
+  "sumber": "Data nyata sheet JUNI (S), toko PMS, produk 15GL-GOR (tahun impor 2026). Nilai harapan diturunkan dari aturan PRD Bagian A §2 dan disajikan ke pemilik di percakapan 2026-10-08. STATUS: menunggu konfirmasi eksplisit pemilik (OD-09).",
+  "pasangan": {
+    "toko": "PMS",
+    "produk": "15GL-GOR"
+  },
+  "tahunImpor": 2026,
+  "bulanImpor": 6,
+  "catatanKolomInvalid": "Kolom 31/6 (JUNI (S)!AJ) invalid dan kosong → dilewati dengan peringatan.",
+  "pengamatan": [
+    {
+      "tanggal": "2026-06-01",
+      "qty": 0,
+      "selSumber": "JUNI (S)!F4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-02",
+      "qty": 0,
+      "selSumber": "JUNI (S)!G4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-03",
+      "qty": 1,
+      "selSumber": "JUNI (S)!H4",
+      "jenis": "terisi"
+    },
+    {
+      "tanggal": "2026-06-04",
+      "qty": 0,
+      "selSumber": "JUNI (S)!I4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-05",
+      "qty": 0,
+      "selSumber": "JUNI (S)!J4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-06",
+      "qty": 1,
+      "selSumber": "JUNI (S)!K4",
+      "jenis": "terisi"
+    },
+    {
+      "tanggal": "2026-06-07",
+      "qty": 0,
+      "selSumber": "JUNI (S)!L4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-08",
+      "qty": 0,
+      "selSumber": "JUNI (S)!M4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-09",
+      "qty": 0,
+      "selSumber": "JUNI (S)!N4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-10",
+      "qty": 0,
+      "selSumber": "JUNI (S)!O4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-11",
+      "qty": 1,
+      "selSumber": "JUNI (S)!P4",
+      "jenis": "terisi"
+    },
+    {
+      "tanggal": "2026-06-12",
+      "qty": 0,
+      "selSumber": "JUNI (S)!Q4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-13",
+      "qty": 0,
+      "selSumber": "JUNI (S)!R4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-14",
+      "qty": 0,
+      "selSumber": "JUNI (S)!S4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-15",
+      "qty": 0,
+      "selSumber": "JUNI (S)!T4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-16",
+      "qty": 0,
+      "selSumber": "JUNI (S)!U4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-17",
+      "qty": 0,
+      "selSumber": "JUNI (S)!V4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-18",
+      "qty": 0,
+      "selSumber": "JUNI (S)!W4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-19",
+      "qty": 0,
+      "selSumber": "JUNI (S)!X4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-20",
+      "qty": 1,
+      "selSumber": "JUNI (S)!Y4",
+      "jenis": "terisi"
+    },
+    {
+      "tanggal": "2026-06-21",
+      "qty": 0,
+      "selSumber": "JUNI (S)!Z4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-22",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AA4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-23",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AB4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-24",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AC4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-25",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AD4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-26",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AE4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-27",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AF4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-28",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AG4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-29",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AH4",
+      "jenis": "kosong-nol-tersirat"
+    },
+    {
+      "tanggal": "2026-06-30",
+      "qty": 0,
+      "selSumber": "JUNI (S)!AI4",
+      "jenis": "kosong-nol-tersirat"
+    }
+  ],
+  "harapan": {
+    "nilaiMingguan": [
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 1,
+        "kategori": "Jumat",
+        "tanggal": [
+          "2026-06-05"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 1,
+        "kategori": "Minggu",
+        "tanggal": [
+          "2026-06-07"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 1,
+        "kategori": "Sabtu",
+        "tanggal": [
+          "2026-06-06"
+        ],
+        "jumlahQty": 1,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 1,
+        "kategori": "Senin–Kamis",
+        "tanggal": [
+          "2026-06-01",
+          "2026-06-02",
+          "2026-06-03",
+          "2026-06-04"
+        ],
+        "jumlahQty": 1,
+        "pembagiTanggal": 4,
+        "nilaiMingguan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 2,
+        "kategori": "Jumat",
+        "tanggal": [
+          "2026-06-12"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 2,
+        "kategori": "Minggu",
+        "tanggal": [
+          "2026-06-14"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 2,
+        "kategori": "Sabtu",
+        "tanggal": [
+          "2026-06-13"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 2,
+        "kategori": "Senin–Kamis",
+        "tanggal": [
+          "2026-06-08",
+          "2026-06-09",
+          "2026-06-10",
+          "2026-06-11"
+        ],
+        "jumlahQty": 1,
+        "pembagiTanggal": 4,
+        "nilaiMingguan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 3,
+        "kategori": "Jumat",
+        "tanggal": [
+          "2026-06-19"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 3,
+        "kategori": "Minggu",
+        "tanggal": [
+          "2026-06-21"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 3,
+        "kategori": "Sabtu",
+        "tanggal": [
+          "2026-06-20"
+        ],
+        "jumlahQty": 1,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 3,
+        "kategori": "Senin–Kamis",
+        "tanggal": [
+          "2026-06-15",
+          "2026-06-16",
+          "2026-06-17",
+          "2026-06-18"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": 4,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 4,
+        "kategori": "Jumat",
+        "tanggal": [
+          "2026-06-26"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 4,
+        "kategori": "Minggu",
+        "tanggal": [
+          "2026-06-28"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 4,
+        "kategori": "Sabtu",
+        "tanggal": [
+          "2026-06-27"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": null,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "mingguLaporan": 4,
+        "kategori": "Senin–Kamis",
+        "tanggal": [
+          "2026-06-22",
+          "2026-06-23",
+          "2026-06-24",
+          "2026-06-25"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": 4,
+        "nilaiMingguan": 0
+      },
+      {
+        "bulanLaporan": "2026-07",
+        "mingguLaporan": 1,
+        "kategori": "Senin–Kamis",
+        "tanggal": [
+          "2026-06-29",
+          "2026-06-30"
+        ],
+        "jumlahQty": 0,
+        "pembagiTanggal": 2,
+        "nilaiMingguan": 0
+      }
+    ],
+    "rataRataBulananJuni": [
+      {
+        "bulanLaporan": "2026-06",
+        "kategori": "Senin–Kamis",
+        "jumlahNilaiMingguan": 2,
+        "pembagiMinggu": 4,
+        "rataRataBulanan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "kategori": "Jumat",
+        "jumlahNilaiMingguan": 0,
+        "pembagiMinggu": 4,
+        "rataRataBulanan": 0
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "kategori": "Sabtu",
+        "jumlahNilaiMingguan": 2,
+        "pembagiMinggu": 4,
+        "rataRataBulanan": 1
+      },
+      {
+        "bulanLaporan": "2026-06",
+        "kategori": "Minggu",
+        "jumlahNilaiMingguan": 0,
+        "pembagiMinggu": 4,
+        "rataRataBulanan": 0
+      }
+    ],
+    "totalPenjualanMentahJuni": 4,
+    "catatan": [
+      "29–30 Juni masuk kelompok Juli Minggu 1 (acuan Kamis 2 Juli); tidak masuk rata-rata Juni.",
+      "Kelompok Juli Minggu 1 Senin–Kamis hanya teramati 2 dari 4 tanggal jika sheet Juli belum diimpor → penanda kelengkapan: parsial (lihat OD-08 untuk definisi)."
+    ]
+  }
+}

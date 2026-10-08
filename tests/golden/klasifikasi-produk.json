@@ -1,0 +1,90 @@
+{
+  "sumber": "Keputusan pemilik 2026-10-08 (ADR-0007). Kode & kategori diambil dari sheet JUNI (S).",
+  "aturan": "manual jika kode berakhiran '-T' ATAU kategori 'KTP'/'KTL'; selain itu otomatis",
+  "kasus": [
+    {
+      "kode": "DP120E-CHA-T",
+      "kategori": "DISPLAY PRIA",
+      "klasifikasi": "manual",
+      "alasan": "display-tester"
+    },
+    {
+      "kode": "DP120P-NO1-T",
+      "kategori": "PARFUM PRIA",
+      "klasifikasi": "manual",
+      "alasan": "display-tester",
+      "catatan": "Kategori di file keliru; aturan berbasis kode."
+    },
+    {
+      "kode": "DP100P-CHA-T",
+      "kategori": "PARFUM PRIA",
+      "klasifikasi": "manual",
+      "alasan": "display-tester"
+    },
+    {
+      "kode": "DW110E-GOR-T",
+      "kategori": "DISPLAY WANITA",
+      "klasifikasi": "manual",
+      "alasan": "display-tester"
+    },
+    {
+      "kode": "KTL-24H",
+      "kategori": "KTL",
+      "klasifikasi": "manual",
+      "alasan": "kertas-tester"
+    },
+    {
+      "kode": "KTB-GOR",
+      "kategori": "KTP",
+      "klasifikasi": "manual",
+      "alasan": "kertas-tester",
+      "catatan": "Awalan KTB- tetapi kategori KTP."
+    },
+    {
+      "kode": "KTP-POL",
+      "kategori": "KTP",
+      "klasifikasi": "manual",
+      "alasan": "kertas-tester"
+    },
+    {
+      "kode": "DP120E-24H",
+      "kategori": "DISPLAY PRIA",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "DD-GS15-B",
+      "kategori": "DISPLAY WANITA",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "DD-HAM120-MRF",
+      "kategori": "DISPLAY WANITA",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "DP120E-ONL-R",
+      "kategori": "DISPLAY PRIA",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "PP120E-ONL-R",
+      "kategori": "PARFUM PRIA",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "A10M-24H",
+      "kategori": "ATOMIZER",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "V2E-GOR",
+      "kategori": "VIAL",
+      "klasifikasi": "otomatis"
+    },
+    {
+      "kode": "100-ALK",
+      "kategori": "PARFUM PRIA",
+      "klasifikasi": "otomatis"
+    }
+  ]
+}

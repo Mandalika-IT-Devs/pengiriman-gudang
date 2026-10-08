@@ -1,0 +1,160 @@
+{
+  "sumber": "docs/PRD.md Bagian B §4 dan §6 (contoh 30 Juni dari pemilik); kasus lain diturunkan langsung dari urutan prioritas §4.",
+  "perubahan": [
+    {
+      "id": "P1",
+      "tanggal": "2026-06-30",
+      "cakupan": {
+        "jenis": "semua-toko"
+      },
+      "kategoriBaru": "Jumat",
+      "revisi": 1,
+      "status": "aktif"
+    },
+    {
+      "id": "P2",
+      "tanggal": "2026-06-03",
+      "cakupan": {
+        "jenis": "toko",
+        "toko": "PMS"
+      },
+      "kategoriBaru": "Minggu",
+      "revisi": 1,
+      "status": "aktif"
+    },
+    {
+      "id": "P3",
+      "tanggal": "2026-06-04",
+      "cakupan": {
+        "jenis": "semua-toko"
+      },
+      "kategoriBaru": "Sabtu",
+      "revisi": 1,
+      "status": "aktif"
+    },
+    {
+      "id": "P4",
+      "tanggal": "2026-06-04",
+      "cakupan": {
+        "jenis": "semua-toko"
+      },
+      "kategoriBaru": "Jumat",
+      "revisi": 2,
+      "status": "aktif"
+    },
+    {
+      "id": "P5",
+      "tanggal": "2026-06-04",
+      "cakupan": {
+        "jenis": "toko",
+        "toko": "PMJ"
+      },
+      "kategoriBaru": "Minggu",
+      "revisi": 1,
+      "status": "dibatalkan"
+    },
+    {
+      "id": "P6",
+      "tanggal": "2026-06-05",
+      "cakupan": {
+        "jenis": "semua-toko"
+      },
+      "kategoriBaru": "Minggu",
+      "revisi": 1,
+      "status": "aktif"
+    },
+    {
+      "id": "P7",
+      "tanggal": "2026-06-05",
+      "cakupan": {
+        "jenis": "toko",
+        "toko": "PMS"
+      },
+      "kategoriBaru": "Sabtu",
+      "revisi": 1,
+      "status": "aktif"
+    }
+  ],
+  "kasus": [
+    {
+      "tanggal": "2026-06-30",
+      "toko": "PMS",
+      "kategoriDasar": "Senin–Kamis",
+      "kategoriEfektif": "Jumat",
+      "sumberKategori": "P1",
+      "bulanLaporan": "2026-07",
+      "mingguLaporan": 1,
+      "catatan": "Contoh pemilik: posisi tetap Juli Minggu 1."
+    },
+    {
+      "tanggal": "2026-06-03",
+      "toko": "PMS",
+      "kategoriDasar": "Senin–Kamis",
+      "kategoriEfektif": "Minggu",
+      "sumberKategori": "P2",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Perubahan khusus toko berlaku untuk toko itu."
+    },
+    {
+      "tanggal": "2026-06-03",
+      "toko": "PMJ",
+      "kategoriDasar": "Senin–Kamis",
+      "kategoriEfektif": "Senin–Kamis",
+      "sumberKategori": "dasar",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Perubahan khusus PMS tidak memengaruhi toko lain."
+    },
+    {
+      "tanggal": "2026-06-04",
+      "toko": "PMS",
+      "kategoriDasar": "Senin–Kamis",
+      "kategoriEfektif": "Jumat",
+      "sumberKategori": "P4",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Revisi aktif terbaru pada tanggal & cakupan sama dipakai."
+    },
+    {
+      "tanggal": "2026-06-04",
+      "toko": "PMJ",
+      "kategoriDasar": "Senin–Kamis",
+      "kategoriEfektif": "Jumat",
+      "sumberKategori": "P4",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Perubahan khusus toko yang dibatalkan diabaikan; jatuh ke perubahan semua-toko."
+    },
+    {
+      "tanggal": "2026-06-05",
+      "toko": "PMS",
+      "kategoriDasar": "Jumat",
+      "kategoriEfektif": "Sabtu",
+      "sumberKategori": "P7",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Khusus toko mengalahkan semua-toko."
+    },
+    {
+      "tanggal": "2026-06-05",
+      "toko": "PMJ",
+      "kategoriDasar": "Jumat",
+      "kategoriEfektif": "Minggu",
+      "sumberKategori": "P6",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Tanpa perubahan khusus toko, pakai semua-toko."
+    },
+    {
+      "tanggal": "2026-06-06",
+      "toko": "PMS",
+      "kategoriDasar": "Sabtu",
+      "kategoriEfektif": "Sabtu",
+      "sumberKategori": "dasar",
+      "bulanLaporan": "2026-06",
+      "mingguLaporan": 1,
+      "catatan": "Tanpa perubahan: kategori dasar."
+    }
+  ]
+}

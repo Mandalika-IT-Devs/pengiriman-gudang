@@ -1,0 +1,128 @@
+{
+  "sumber": "docs/PRD.md Bagian B §8 + temuan data workbook (2026-10-08).",
+  "kasusHeader": [
+    {
+      "header": "1/6",
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "valid",
+        "tanggal": "2026-06-01"
+      }
+    },
+    {
+      "header": "12/6",
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "valid",
+        "tanggal": "2026-06-12"
+      },
+      "catatan": "DD/MM — bukan 6 Desember."
+    },
+    {
+      "header": "05/06/2026",
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "valid",
+        "tanggal": "2026-06-05"
+      }
+    },
+    {
+      "header": 46174,
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "valid",
+        "tanggal": "2026-06-01"
+      },
+      "catatan": "Nomor seri tanggal Excel; dikonversi tanpa zona waktu."
+    },
+    {
+      "header": 46295,
+      "tahunImpor": 2026,
+      "bulanImpor": 9,
+      "hasil": {
+        "status": "valid",
+        "tanggal": "2026-09-30"
+      }
+    },
+    {
+      "header": "31/6",
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "invalid"
+      }
+    },
+    {
+      "header": "31/4",
+      "tahunImpor": 2026,
+      "bulanImpor": 4,
+      "hasil": {
+        "status": "invalid"
+      }
+    },
+    {
+      "header": "31/9",
+      "tahunImpor": 2026,
+      "bulanImpor": 9,
+      "hasil": {
+        "status": "invalid"
+      }
+    },
+    {
+      "header": "5/7",
+      "tahunImpor": 2026,
+      "bulanImpor": 6,
+      "hasil": {
+        "status": "di-luar-bulan-impor"
+      },
+      "catatan": "Tanggal valid tetapi bukan bulan impor yang dipilih → error (ADR-0002)."
+    }
+  ],
+  "kasusKolomInvalid": [
+    {
+      "isiKolom": "semua sel kosong",
+      "hasil": "peringatan; kolom dilewati; kolom valid tetap diproses",
+      "contohData": "APRIL (S) dan JUNI (S): kolom 31/4 dan 31/6 kosong di 25 toko"
+    },
+    {
+      "isiKolom": "ada sel berisi angka > 0",
+      "hasil": "error per sel (sheet!sel); publikasi ditahan",
+      "contohData": "SEPTEMBER (S): 749 sel berisi penjualan pada kolom 31/9, mis. PMS sel AJ11"
+    },
+    {
+      "isiKolom": "hanya nol yang diketik",
+      "hasil": "error; nol yang diketik adalah data (ADR-0005)"
+    }
+  ],
+  "kasusKuantitas": [
+    {
+      "nilai": "kosong pada tanggal valid",
+      "hasil": "nol tersirat (tidak disimpan sebagai baris)"
+    },
+    {
+      "nilai": 0,
+      "hasil": "nol teramati (disimpan)"
+    },
+    {
+      "nilai": 3,
+      "hasil": "valid"
+    },
+    {
+      "nilai": 1.5,
+      "hasil": "error: kuantitas harus bilangan bulat"
+    },
+    {
+      "nilai": "abc",
+      "hasil": "error: kuantitas bukan angka"
+    },
+    {
+      "nilai": -1,
+      "hasil": "error: menunggu keputusan OD-01",
+      "contohData": "APRIL (S)!MY29 (BXC, 17-04-2026, A10M-IRR) dan MEI (S)!PJ346 (KOKAS, 18-05-2026, V2P-SED)"
+    }
+  ]
+}
