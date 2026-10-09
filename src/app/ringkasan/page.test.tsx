@@ -345,3 +345,135 @@ describe("/ringkasan: filter toko, kategori produk, dan produk (T35)", () => {
     }
   });
 });
+
+describe("/ringkasan: perbandingan minggu yang sama antarbulan (T36, PRD A2)", () => {
+  /**
+   * 2029, kategori Sabtu. Maret: 3 Mar (M1) = 1, 10 Mar (M2) = 0 (nol teramati). April: 14 Apr (M2) = 5,
+   * M1 tidak punya nilai. Mei: 5 Mei (M1) = 3. `tokoLain` (opsional): toko lain yang hanya menjual di Juni 2029.
+   * Semua impor diaktifkan sebelum satu kali hitung ulang cache.
+   */
+  async function siapkan({ denganTokoLain = false }: { denganTokoLain?: boolean } = {}) {
+    const admin = await buatPenggunaUji("admin");
+    const toko = await buatTokoUji();
+    const kode = kodeProdukUji();
+    await imporAktif({ idAdmin: admin.id, toko: toko.nama, tahun: 2029, bulan: 3, hari: [3, 10], produk: [produkUji(kode, [1, 0])] });
+    await imporAktif({ idAdmin: admin.id, toko: toko.nama, tahun: 2029, bulan: 4, hari: [14], produk: [produkUji(kode, [5])] });
+    await imporAktif({ idAdmin: admin.id, toko: toko.nama, tahun: 2029, bulan: 5, hari: [5], produk: [produkUji(kode, [3])] });
+    const tokoLain = denganTokoLain ? await buatTokoUji() : null;
+    if (tokoLain !== null) {
+      await imporAktif({ idAdmin: admin.id, toko: tokoLain.nama, tahun: 2029, bulan: 6, hari: [2], produk: [produkUji(kodeProdukUji(), [1])] });
+    }
+    await hitungUlangCacheLaporan();
+    return { toko, kode, tokoLain, pasangan: `${toko.id}|${kode}` };
+  }
+
+  /** Bagian perbandingan minggu sama: sel per minggu laporan dan kategori. */
+  function mingguSama(html: string) {
+    const bagian = /<section[^>]*id="minggu-sama"[^>]*>(.*?)<\/section>/.exec(html)?.[1];
+    if (bagian === undefined) throw new Error("Bagian perbandingan minggu sama tidak ada.");
+    const sel = Object.fromEntries(
+      [...bagian.matchAll(/<tr[^>]*data-minggu-laporan="(\d+)"[^>]*>(.*?)<\/tr>/g)].flatMap(([, minggu, tr]) =>
+        [...tr.matchAll(/<td[^>]*data-kategori="([^"]+)"([^>]*)>(.*?)<\/td>/g)].map(([, kategori, atribut, isi]) => [
+          `M${minggu} ${kategori}`,
+          {
+            nilai: /data-nilai="(\d+)"/.exec(atribut)?.[1],
+            jumlah: /data-jumlah="(\d+)"/.exec(atribut)?.[1],
+            pembagi: /data-pembagi="(\d+)"/.exec(atribut)?.[1],
+            bulan: /data-bulan="([^"]*)"/.exec(atribut)?.[1],
+            tersedia: !atribut.includes('data-tersedia="tidak"'),
+            isi,
+          },
+        ]),
+      ),
+    );
+    return { bagian, sel };
+  }
+
+  it("dua bulan: Sabtu M1 Maret 1 dan Mei 3 → Σ 4 ÷ 2 bulan → 2; nol teramati tetap dihitung", async () => {
+    const d = await siapkan();
+    const html = await buka("viewer", { bulan: ["2029-05", "2029-03"], mingguSama: d.pasangan });
+    const { bagian, sel } = mingguSama(html);
+
+    expect(sel["M1 Sabtu"]).toMatchObject({ nilai: "2", jumlah: "4", pembagi: "2", bulan: "2029-03,2029-05", tersedia: true });
+    expect(sel["M1 Sabtu"].isi).toContain("Σ 4 ÷ 2 bulan");
+    expect(sel["M1 Sabtu"].isi).toContain("Maret 2029, Mei 2029");
+    // Nol teramati: Σ 0 ÷ 1 bulan → 0, bukan "—".
+    expect(sel["M2 Sabtu"]).toMatchObject({ nilai: "0", jumlah: "0", pembagi: "1", bulan: "2029-03", tersedia: true });
+    expect(sel["M2 Sabtu"].isi).toContain(">0<");
+    // Kategori tanpa nilai: ikon CircleDashed + "—" (DESIGN §7).
+    for (const kategori of ["Senin–Kamis", "Jumat", "Minggu"]) {
+      expect(sel[`M1 ${kategori}`]).toMatchObject({ tersedia: false, nilai: undefined });
+      expect(sel[`M1 ${kategori}`].isi).toMatch(/data-status="tidakTersedia".*<svg[^>]*lucide-circle-dashed[^>]*>.*—/);
+    }
+    expect(bagian).toContain(d.kode);
+    expect(bagian).toContain(d.toko.nama);
+    expect(bagian).toContain("Rata-rata Sabtu");
+    // Zona kerja (DESIGN §1): tanpa blob blur.
+    expect(html).not.toContain("blur-3xl");
+    // Baris produk–toko terpilih ditandai; total mentah di latar accent memakai accent-foreground (DESIGN §2).
+    const { tr } = baris(html, d.toko.nama, d.kode);
+    expect(html).toMatch(new RegExp(`<tr[^>]*data-baris="${d.toko.nama}\\|${d.kode}"[^>]*data-state="selected"`));
+    expect(tr).toMatch(/class="[^"]*text-accent-foreground[^"]*"[^>]*data-total-mentah/);
+    // DESIGN §2: semua teks sekunder di baris terpilih memakai accent-foreground (nama produk, Σ ÷ bulan, "—");
+    // hanya ikon CircleDashed yang tetap muted-foreground (§7).
+    const trTanpaIkon = tr.replace(/<svg[^>]*>.*?<\/svg>/g, "");
+    expect(trTanpaIkon).not.toContain("text-muted-foreground");
+    expect(tr).toMatch(/<svg[^>]*lucide-circle-dashed[^>]*text-muted-foreground/);
+    expect(tr).toMatch(/class="block text-accent-foreground">15ML GLITTER - GORGEOUS</);
+    expect(tr).toMatch(/class="text-xs text-accent-foreground">Σ/);
+    expect(tr).toMatch(/class="[^"]*text-accent-foreground[^"]*" data-status="tidakTersedia"/);
+    // Tautan "Minggu sama" di baris terpilih: accent-foreground (6,6 : 1 di accent), bukan primary (±3,97 : 1).
+    const tautan = /<a[^>]*data-tautan-minggu-sama="[^"]*"[^>]*>/.exec(tr)?.[0] ?? "";
+    expect(tautan).toContain('aria-current="true"');
+    expect(tautan).toContain("text-accent-foreground");
+    expect(tautan).toContain("hover:bg-accent-foreground/10");
+    expect(tautan).not.toContain("text-primary");
+    expect(tautan).not.toContain("hover:bg-primary/10");
+    // Tidak ada sisa token berkontras rendah di atas accent pada baris terpilih (selain ikon, §7).
+    expect(trTanpaIkon).not.toMatch(/text-primary|text-clay|text-warning|text-info/);
+    // Baris yang tidak terpilih tetap memakai muted-foreground.
+    const lain = baris(await buka("viewer", { bulan: ["2029-05", "2029-03"] }), d.toko.nama, d.kode).tr;
+    expect(/<a[^>]*data-tautan-minggu-sama="[^"]*"[^>]*>/.exec(lain)?.[0]).toContain("text-primary");
+    expect(lain).not.toContain("text-accent-foreground");
+    expect(lain).toMatch(/class="block text-muted-foreground">15ML GLITTER - GORGEOUS</);
+  });
+
+  it("bulan tanpa nilai pada indeks minggu itu tidak menambah pembagi", async () => {
+    const d = await siapkan();
+    const { sel } = mingguSama(await buka("viewer", { bulan: ["2029-03", "2029-04", "2029-05"], mingguSama: d.pasangan }));
+    // April tidak punya nilai Sabtu M1 → pembagi tetap 2.
+    expect(sel["M1 Sabtu"]).toMatchObject({ nilai: "2", jumlah: "4", pembagi: "2", bulan: "2029-03,2029-05" });
+    // M2: Maret 0 dan April 5; Mei tidak punya nilai → Σ 5 ÷ 2 bulan → 3.
+    expect(sel["M2 Sabtu"]).toMatchObject({ nilai: "3", jumlah: "5", pembagi: "2", bulan: "2029-03,2029-04" });
+    expect(sel["M2 Sabtu"].isi).toContain("Maret 2029, April 2029");
+  });
+
+  it("mengikuti periode yang diterapkan; tautan per baris membawa periode dan filter", async () => {
+    const d = await siapkan();
+    const hanyaMaret = mingguSama(await buka("viewer", { bulan: "2029-03", mingguSama: d.pasangan }));
+    expect(hanyaMaret.sel["M1 Sabtu"]).toMatchObject({ nilai: "1", jumlah: "1", pembagi: "1", bulan: "2029-03" });
+
+    // Tautan dari baris tabel membawa bulan dan filter yang diterapkan.
+    const tanpaPilihan = await buka("viewer", { bulan: "2029-03", toko: String(d.toko.id) });
+    expect(tanpaPilihan).not.toContain('id="minggu-sama"');
+    const harapanUrl = new URLSearchParams({ bulan: "2029-03", toko: String(d.toko.id), mingguSama: d.pasangan }).toString();
+    expect(tanpaPilihan).toContain(`href="/ringkasan?${harapanUrl.replaceAll("&", "&amp;")}#minggu-sama"`);
+  });
+
+  it("pasangan di luar periode atau filter yang diterapkan, atau tidak dikenal: pesan, tanpa angka", async () => {
+    const d = await siapkan({ denganTokoLain: true });
+    if (d.tokoLain === null) throw new Error("Toko lain belum disiapkan.");
+    const daftarParameter: Record<string, string>[] = [
+      { bulan: "2029-03", toko: String(d.tokoLain.id), mingguSama: d.pasangan },
+      { bulan: "2029-06", mingguSama: d.pasangan },
+      { bulan: "2029-03", mingguSama: "bukan-pasangan" },
+    ];
+    for (const parameter of daftarParameter) {
+      const html = await buka("viewer", parameter);
+      const { bagian } = mingguSama(html);
+      expect(bagian).toContain('role="alert"');
+      expect(bagian).toContain("tidak ada pada periode dan filter yang diterapkan");
+      expect(bagian).not.toContain("data-minggu-laporan=");
+    }
+  });
+});
