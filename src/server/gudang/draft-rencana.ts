@@ -1,6 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
-import { tanggalKirimMenurutJadwal } from "@/domain/jadwal";
 import { parseTanggalBisnis, type KategoriDasar, type TanggalBisnis } from "@/domain/kalender";
 import { hitungRingkasan } from "@/domain/laporan";
 import { rincianJumlahKirim } from "@/domain/angka";
@@ -19,10 +18,10 @@ import {
   versiRanking,
   type StatusKeluargaAroma,
 } from "@/server/db/schema";
-import { bacaPerubahanKategori, bacaRevisiKalender, idVersiCacheAktif } from "@/server/laporan/cache";
+import { bacaPerubahanKategori, bacaRevisiKalender, versiCacheAktif } from "@/server/laporan/cache";
 import { rankingBerlaku } from "@/server/ranking/ranking";
 
-import { jadwalTokoGudang } from "./jadwal";
+import { alasanHitungUlang, perubahanKategoriMengenai, tokoYangMengirim, type AlasanHitungUlang, type TokoKirim } from "./dasar-draft";
 import { URUTAN_MASALAH, type MasalahBarisDraft } from "./masalah-draft";
 import { bacaPeriodeSumberPerhitungan } from "./periode-sumber";
 import type { RincianBarisDraft, SumberKategoriDraft, TanggalCakupanDraft } from "./rincian-draft";
@@ -35,6 +34,10 @@ import type { RincianBarisDraft, SumberKategoriDraft, TanggalCakupanDraft } from
 // daftar masalah per baris lewat `nilaiBarisDraft` (T66); belum ada ranking dipublikasikan → perhitungan tidak berjalan.
 // Dasar rincian per baris (T60) ikut disimpan: bulan periode sumber yang dipakai, cakupan per toko beserta kategori
 // efektif dan sumbernya, serta rata-rata per kategori dan kebutuhan per kategori efektif per baris.
+// Menghitung lagi draft yang sudah ada (hitung ulang, T61; PRD A5, A7, B9) mempertahankan stok akhir toko–varian yang
+// masih ada di draft; toko yang tidak lagi mengirim dikeluarkan dan dicatat, varian baru ditambahkan dengan stok kosong.
+// Stok akhir toko–varian yang tidak ada lagi di draft disimpan dan dipakai kembali bila muncul lagi (PRD A7 ▶ Keputusan
+// 2026-10-10, T61).
 // Halaman hanya membaca draft yang tersimpan (PRD C1). Kewenangan diperiksa pemanggil (server action / halaman).
 
 export const PESAN_PERIODE_BELUM_DITETAPKAN = "Periode sumber belum ditetapkan admin";
@@ -52,26 +55,11 @@ const PERSEN_BUFFER_LAINNYA = 10;
 
 export type HasilHitungDraft = { keadaan: "berhasil"; idDraft: number } | { keadaan: "gagal"; pesan: string };
 
-type TokoKirim = { tokoId: number; versiJadwal: number; persiapanHari: 0 | 1 | 2; panjangCakupan: 7 | 14 };
-
-/**
- * Toko aktif gudang yang menurut jadwal aktifnya mengirim pada `tanggalKirim`, beserta p, L, dan versi jadwal. Toko
- * nonaktif tidak ikut walaupun masih punya jadwal aktif (PRD A6 ▶ Keputusan 2026-10-10, T58).
- */
-async function tokoYangMengirim(idGudang: number, tanggalKirim: TanggalBisnis): Promise<TokoKirim[]> {
-  return (await jadwalTokoGudang(idGudang)).flatMap(({ id, aktif, jadwal }) => {
-    if (!aktif || jadwal === null) return [];
-    const hasil = tanggalKirimMenurutJadwal(jadwal, tanggalKirim);
-    return hasil.kirim
-      ? [{ tokoId: id, versiJadwal: jadwal.versi, persiapanHari: hasil.persiapanHari, panjangCakupan: hasil.panjangCakupan }]
-      : [];
-  });
-}
-
-type BarisBaru = { tokoId: number; kodeProduk: string } & NilaiBarisDraft;
-
 /** Status keluarga aroma produk (ADR-0006); `keluargaAromaId` terisi persis saat `terpetakan`. */
 type PemetaanProduk = { statusKeluargaAroma: StatusKeluargaAroma; keluargaAromaId: number | null };
+
+/** Satu baris draft hasil hitung, beserta pemetaan produk yang dipakai (sinyal perubahan pemetaan, T61). */
+type BarisBaru = { tokoId: number; kodeProduk: string } & NilaiBarisDraft & PemetaanProduk;
 
 type NilaiBarisDraft = {
   klasifikasi: "manual" | "otomatis";
@@ -163,23 +151,36 @@ async function hitungBaris(
   bulanDipakai: readonly string[],
   tanggalKirim: TanggalBisnis,
 ): Promise<
-  | { keadaan: "berhasil"; baris: BarisBaru[]; cakupan: Map<number, TanggalCakupanDraft[]>; revisiKalender: number; versiRankingId: number }
+  | {
+      keadaan: "berhasil";
+      baris: BarisBaru[];
+      cakupan: Map<number, TanggalCakupanDraft[]>;
+      perubahanKategori: Map<number, number[]>;
+      revisiKalender: number;
+      versiRankingId: number;
+      versiCache: { id: number; imporAktif: number[] };
+    }
   | { keadaan: "gagal"; pesan: string }
 > {
   return db.transaction(
     async (tx) => {
       const revisiKalender = await bacaRevisiKalender(tx);
-      const versiId = await idVersiCacheAktif(tx);
+      const versiCache = await versiCacheAktif(tx);
       // Cache laporan hilang setelah periode dibaca: sama dengan semua bulan periode sumber tanpa data aktif.
-      if (versiId === null) return { keadaan: "gagal", pesan: PESAN_PERIODE_TANPA_DATA_AKTIF };
+      if (versiCache === null) return { keadaan: "gagal", pesan: PESAN_PERIODE_TANPA_DATA_AKTIF };
+      const versiId = versiCache.id;
       const ranking = await rankingBerlaku(tx);
       if (ranking === null) return { keadaan: "gagal", pesan: PESAN_RANKING_BELUM_DIPUBLIKASIKAN };
-      const dasar = { keadaan: "berhasil", revisiKalender, versiRankingId: ranking.idVersi } as const;
-      if (daftarToko.length === 0) return { ...dasar, baris: [], cakupan: new Map() };
+      const dasar = { keadaan: "berhasil", revisiKalender, versiRankingId: ranking.idVersi, versiCache } as const;
+      if (daftarToko.length === 0) return { ...dasar, baris: [], cakupan: new Map(), perubahanKategori: new Map() };
       const keluargaTujuhBesar = new Set(ranking.tujuhBesar.map((t) => t.keluarga.id));
 
       const daftarPerubahan = await bacaPerubahanKategori(tx);
       const cakupan = new Map(daftarToko.map((t) => [t.tokoId, cakupanToko(t, tanggalKirim, daftarPerubahan)]));
+      const perubahanKategori = await perubahanKategoriMengenai(
+        tx,
+        new Map([...cakupan].map(([tokoId, daftarTanggal]) => [tokoId, daftarTanggal.map((t) => t.tanggal)])),
+      );
       const bulanan = await tx
         .select({
           tokoId: cacheRataRataBulanan.tokoId,
@@ -220,6 +221,8 @@ async function hitungBaris(
         const rataRata: Partial<Record<KategoriDasar, number>> = Object.fromEntries(
           hitungRingkasan(daftar, bulanDipakai).map((r) => [r.kategori, r.rataRataRingkasan]),
         );
+        // Kode tanpa master produk tidak punya pemetaan yang dikonfirmasi admin.
+        const pemetaan: PemetaanProduk = { statusKeluargaAroma: statusKeluargaAroma ?? "belum-dipetakan", keluargaAromaId };
         const nilai = nilaiBarisDraft(
           {
             tanggalKirim,
@@ -232,13 +235,12 @@ async function hitungBaris(
             // Draft yang baru dihitung: stok akhir belum diketahui, bukan nol (diisi lewat T59).
             stokAkhir: null,
           },
-          // Kode tanpa master produk tidak punya pemetaan yang dikonfirmasi admin.
-          { statusKeluargaAroma: statusKeluargaAroma ?? "belum-dipetakan", keluargaAromaId },
+          pemetaan,
           keluargaTujuhBesar,
         );
-        return { tokoId, kodeProduk, ...nilai };
+        return { tokoId, kodeProduk, ...nilai, ...pemetaan };
       });
-      return { ...dasar, baris, cakupan };
+      return { ...dasar, baris, cakupan, perubahanKategori };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
   );
@@ -248,7 +250,11 @@ async function hitungBaris(
  * Membuat draft rencana gudang `idGudang` untuk `tanggalKirim` dan menyimpannya. Periode sumber belum ditetapkan, semua
  * bulannya tanpa data aktif (termasuk cache laporan belum ada), atau belum ada ranking dipublikasikan → gagal dengan
  * pesan, tanpa membuat atau mengubah draft (ADR-0003; PRD A6 ▶ Keputusan perencanaan M2–M3 dan 2026-10-10, T58). Draft
- * yang sudah ada untuk gudang + tanggal yang sama diganti isinya.
+ * yang sudah ada untuk gudang + tanggal yang sama diganti isinya (hitung ulang, T61): stok akhir toko–varian yang masih
+ * ada dipertahankan dan masalah serta jumlah kirimnya dihitung dari stok itu; toko yang tidak lagi mengirim dicatat di
+ * `tokoDikeluarkan`. Stok akhir yang sudah diisi untuk toko–varian yang tidak ada lagi di draft (termasuk yang sudah
+ * tersimpan dari hitungan sebelumnya) disimpan di `stokTidakDipakai`, lalu dipakai kembali bila toko–varian itu muncul
+ * lagi (PRD A7 ▶ Keputusan 2026-10-10, T61).
  */
 export async function hitungDraftRencana({
   idGudang,
@@ -266,12 +272,36 @@ export async function hitungDraftRencana({
   const daftarToko = await tokoYangMengirim(idGudang, tanggalKirim);
   const hasilBaris = await hitungBaris(daftarToko, periode.bulanDipakai, tanggalKirim);
   if (hasilBaris.keadaan === "gagal") return hasilBaris;
-  const { baris, cakupan, revisiKalender, versiRankingId } = hasilBaris;
+  const { baris, cakupan, perubahanKategori, revisiKalender, versiRankingId, versiCache } = hasilBaris;
 
   return db.transaction(async (tx) => {
     // Mengunci baris gudang agar perhitungan bersamaan untuk gudang yang sama berjalan bergantian.
     const [tujuan] = await tx.select({ id: gudang.id }).from(gudang).where(eq(gudang.id, idGudang)).for("update");
     if (!tujuan) return { keadaan: "gagal", pesan: "Gudang tidak ditemukan." };
+
+    // Isi draft lama (bila ada): stok akhir per toko–varian, toko yang mengirim, dan stok yang belum dipakai lagi.
+    const lama = await tx
+      .select({ tokoId: tokoDraftRencana.tokoId, kodeProduk: barisDraftRencana.kodeProduk, stokAkhir: barisDraftRencana.stokAkhir })
+      .from(tokoDraftRencana)
+      .innerJoin(draftRencana, eq(draftRencana.id, tokoDraftRencana.draftId))
+      .leftJoin(barisDraftRencana, eq(barisDraftRencana.tokoDraftId, tokoDraftRencana.id))
+      .where(and(eq(draftRencana.gudangId, idGudang), eq(draftRencana.tanggalKirim, tanggalKirim)));
+    const [draftLama] = await tx
+      .select({ stokTidakDipakai: draftRencana.stokTidakDipakai })
+      .from(draftRencana)
+      .where(and(eq(draftRencana.gudangId, idGudang), eq(draftRencana.tanggalKirim, tanggalKirim)));
+    // Baris draft lama menimpa stok yang belum dipakai: isinya yang terbaru (termasuk stok yang dikosongkan operator).
+    const stokLama = new Map<string, { tokoId: number; kodeProduk: string; stokAkhir: number | null }>();
+    for (const s of draftLama?.stokTidakDipakai ?? []) stokLama.set(`${s.tokoId}|${s.kodeProduk}`, s);
+    for (const { tokoId, kodeProduk, stokAkhir } of lama) {
+      if (kodeProduk !== null) stokLama.set(`${tokoId}|${kodeProduk}`, { tokoId, kodeProduk, stokAkhir });
+    }
+    const dipakai = new Set(baris.map((b) => `${b.tokoId}|${b.kodeProduk}`));
+    const stokTidakDipakai = [...stokLama]
+      .flatMap(([kunci, { stokAkhir, ...s }]) => (dipakai.has(kunci) || stokAkhir === null ? [] : [{ ...s, stokAkhir }]))
+      .sort((a, b) => a.tokoId - b.tokoId || a.kodeProduk.localeCompare(b.kodeProduk));
+    const idTokoKirim = new Set(daftarToko.map((t) => t.tokoId));
+    const tokoDikeluarkan = [...new Set(lama.map((b) => b.tokoId))].filter((id) => !idTokoKirim.has(id)).sort((a, b) => a - b);
 
     const dasar = {
       dihitungOleh: idPengguna,
@@ -280,6 +310,10 @@ export async function hitungDraftRencana({
       revisiKalender,
       versiRankingId,
       bulanSumber: [...periode.bulanDipakai],
+      versiCacheId: versiCache.id,
+      imporAktif: versiCache.imporAktif,
+      tokoDikeluarkan,
+      stokTidakDipakai,
     };
     const [draft] = await tx
       .insert(draftRencana)
@@ -291,7 +325,14 @@ export async function hitungDraftRencana({
     if (daftarToko.length > 0) {
       const tokoDraft = await tx
         .insert(tokoDraftRencana)
-        .values(daftarToko.map((t) => ({ ...t, draftId: draft.id, cakupan: cakupan.get(t.tokoId) ?? null })))
+        .values(
+          daftarToko.map((t) => ({
+            ...t,
+            draftId: draft.id,
+            cakupan: cakupan.get(t.tokoId) ?? null,
+            perubahanKategori: perubahanKategori.get(t.tokoId) ?? [],
+          })),
+        )
         .returning({ id: tokoDraftRencana.id, tokoId: tokoDraftRencana.tokoId });
       const idTokoDraft = new Map(tokoDraft.map((t) => [t.tokoId, t.id]));
       if (baris.length > 0) {
@@ -299,7 +340,9 @@ export async function hitungDraftRencana({
           baris.map(({ tokoId, ...b }) => {
             const tokoDraftId = idTokoDraft.get(tokoId);
             if (tokoDraftId === undefined) throw new Error(`Toko ${tokoId} tidak termasuk toko draft.`);
-            return { ...b, tokoDraftId };
+            // Stok akhir yang sudah diisi dipertahankan (PRD A7, B9); varian baru belum punya stok.
+            const stokAkhir = stokLama.get(`${tokoId}|${b.kodeProduk}`)?.stokAkhir ?? null;
+            return { ...b, tokoDraftId, stokAkhir, ...nilaiKirimBaris({ ...b, stokAkhir }) };
           }),
         );
       }
@@ -343,6 +386,16 @@ export type TokoDraft = {
   baris: BarisDraft[];
 };
 
+/** Stok akhir yang sudah diisi untuk toko–varian yang tidak ada lagi di draft (PRD A7 ▶ Keputusan 2026-10-10, T61). */
+export type StokTidakDipakai = {
+  toko: { id: number; nama: string };
+  kodeProduk: string;
+  namaProduk: string | null;
+  stokAkhir: number;
+  /** Tokonya tidak ada lagi di draft, atau tokonya ada tetapi variannya tidak. */
+  alasan: "toko-tidak-di-draft" | "varian-tidak-di-draft";
+};
+
 export type DraftRencana = {
   tanggalKirim: TanggalBisnis;
   dihitungOleh: string;
@@ -353,6 +406,15 @@ export type DraftRencana = {
   bulanSumber: string[] | null;
   /** Urut nama toko; baris urut kode produk. Toko tanpa varian di periode sumber punya `baris` kosong. */
   toko: TokoDraft[];
+  /**
+   * Dasar perhitungan yang berubah sejak draft dihitung (T61), dalam urutan tampilan; kosong = tidak perlu dihitung
+   * ulang. Draft yang perlu dihitung ulang tidak bisa difinalisasi.
+   */
+  perluDihitungUlang: AlasanHitungUlang[];
+  /** Toko yang dikeluarkan pada hitungan terakhir karena tidak lagi mengirim pada tanggal itu (T61), urut nama. */
+  tokoDikeluarkan: { id: number; nama: string }[];
+  /** Stok yang disimpan tetapi tidak dipakai karena toko atau variannya tidak ada lagi di draft; urut nama toko, kode. */
+  stokTidakDipakai: StokTidakDipakai[];
 };
 
 /**
@@ -368,6 +430,11 @@ export async function bacaDraftRencana(idGudang: number, tanggalKirim?: TanggalB
       dihitungPada: draftRencana.dihitungPada,
       ranking: { bulanRanking: versiRanking.bulanRanking, versi: versiRanking.versi },
       bulanSumber: draftRencana.bulanSumber,
+      versiPeriodeSumber: draftRencana.versiPeriodeSumber,
+      imporAktif: draftRencana.imporAktif,
+      versiRankingId: draftRencana.versiRankingId,
+      tokoDikeluarkan: draftRencana.tokoDikeluarkan,
+      stokTidakDipakai: draftRencana.stokTidakDipakai,
     })
     .from(draftRencana)
     .innerJoin(user, eq(user.id, draftRencana.dihitungOleh))
@@ -381,6 +448,17 @@ export async function bacaDraftRencana(idGudang: number, tanggalKirim?: TanggalB
     .orderBy(desc(draftRencana.dihitungPada), desc(draftRencana.id))
     .limit(1);
   if (!draft) return null;
+  const tanggalDraft = parseTanggalBisnis(draft.tanggalKirim);
+
+  const perluDihitungUlang = await alasanHitungUlang({ ...draft, idDraft: draft.id, idGudang, tanggalKirim: tanggalDraft });
+  const tokoDikeluarkan =
+    draft.tokoDikeluarkan.length === 0
+      ? []
+      : await db
+          .select({ id: toko.id, nama: toko.nama })
+          .from(toko)
+          .where(inArray(toko.id, draft.tokoDikeluarkan))
+          .orderBy(asc(toko.nama), asc(toko.id));
 
   const daftarToko = await db
     .select({
@@ -438,8 +516,12 @@ export async function bacaDraftRencana(idGudang: number, tanggalKirim?: TanggalB
       },
     ]);
   }
+  const stokTidakDipakai = await bacaStokTidakDipakai(
+    draft.stokTidakDipakai,
+    new Set(daftarToko.map((t) => t.id)),
+  );
   return {
-    tanggalKirim: parseTanggalBisnis(draft.tanggalKirim),
+    tanggalKirim: tanggalDraft,
     dihitungOleh: draft.dihitungOleh,
     dihitungPada: draft.dihitungPada,
     ranking: draft.ranking,
@@ -453,5 +535,47 @@ export async function bacaDraftRencana(idGudang: number, tanggalKirim?: TanggalB
         baris: barisToko,
       };
     }),
+    perluDihitungUlang,
+    tokoDikeluarkan,
+    stokTidakDipakai,
   };
+}
+
+/** Nama toko dan produk untuk stok yang tidak dipakai, beserta alasannya; urut nama toko lalu kode produk. */
+async function bacaStokTidakDipakai(
+  tersimpan: readonly { tokoId: number; kodeProduk: string; stokAkhir: number }[],
+  idTokoDraft: ReadonlySet<number>,
+): Promise<StokTidakDipakai[]> {
+  if (tersimpan.length === 0) return [];
+  const [daftarToko, daftarProduk] = await Promise.all([
+    db
+      .select({ id: toko.id, nama: toko.nama })
+      .from(toko)
+      .where(
+        inArray(
+          toko.id,
+          tersimpan.map((s) => s.tokoId),
+        ),
+      ),
+    db
+      .select({ kode: produk.kode, nama: produk.nama })
+      .from(produk)
+      .where(
+        inArray(
+          produk.kode,
+          tersimpan.map((s) => s.kodeProduk),
+        ),
+      ),
+  ]);
+  const namaToko = new Map(daftarToko.map((t) => [t.id, t.nama]));
+  const namaProduk = new Map(daftarProduk.map((p) => [p.kode, p.nama]));
+  return tersimpan
+    .map(({ tokoId, kodeProduk, stokAkhir }): StokTidakDipakai => ({
+      toko: { id: tokoId, nama: namaToko.get(tokoId) ?? "" },
+      kodeProduk,
+      namaProduk: namaProduk.get(kodeProduk) ?? null,
+      stokAkhir,
+      alasan: idTokoDraft.has(tokoId) ? "varian-tidak-di-draft" : "toko-tidak-di-draft",
+    }))
+    .sort((a, b) => a.toko.nama.localeCompare(b.toko.nama) || a.toko.id - b.toko.id || a.kodeProduk.localeCompare(b.kodeProduk));
 }

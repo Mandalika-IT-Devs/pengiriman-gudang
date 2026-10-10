@@ -848,7 +848,12 @@ export const usulanJadwal = pgTable(
  * `hitung-kebutuhan`. Satu draft per gudang + tanggal kirim; menghitung lagi mengganti isi draft itu. Dasar yang dipakai
  * disimpan sebagai sinyal perubahan (T61): versi periode sumber (id penetapan yang berlaku, T51) dan revisi kalender
  * (T42). Toko beserta p, L, dan versi jadwal disimpan di `toko_draft_rencana`. `versiRankingId` = versi ranking pusat
- * berlaku yang dipakai untuk buffer (bulan ranking dan versinya, T66).
+ * berlaku yang dipakai untuk buffer (bulan ranking dan versinya, T66). `versiCacheId` dan `imporAktif` = versi cache
+ * laporan yang dipakai beserta set impor aktifnya (T61; tanpa FK karena versi cache lama dihapus). Kosong = draft
+ * dihitung sebelum T61. `tokoDikeluarkan` = toko yang dikeluarkan dari draft pada hitungan terakhir karena tidak lagi
+ * mengirim pada tanggal itu (T61). `stokTidakDipakai` = stok akhir yang sudah diisi untuk toko–varian yang tidak ada lagi
+ * di draft setelah dihitung ulang; disimpan dan dipakai kembali bila toko–varian itu muncul lagi (PRD A7 ▶ Keputusan
+ * 2026-10-10, T61).
  */
 export const draftRencana = pgTable(
   "draft_rencana",
@@ -871,6 +876,11 @@ export const draftRencana = pgTable(
       .references(() => versiRanking.id),
     /** Bulan periode sumber yang dipakai (`YYYY-MM`, urut naik; T60). Kosong = draft dihitung sebelum T60. */
     bulanSumber: jsonb("bulan_sumber").$type<string[]>(),
+    versiCacheId: integer("versi_cache_id"),
+    /** Id impor aktif (urut naik) pembentuk versi cache laporan yang dipakai. */
+    imporAktif: integer("impor_aktif").array(),
+    tokoDikeluarkan: integer("toko_dikeluarkan").array().notNull().default(sql`'{}'::integer[]`),
+    stokTidakDipakai: jsonb("stok_tidak_dipakai").$type<{ tokoId: number; kodeProduk: string; stokAkhir: number }[]>().notNull().default([]),
   },
   (tabel) => [uniqueIndex("draft_rencana_gudang_tanggal_unik").on(tabel.gudangId, tabel.tanggalKirim)],
 );
@@ -896,6 +906,12 @@ export const tokoDraftRencana = pgTable(
     panjangCakupan: integer("panjang_cakupan").$type<7 | 14>().notNull(),
     /** Tanggal cakupan beserta kategori efektif dan sumbernya (T60). Kosong = draft dihitung sebelum T60. */
     cakupan: jsonb("cakupan").$type<TanggalCakupanDraft[]>(),
+    /**
+     * Id perubahan kategori aktif (urut naik) yang tanggalnya masuk cakupan toko ini dan mengenai toko ini (seluruh toko
+     * atau toko ini) saat dihitung; sinyal perubahan kalender (PRD B9 ▶ Keputusan 2026-10-10, T61). Kosong = draft
+     * dihitung sebelum T61.
+     */
+    perubahanKategori: integer("perubahan_kategori").array(),
   },
   (tabel) => [
     uniqueIndex("toko_draft_rencana_unik").on(tabel.draftId, tabel.tokoId),
@@ -911,7 +927,8 @@ export const tokoDraftRencana = pgTable(
  * kosong untuk produk manual dan produk otomatis yang belum dipetakan; `jumlahKirim` kosong selama ada masalah.
  * `stokAkhir` diisi operator (T59): kosong = belum diketahui, bukan nol; boleh negatif (menjadi masalah produk otomatis).
  * Setelah stok disimpan, `masalah` dan `jumlahKirim` diperbarui (PRD A7). `rincian` menyimpan dasar kebutuhan untuk
- * rincian perhitungan (T60).
+ * rincian perhitungan (T60). `statusKeluargaAroma` dan `keluargaAromaId` = pemetaan produk yang dipakai saat dihitung,
+ * sebagai sinyal perubahan pemetaan (T61). Kosong = draft dihitung sebelum T61.
  */
 export const barisDraftRencana = pgTable(
   "baris_draft_rencana",
@@ -930,6 +947,8 @@ export const barisDraftRencana = pgTable(
     stokAkhir: integer("stok_akhir"),
     /** Rata-rata per kategori dan kebutuhan per kategori efektif (T60). Kosong = draft dihitung sebelum T60. */
     rincian: jsonb("rincian").$type<RincianBarisDraft>(),
+    statusKeluargaAroma: text("status_keluarga_aroma").$type<StatusKeluargaAroma>(),
+    keluargaAromaId: integer("keluarga_aroma_id"),
   },
   (tabel) => [
     uniqueIndex("baris_draft_rencana_unik").on(tabel.tokoDraftId, tabel.kodeProduk),

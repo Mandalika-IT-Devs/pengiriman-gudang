@@ -495,3 +495,51 @@ describe("rincian perhitungan per baris draft (T60)", () => {
     expect(rincian).toMatch(/data-jumlah-kirim-rincian="kosong"/);
   });
 });
+
+// T61: berjalan setelah bagian sebelumnya. Jadwal toko contoh sudah dinonaktifkan sejak draft tanggal contoh dihitung,
+// jadi draft itu perlu dihitung ulang.
+describe("draft perlu dihitung ulang (T61)", () => {
+  const penanda = (html: string) => /<div[^>]*data-perlu-dihitung-ulang.*?<\/ul>/.exec(html)?.[0] ?? "";
+
+  it("penanda \"Perlu dihitung ulang\" (ikon + teks warning) beserta yang berubah; tampil juga untuk admin, tanpa tombol", async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const html = await buka(cibubur, TANGGAL_KIRIM);
+    expect(penanda(html)).toMatch(/data-status="perluDihitungUlang".*?lucide-triangle-alert.*?Perlu dihitung ulang/);
+    expect(penanda(html)).toMatch(/data-alasan-hitung-ulang="jadwal"[^>]*>Jadwal toko</);
+    expect(penanda(html)).not.toContain('data-alasan-hitung-ulang="ranking"');
+    expect(penanda(html)).toContain(
+      "Stok akhir yang sudah diisi tetap disimpan. Stok untuk toko atau varian yang tidak ada lagi di draft ditampilkan sebagai keterangan dan dipakai kembali jika toko atau varian itu muncul lagi.",
+    );
+    expect(html).not.toContain("Hitung ulang</button>");
+    expect(html).not.toMatch(/<(button|input|select|form)\b/);
+  });
+
+  it("operator dengan hak hitung-kebutuhan melihat tombol Hitung ulang; tanpa hak itu tidak", async () => {
+    await masukOperator(cibubur, ["hitung-kebutuhan"]);
+    expect(await buka(cibubur, TANGGAL_KIRIM)).toMatch(/data-perlu-dihitung-ulang.*?<button[^>]*>Hitung ulang<\/button>/);
+
+    await masukOperator(cibubur, ["input-stok"]);
+    expect(await buka(cibubur, TANGGAL_KIRIM)).not.toContain(">Hitung ulang</button>");
+  });
+
+  it("setelah dihitung ulang: penanda hilang; toko yang tidak lagi mengirim dan stoknya yang tidak dipakai tampil dengan keterangan", async () => {
+    await masukOperator(cibubur, ["hitung-kebutuhan"]);
+    await expect(hitungDraft({ idGudang: cibubur, tanggalKirim: TANGGAL_KIRIM })).resolves.toEqual({ keadaan: "berhasil" });
+
+    const html = await buka(cibubur, TANGGAL_KIRIM);
+    expect(html).not.toContain("data-perlu-dihitung-ulang");
+    expect(html).not.toContain(`data-draft-toko="${tokoContoh.id}"`);
+    expect(html).toMatch(
+      new RegExp(
+        `data-toko-dikeluarkan="${tokoContoh.id}"[^>]*>.*?lucide-triangle-alert.*?Toko ${tokoContoh.nama} dikeluarkan dari draft karena tidak lagi mengirim pada tanggal ini menurut jadwal aktif\\.<`,
+      ),
+    );
+    // Stok contoh (diisi di bagian T60) tetap disimpan dan ditampilkan (PRD A7 ▶ Keputusan 2026-10-10, T61).
+    const [contoh] = golden.kasusJumlahKirim;
+    expect(html).toMatch(
+      new RegExp(
+        `data-stok-tidak-dipakai="${tokoContoh.id}\\|${kode.contoh}"[^>]*>.*?lucide-triangle-alert.*?Stok ${kode.contoh} \\([^)]*\\) di Toko ${tokoContoh.nama} \\(${contoh.stokAkhir}\\) tidak dipakai karena toko ini tidak ada lagi di draft\\.<`,
+      ),
+    );
+  });
+});
