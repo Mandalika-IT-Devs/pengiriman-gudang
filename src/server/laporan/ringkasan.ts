@@ -11,7 +11,8 @@ import { bulanLaporanTersedia, idVersiCacheAktif } from "@/server/laporan/cache"
 import { muatRincian, type RincianAngka } from "@/server/laporan/rincian";
 
 // Halaman Ringkasan (T34, PRD A2). Membaca cache rata-rata bulanan (T33) lalu menghitung tahap 3 lewat
-// `hitungRingkasan` (T32) untuk baris di halaman tabel yang dibuka saja. Tidak membaca Excel (PRD C1).
+// `hitungRingkasan` (T32) untuk baris di halaman tabel yang dibuka. Kartu jumlah (T80) menjumlahkan Rata-rata Ringkasan
+// seluruh hasil filter dengan tahap 3 yang sama, diagregasi di database. Tidak membaca Excel (PRD C1).
 // Perbandingan minggu sama (T36) untuk satu produk–toko terpilih dari cache nilai mingguan lewat
 // `hitungPerbandinganMingguSama` (T32). Rincian satu angka sampai sel sumber (T37) dari `muatRincian`.
 // Ekspor (T38) memakai pemeriksaan pilihan dan perhitungan baris yang sama untuk semua baris hasil filter.
@@ -90,6 +91,12 @@ export type HasilRingkasan =
       bulanPilihan: string[];
       filterAktif: FilterAktif;
       baris: BarisRingkasan[];
+      /**
+       * Kartu jumlah (PRD A2 ▶ Keputusan 2026-10-11): per kategori hari, jumlah Rata-rata Ringkasan per baris
+       * produk–toko (sudah dibulatkan per baris) dari seluruh hasil filter, bukan hanya halaman tabel. Baris tanpa
+       * nilai tidak menambah apa pun. Bukan total penjualan.
+       */
+      jumlahRataRataRingkasan: Record<KategoriDasar, number>;
       /** `null` = belum ada produk–toko yang dipilih untuk perbandingan minggu sama. */
       mingguSama: MingguSamaTerpilih | null;
       /** `null` = belum ada angka Ringkasan yang dibuka rinciannya (T37). */
@@ -288,6 +295,41 @@ async function hitungBaris(
   });
 }
 
+/**
+ * Jumlah Rata-rata Ringkasan per kategori hari dari semua pasangan produk–toko hasil periode dan filter yang
+ * diterapkan (PRD A2 ▶ Keputusan 2026-10-11). Tahap 3 per pasangan sama dengan `hitungRingkasan`: Σ rata-rata bulanan
+ * dibagi jumlah bulan pilihan yang punya hasil (baris cache yang ada), dibulatkan ke atas per pasangan lewat
+ * `bagiBulatAtas`. Pasangan tanpa hasil di suatu kategori tidak punya baris cache, jadi tidak menambah apa pun.
+ * Agar halaman tetap cepat untuk 12 bulan (PRD C1), database hanya mengembalikan banyaknya pasangan per kombinasi
+ * (kategori, Σ, pembagi); pembulatan tetap di domain.
+ */
+async function jumlahkanRataRataRingkasan(tx: Tx, { sesuaiFilter }: PilihanTerperiksa): Promise<Record<KategoriDasar, number>> {
+  const perPasangan = tx
+    .select({
+      kategori: cacheRataRataBulanan.kategori,
+      jumlahRataRataBulanan: sql<number>`sum(${cacheRataRataBulanan.rataRataBulanan})::int`.as("jumlah_rata_rata_bulanan"),
+      pembagiBulan: sql<number>`count(*)::int`.as("pembagi_bulan"),
+    })
+    .from(cacheRataRataBulanan)
+    .where(sesuaiFilter)
+    .groupBy(cacheRataRataBulanan.tokoId, cacheRataRataBulanan.kodeProduk, cacheRataRataBulanan.kategori)
+    .as("per_pasangan");
+  const kelompok = await tx
+    .select({
+      kategori: perPasangan.kategori,
+      jumlahRataRataBulanan: perPasangan.jumlahRataRataBulanan,
+      pembagiBulan: perPasangan.pembagiBulan,
+      banyakPasangan: sql<number>`count(*)::int`,
+    })
+    .from(perPasangan)
+    .groupBy(perPasangan.kategori, perPasangan.jumlahRataRataBulanan, perPasangan.pembagiBulan);
+  const jumlah = Object.fromEntries(KATEGORI.map((kategori) => [kategori, 0])) as Record<KategoriDasar, number>;
+  for (const k of kelompok) {
+    jumlah[k.kategori] += bagiBulatAtas(k.jumlahRataRataBulanan, k.pembagiBulan) * k.banyakPasangan;
+  }
+  return jumlah;
+}
+
 /** Pasangan produk–toko dari subquery `pasanganUnik`, dengan nama toko, nama produk, dan kategori produk. */
 function pilihPasangan(tx: Tx, pasanganUnik: ReturnType<typeof pasanganUnikDari>) {
   return tx
@@ -396,6 +438,7 @@ export async function muatRingkasan({
         bulanPilihan: pilihan,
         filterAktif,
         baris: await hitungBaris(tx, terperiksa, pasangan, milikHalaman),
+        jumlahRataRataRingkasan: await jumlahkanRataRataRingkasan(tx, terperiksa),
         mingguSama: hasilMingguSama,
         rincian: hasilRincian,
         jumlahBaris: jumlah,
