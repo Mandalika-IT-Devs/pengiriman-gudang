@@ -136,7 +136,7 @@ lalu jalankan `pnpm uat` lagi. Perintah itu menghapus semua data lokal, termasuk
 | U2.3 | Buka **Admin › Ranking**. Pilih `data-lokal/RANKING-SALES-SEPTEMBER-2026.xlsx`. | Bulan ranking terisi **September** dan tahun **2026** dari nama file (masih bisa diubah). | | |
 | U2.4 | Tekan "Unggah dan tinjau", lalu "Publikasikan". | Halaman tinjau: 28 baris, semuanya cocok ke keluarga aroma; tujuh besar RANK 1–7 (GORGEOUS TUBEROSE, HOLY SWEET, ONLY THE BRAVE, NO1, UNSTOPPABLE, CHAMPION, SEDUCTION). Setelah publikasi: "Ranking ini sekarang berlaku untuk semua gudang." Status "Dipublikasikan", "September 2026 versi 1". | | |
 
-> **Periksa sendiri:** keluarga GIFT SET BOX memakai segmen `B` dan `W`, sehingga `GS15-B`, `GS15-W`, dan dua display dummy `DD-GS15-B`, `DD-GS15-W` masuk keluarga itu. Ini tidak mengubah angka (GIFT SET BOX di luar tujuh besar, buffernya 10% sama dengan produk otomatis lain). Jika ingin diubah, pakai Pemetaan produk.
+> **Sudah dikonfirmasi pemilik (12-10-2026):** keluarga GIFT SET BOX memakai segmen `B` dan `W`, sehingga `GS15-B`, `GS15-W`, dan dua display dummy `DD-GS15-B`, `DD-GS15-W` masuk keluarga itu. Ini tidak mengubah angka (GIFT SET BOX di luar tujuh besar, buffernya 10% sama dengan produk otomatis lain).
 
 ### Babak 3 — Admin: periksa alias nama stok, periode sumber, operator, jadwal
 
@@ -149,7 +149,7 @@ lalu jalankan `pnpm uat` lagi. Perintah itu menghapus semua data lokal, termasuk
 | U3.5 | Buka **Admin › Penugasan**. | Operator Cibubur, Operator Bali, dan Operator Bandung tertugas di gudangnya masing-masing dengan kelima hak (Kelola usulan jadwal, Input stok, Hitung kebutuhan, Finalisasi, Ekspor). | | |
 | U3.6 | Buka **Pengiriman Gudang** → Gudang Cibubur sebagai admin. | Halaman terbuka hanya-baca. Kartu "Toko terhubung" berisi 16 toko (ALSUT, BOTANI, BSD, BXC, CCM, DELTAMAS, KARAWACI, KOKAS, KUNCIT, LMK, MKG, PMB, SENTUL, SMB, SMS, TSM CBB). Kartu "Jadwal" berisi jadwal dari lampiran Anda, misalnya SMB "2× seminggu · Senin (H), Kamis (H−1)", BXC "Dua mingguan · Rabu (H−1) · jangkar Rabu, 14-10-2026", PMB "Mingguan · Kamis (H−2)". | | |
 
-> **Periksa sendiri:** tiga bacaan lampiran yang saya tetapkan sendiri dan perlu Anda konfirmasi: SMS dibaca **2× seminggu** (Selasa dan Jumat); BXC mengirim pekan 12-10-2026 dan CCM pekan berikutnya (bergantian); persiapan Bali dan Bandung **H−1**. Toko "Performance" tidak ada di sheet penjualan sehingga tidak masuk. Jika ada yang keliru, ubah lewat usulan jadwal (Babak 5) atau beri tahu saya untuk mengubah seed-nya.
+> **Sudah dikonfirmasi pemilik (12-10-2026):** SMS dikirim **2× seminggu** (Selasa dan Jumat); BXC dan CCM **bergantian** dua mingguan (BXC pekan 12-10-2026, CCM pekan berikutnya); persiapan Bali dan Bandung **H−1**. Toko "Performance" tidak ada di sheet penjualan sehingga tidak masuk. Jika jadwal berubah nanti, ubah lewat usulan jadwal (Babak 5).
 
 ### Babak 4 — Operator Cibubur: hitung, unggah stok, finalisasi, ekspor
 

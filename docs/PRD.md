@@ -103,6 +103,7 @@ Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan 
 > - Pemetaan dari seed berlaku sebagai **konfirmasi admin awal** untuk UAT dan instalasi awal. Produk baru yang muncul dari impor berikutnya tetap `belum-dipetakan` dan melewati usulan + konfirmasi admin seperti biasa (ADR-0006 tidak berubah).
 > - Seed idempoten dan **tidak menimpa** perubahan admin: hanya mengisi yang belum ada; produk yang statusnya bukan `belum-dipetakan` tidak diubah. Impor yang diaktifkan kemudian memperbarui nama, ukuran, dan kategori produk seperti biasa.
 > - Asumsi yang ikut dikunci seed, dikonfirmasi lewat UAT 2026-10-12 dan bisa diubah admin dari aplikasi: display dummy `DD-GS15-B`/`DD-GS15-W` masuk GIFT SET BOX (tidak memengaruhi angka, karena GIFT SET BOX di luar tujuh besar sehingga buffernya 10%, sama dengan produk otomatis lain); alias `EDP` = `EXTRAIT` dan `PARFUM` = `PARFUM INTENSE`.
+> ▶ Keputusan (2026-10-12, UAT kedua): pemilik **mengonfirmasi** display dummy `DD-GS15-B` dan `DD-GS15-W` tetap dipetakan ke keluarga GIFT SET BOX.
 > - **Seed UAT** (hanya `pnpm uat`, bukan instalasi produksi) menambahkan: periode sumber Juni, Juli, Agustus 2026 untuk Gudang Cibubur, Gudang Bali, dan Gudang Bandung; akun Operator Cibubur, Operator Bali, Operator Bandung (peran viewer) yang ditugaskan ke gudangnya dengan kelima hak tindakan. Kata sandi ketiga akun dari variabel lingkungan `UAT_SANDI_OPERATOR`. Pusat dan Gudang Jabodetabek dibiarkan kosong untuk skenario A3–A5.
 > - Impor penjualan dan ranking pusat **tidak** di-seed: keduanya pekerjaan rutin admin setiap bulan.
 
@@ -155,7 +156,8 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 > | Gudang Bandung | PASKAL | 2× seminggu | Senin (H−1), Jumat (H−1) | — |
 > | Gudang Bandung | PVJ | mingguan | Selasa (H−1) | — |
 >
-> - Bacaan lampiran yang perlu dikonfirmasi pemilik saat UAT: SMS tercantum di Selasa ("1× seminggu") dan Jumat ("2× seminggu") → dibaca 2× seminggu. BXC dan CCM "2 minggu 1× bergantian" → BXC pekan 12-10-2026, CCM pekan berikutnya. Persiapan Bali dan Bandung tidak tertulis → H−1 (PDF Bandung: permintaan masuk paling lambat satu hari sebelum kirim).
+> - Bacaan lampiran yang dipakai: SMS tercantum di Selasa ("1× seminggu") dan Jumat ("2× seminggu") → dibaca 2× seminggu. BXC dan CCM "2 minggu 1× bergantian" → BXC pekan 12-10-2026, CCM pekan berikutnya. Persiapan Bali dan Bandung tidak tertulis → H−1 (PDF Bandung: permintaan masuk paling lambat satu hari sebelum kirim).
+> ▶ Keputusan (2026-10-12, UAT kedua): pemilik **mengonfirmasi** ketiga bacaan di atas: SMS 2× seminggu (Selasa dan Jumat), BXC dan CCM bergantian dua mingguan (jangkar BXC 2026-10-14, CCM 2026-10-21), dan persiapan Bali serta Bandung H−1.
 
 
 Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
