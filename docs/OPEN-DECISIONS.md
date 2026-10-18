@@ -106,3 +106,4 @@ Daftar hal yang **belum diputuskan pemilik**. Agen tidak mengimplementasikan per
 | Ekspor rencana final ke Google Sheets (Shared Drive, satu spreadsheet per versi) sebagai tambahan `.xlsx` (2026-10-13) | PRD A7; T116 |
 | Sidebar tanpa kelompok Pengiriman Gudang; Pengiriman Gudang di Pekerjaan rutin (2026-10-13) | DESIGN §6; T105 |
 | Pola zona kerja hasil audit UI/UX: tabel panjang, panel samping, konfirmasi, aksi menempel, urutan halaman Pengiriman Gudang, bahasa awam, halaman error (2026-10-13) | DESIGN §11; T107–T109, T117–T123 |
+| Format file ekspor satu rencana final untuk packing list: kepala 6 baris, judul kolom di baris 8, Status sebelum Jumlah kirim, kolom Keterangan kosong; ekspor Riwayat tidak berubah (2026-10-18) | PRD A7; T133 |

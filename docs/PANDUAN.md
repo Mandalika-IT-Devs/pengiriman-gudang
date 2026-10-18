@@ -182,6 +182,7 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 - Finalisasi ulang membutuhkan alasan dan menghasilkan versi baru. Versi lama tetap ada di menu **Riwayat**, tab "Rencana final".
 - Finalisasi hanya menyimpan rencana kebutuhan barang, bukan konfirmasi pengiriman fisik.
 - "Ekspor (.xlsx)" tersedia di rencana final bagi operator yang punya hak Ekspor di gudang rencana itu.
+- File ekspor langsung bisa dipakai gudang sebagai packing list. Isinya satu sheet "Rencana final": di atas ada Gudang, Tanggal kirim, Toko, Jenis pengiriman, dan Waktu finalisasi, lalu tabel Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Status, Jumlah kirim, dan Keterangan. Kolom Keterangan dibiarkan kosong untuk catatan tim gudang. Tanda "—" berarti tidak tersedia, bukan 0. Periode sumber, impor sumber, dan ranking tidak ditulis di file; lihat di rincian rencana final.
 
 **Riwayat** (menu **Riwayat**, tepat di bawah Beranda). Tab "Rencana final" berisi semua versi rencana final dari **semua gudang**, termasuk gudang nonaktif (bertanda "Nonaktif"):
 

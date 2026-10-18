@@ -1,44 +1,75 @@
 import * as XLSX from "xlsx";
 
-import { formatAngka, formatBulanImpor, formatBulanLaporan, formatWaktu } from "@/app/admin/impor/format";
+import { formatWaktu } from "@/app/admin/impor/format";
 import { formatTanggal } from "@/domain/kalender";
 import type { RencanaFinal } from "@/server/gudang/rencana-final";
 
 import { teksJenisPengiriman } from "../../../teks-di-luar-jadwal";
 import { labelStatusBarisRencanaFinal } from "../../label-status-baris";
 
-// Berkas ekspor rencana final (T64; PRD A7 ▶ Keputusan 2026-10-09: .xlsx). Semua isinya dari snapshot finalisasi:
-// gudang, tanggal kirim, toko, jenis pengiriman (rutin atau di luar jadwal, T114), waktu finalisasi, identitas sumber
-// penjualan, ranking, lalu baris rencana (varian, kebutuhan, stok, buffer, jumlah kirim, status dengan label yang sama
-// seperti layar rincian, T77). Nilai
-// kosong/tidak tersedia ditulis "—", bukan 0 (DESIGN §7, §8).
+// Berkas ekspor rencana final (T64; PRD A7 ▶ Keputusan 2026-10-09: .xlsx), format packing list (T133; PRD A7 ▶ Keputusan
+// 2026-10-18): kepala gudang, tanggal kirim, toko, jenis pengiriman (rutin atau di luar jadwal, T114), dan waktu
+// finalisasi dari snapshot finalisasi, lalu tabel produk dengan kolom Keterangan kosong untuk catatan gudang. Identitas
+// sumber penjualan, ranking, dan keterangan arti "—" tidak ditulis; penelusurannya di rincian rencana final. Status
+// memakai label yang sama seperti layar rincian (T77). Nilai kosong/tidak tersedia ditulis "—", bukan 0 (DESIGN §7, §8).
 
 export const TIDAK_TERSEDIA = "—";
 
-/** Baris "Keterangan" arti tanda tidak tersedia, dipakai juga ekspor halaman Riwayat (T129). */
+/** Baris "Keterangan" arti tanda tidak tersedia di ekspor halaman Riwayat (T129). */
 export const KETERANGAN_TIDAK_TERSEDIA = `${TIDAK_TERSEDIA} = tidak tersedia atau belum diisi, bukan 0.`;
 
 /** `null` = sel kosong. */
 export type Sel = string | number | null;
 
-/** Kolom tabel produk, dipakai juga ekspor halaman Riwayat (T129). */
-export const KOLOM_PRODUK_EKSPOR: readonly string[] = ["Kode produk", "Nama produk", "Kebutuhan barang", "Stok akhir", "Buffer (%)", "Jumlah kirim", "Status"];
+type KolomProduk = "Kode produk" | "Nama produk" | "Kebutuhan barang" | "Stok akhir" | "Buffer (%)" | "Jumlah kirim" | "Status";
+
+type BarisProduk = Pick<
+  RencanaFinal["baris"][number],
+  "kodeProduk" | "namaProduk" | "kebutuhan" | "stokAkhir" | "persenBuffer" | "jumlahKirim" | "status"
+>;
 
 const angkaAtauTidakTersedia = (nilai: number | null): Sel => nilai ?? TIDAK_TERSEDIA;
 
-/** Sel tabel produk satu baris rencana final, urut `KOLOM_PRODUK_EKSPOR`. */
-export function selProdukEkspor(
-  b: Pick<RencanaFinal["baris"][number], "kodeProduk" | "namaProduk" | "kebutuhan" | "stokAkhir" | "persenBuffer" | "jumlahKirim" | "status">,
-): Sel[] {
-  return [
-    b.kodeProduk,
-    b.namaProduk ?? TIDAK_TERSEDIA,
-    angkaAtauTidakTersedia(b.kebutuhan),
-    angkaAtauTidakTersedia(b.stokAkhir),
-    angkaAtauTidakTersedia(b.persenBuffer),
-    angkaAtauTidakTersedia(b.jumlahKirim),
-    labelStatusBarisRencanaFinal[b.status],
-  ];
+/** Isi sel produk per judul kolom; satu sumber untuk ekspor rencana final dan ekspor halaman Riwayat. */
+function nilaiProduk(b: BarisProduk): Record<KolomProduk, Sel> {
+  return {
+    "Kode produk": b.kodeProduk,
+    "Nama produk": b.namaProduk ?? TIDAK_TERSEDIA,
+    "Kebutuhan barang": angkaAtauTidakTersedia(b.kebutuhan),
+    "Stok akhir": angkaAtauTidakTersedia(b.stokAkhir),
+    "Buffer (%)": angkaAtauTidakTersedia(b.persenBuffer),
+    "Jumlah kirim": angkaAtauTidakTersedia(b.jumlahKirim),
+    Status: labelStatusBarisRencanaFinal[b.status],
+  };
+}
+
+/** Kolom tabel produk ekspor halaman Riwayat (T129; PRD A7 ▶ Keputusan 2026-10-14, tidak berubah oleh T133). */
+export const KOLOM_PRODUK_EKSPOR: readonly KolomProduk[] = ["Kode produk", "Nama produk", "Kebutuhan barang", "Stok akhir", "Buffer (%)", "Jumlah kirim", "Status"];
+
+/** Sel tabel produk satu baris rencana final, urut `KOLOM_PRODUK_EKSPOR` (ekspor halaman Riwayat). */
+export function selProdukEkspor(b: BarisProduk): Sel[] {
+  const nilai = nilaiProduk(b);
+  return KOLOM_PRODUK_EKSPOR.map((k) => nilai[k]);
+}
+
+/** Kolom tabel berkas rencana final (baris 8): Status sebelum Jumlah kirim, lalu Keterangan yang selalu kosong. */
+const KOLOM_BERKAS: readonly (KolomProduk | "Keterangan")[] = [
+  "Kode produk",
+  "Nama produk",
+  "Kebutuhan barang",
+  "Stok akhir",
+  "Buffer (%)",
+  "Status",
+  "Jumlah kirim",
+  "Keterangan",
+];
+
+/** Lebar kolom A–H dalam karakter, mengikuti contoh file pemilik. */
+const LEBAR_KOLOM_BERKAS = [17, 57, 18, 10, 10, 12, 12, 14];
+
+function selBerkas(b: BarisProduk): Sel[] {
+  const nilai = nilaiProduk(b);
+  return KOLOM_BERKAS.map((k) => (k === "Keterangan" ? null : nilai[k]));
 }
 
 /** Nama berkas, mis. `rencana-final-PMS-2026-06-08-v1.xlsx`; karakter selain huruf, angka, dan "-" dibuang dari nama toko. */
@@ -47,9 +78,11 @@ export function namaBerkasEkspor(rencana: Pick<RencanaFinal, "toko" | "tanggalKi
   return `rencana-final-${toko}-${rencana.tanggalKirim}-v${rencana.versi}.xlsx`;
 }
 
-/** Workbook `.xlsx` berisi satu sheet "Rencana final". */
+/**
+ * Workbook `.xlsx` berisi satu sheet "Rencana final": baris 1 judul, baris 2–6 label (kolom A) dan nilai (kolom B),
+ * baris 7 kosong, baris 8 judul kolom, baris produk mulai baris 9 (urut `rencana.baris`).
+ */
 export function buatBerkasEkspor(rencana: RencanaFinal): Buffer {
-  const { sumber, ranking } = rencana;
   const kepala: Sel[][] = [
     ["Rencana final"],
     ["Gudang", rencana.gudang.nama],
@@ -57,24 +90,12 @@ export function buatBerkasEkspor(rencana: RencanaFinal): Buffer {
     ["Toko", rencana.toko.nama],
     ["Jenis pengiriman", teksJenisPengiriman(rencana.diLuarJadwal)],
     ["Waktu finalisasi", formatWaktu(rencana.difinalisasiPada)],
-    ["Periode sumber", `${sumber.bulanSumber.map(formatBulanLaporan).join(", ")} (penetapan #${sumber.versiPeriodeSumber})`],
-    ...(sumber.impor.length === 0
-      ? [["Impor sumber", "Tidak ada impor aktif untuk bulan periode sumber."]]
-      : sumber.impor.map((i): Sel[] => [
-          "Impor sumber",
-          formatBulanImpor(i.tahunImpor, i.bulanImpor),
-          i.namaSheet,
-          i.namaFile,
-          `${formatAngka(i.ukuranByte)} byte`,
-          i.sha256 ?? TIDAK_TERSEDIA,
-        ])),
-    ["Ranking pusat", `${formatBulanLaporan(ranking.bulanRanking)} versi ${ranking.versi}`],
-    ["Keterangan", KETERANGAN_TIDAK_TERSEDIA],
     [],
   ];
-  const isi: Sel[][] = rencana.baris.map(selProdukEkspor);
+  const sheet = XLSX.utils.aoa_to_sheet([...kepala, [...KOLOM_BERKAS], ...rencana.baris.map(selBerkas)]);
+  sheet["!cols"] = LEBAR_KOLOM_BERKAS.map((wch) => ({ wch }));
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([...kepala, [...KOLOM_PRODUK_EKSPOR], ...isi]), "Rencana final");
+  XLSX.utils.book_append_sheet(wb, sheet, "Rencana final");
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
 }

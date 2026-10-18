@@ -425,6 +425,17 @@ Saya ingin alur akhirnya terasa sederhana: data penjualan yang valid menghasilka
 >   - Di atas tabel ada baris keterangan: jenis riwayat, filter yang diterapkan, waktu ekspor, dan arti tanda tidak tersedia.
 > - Ekspor satu rencana final (`.xlsx` dan Google Sheets, aturan hak di atas) tetap seperti sebelumnya dan tersedia dari rincian rencana final di Riwayat.
 
+> ▶ Keputusan (2026-10-18, pemilik): **format file ekspor satu rencana final** (`.xlsx`) disederhanakan agar langsung bisa dipakai gudang sebagai daftar barang yang disiapkan (packing list). Format ini menggantikan isi kepala dan urutan kolom sebelumnya. Hak ekspor dan nama file tidak berubah.
+> - **Sheet** bernama "Rencana final".
+> - **Kepala, baris 1–6:** baris 1 berisi "Rencana final". Baris 2–6 berisi label di kolom A dan nilainya di kolom B: Gudang, Tanggal kirim, Toko, Jenis pengiriman, Waktu finalisasi. Baris 7 kosong.
+> - **Yang tidak lagi ada di file:** baris Periode sumber, Impor sumber, Ranking pusat, dan Keterangan (arti tanda "—"). Snapshot finalisasi tetap menyimpan semuanya, dan rincian rencana final di Riwayat tetap menampilkannya. Penelusuran dilakukan di aplikasi.
+> - **Judul kolom di baris 8**, berurutan: Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Status, Jumlah kirim, Keterangan.
+> - **Baris produk mulai baris 9**, satu baris per produk, urutan sama seperti sebelumnya. Isi sel tidak berubah: angka ditulis sebagai angka, tidak tersedia ditulis "—" (bukan 0), dan status memakai label yang sama dengan layar rincian.
+> - **Kolom Keterangan** selalu kosong. Kolom ini untuk catatan tim gudang.
+> - **Lebar kolom** diatur agar isinya terbaca tanpa perlu diperlebar manual. Tidak ada bingkai sel atau gaya font khusus.
+> - **Ekspor Riwayat** (tab Rencana final) tidak berubah. Kolom tabel produknya tetap Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Jumlah kirim, Status, dan baris keterangan di atas tabel tetap ada.
+> - **Ekspor ke Google Sheets** (T116, belum dibuat) mengikuti isi file `.xlsx` ini.
+
 ---
 
 ## Bagian B — Kalender & Kategori Hari (teks pemilik, 2026-10-08)

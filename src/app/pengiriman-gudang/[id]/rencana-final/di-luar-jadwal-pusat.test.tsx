@@ -47,10 +47,11 @@ const rencanaPusat: RencanaFinal = {
 const teks = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 describe("pengiriman di luar jadwal gudang Pusat (tanpa penyetuju)", () => {
-  it('ekspor: baris "Jenis pengiriman" = "Di luar jadwal · Tambahan — <alasan> — langsung berlaku (Pusat)"', () => {
+  it('ekspor: baris 5 "Jenis pengiriman" = "Di luar jadwal · Tambahan — <alasan> — langsung berlaku (Pusat)"', () => {
     const wb = XLSX.read(new Uint8Array(buatBerkasEkspor(rencanaPusat)), { type: "array" });
     const semua = XLSX.utils.sheet_to_json<(string | number | null)[]>(wb.Sheets["Rencana final"], { header: 1, defval: null });
-    expect(semua.find((b) => b[0] === "Jenis pengiriman")?.[1]).toBe(`Di luar jadwal · Tambahan — ${ALASAN} — langsung berlaku (Pusat)`);
+    // Kepala T133 (PRD A7 ▶ Keputusan 2026-10-18): label di A5, nilai di B5.
+    expect(semua[4].slice(0, 2)).toEqual(["Jenis pengiriman", `Di luar jadwal · Tambahan — ${ALASAN} — langsung berlaku (Pusat)`]);
   });
 
   it('layar: penanda memuat "Di luar jadwal · Tambahan" dan "Langsung berlaku (Pusat)"', () => {

@@ -10,12 +10,12 @@ import { formatWaktu } from "@/app/admin/impor/format";
 import { parseTanggalBisnis, type KategoriDasar, type NamaHari } from "@/domain/kalender";
 import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { draftRencana, gudang, hubunganTokoGudang, impor, jadwalToko, produk, rencanaFinal, toko, user } from "@/server/db/schema";
+import { draftRencana, gudang, hubunganTokoGudang, impor, jadwalToko, produk, rencanaFinal, toko, user, type ImporRencanaFinal } from "@/server/db/schema";
 import { bacaDraftRencana, hitungDraftRencana } from "@/server/gudang/draft-rencana";
 import { daftarHakTindakan, type HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
-import { finalisasiRencanaToko } from "@/server/gudang/rencana-final";
+import { bacaRencanaFinal, finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 import { simpanStokToko } from "@/server/gudang/stok-draft";
 import { buatTokoUji, idGudangUji } from "@/server/gudang/uji-bantu";
 import { kodeProdukUji, tahunUjiBebas } from "@/server/impor/uji-bantu";
@@ -36,12 +36,14 @@ vi.mock("next/navigation", async (asli) => ({
 import HalamanRiwayat from "@/app/riwayat/page";
 import HalamanRincianRencanaFinal from "@/app/riwayat/rencana-final/[idRencana]/page";
 
+import { buatBerkasEkspor } from "./[idRencana]/ekspor/berkas";
 import { GET } from "./[idRencana]/ekspor/route";
 
 // T64: ekspor rencana final (.xlsx). Hanya rencana final (termasuk dari riwayat) dan hanya untuk pengguna dengan hak
 // tindakan `ekspor` di gudang itu (PRD A7 ▶ Keputusan 2026-10-09). Isinya dibaca dari snapshot finalisasi, bukan data
 // terkini. Contoh PRD A6 / golden `jumlah-kirim.json`: kebutuhan 56, stok 20, tujuh besar (buffer 20%) → jumlah kirim 48
-// (stok target, PRD A6 ▶ Revisi 2026-10-14).
+// (stok target, PRD A6 ▶ Revisi 2026-10-14). Susunan berkas mengikuti format packing list (T133, PRD A7 ▶ Keputusan
+// 2026-10-18): kepala A1:B6, baris 7 kosong, judul kolom baris 8, produk mulai baris 9, kolom Keterangan kosong.
 
 type Golden = {
   rataRata: Record<KategoriDasar, number>;
@@ -133,18 +135,34 @@ const ekspor = (id: number | string = idRencana, idGudang: number | string = cib
 
 type Sel = string | number | null;
 
-/** Isi sheet "Rencana final": bagian kepala (label → nilai-nilai) dan baris data di bawah judul kolom. */
-async function baca(respons: Response) {
-  const wb = XLSX.read(new Uint8Array(await respons.arrayBuffer()), { type: "array" });
+/**
+ * Isi sheet "Rencana final" menurut posisi (PRD A7 ▶ Keputusan 2026-10-18): kepala di baris 1–7 (indeks 0–6), judul
+ * kolom di baris 8 (indeks 7), baris produk mulai baris 9. `nilai` = kolom B baris kepala berlabel itu di kolom A.
+ */
+function bacaBerkas(berkas: Uint8Array) {
+  const wb = XLSX.read(berkas, { type: "array", cellStyles: true });
   expect(wb.SheetNames).toEqual(["Rencana final"]);
-  const semua = XLSX.utils.sheet_to_json<Sel[]>(wb.Sheets["Rencana final"], { header: 1, defval: null });
-  const indeksJudul = semua.findIndex((b) => b[0] === "Kode produk");
-  const kolom = semua[indeksJudul] as string[];
-  const kepalaBerkas = semua.slice(0, indeksJudul).filter((b) => b.length >= 2);
+  const sheet = wb.Sheets["Rencana final"];
+  const semua = XLSX.utils.sheet_to_json<Sel[]>(sheet, { header: 1, defval: null });
+  const kepalaBerkas = semua.slice(0, 7);
+  const kolom = semua[7] as string[];
   const nilai = (label: string) => kepalaBerkas.find((b) => b[0] === label)?.[1];
-  const semuaNilai = (label: string) => kepalaBerkas.filter((b) => b[0] === label).map((b) => b.slice(1).filter((s) => s !== null));
-  const baris = semua.slice(indeksJudul + 1).map((b) => Object.fromEntries(kolom.map((k, i) => [k, b[i]])));
-  return { semua, nilai, semuaNilai, kolom, baris };
+  const baris = semua.slice(8).map((b) => Object.fromEntries(kolom.map((k, i) => [k, b[i]])));
+  const lebarKolom = (sheet["!cols"] ?? []).map((c) => c.wch);
+  return { semua, kepalaBerkas, nilai, kolom, baris, lebarKolom };
+}
+
+const baca = async (respons: Response) => bacaBerkas(new Uint8Array(await respons.arrayBuffer()));
+
+/** Judul kolom baris 8 dan lebar kolom A–H (karakter) contoh file pemilik, PRD A7 ▶ Keputusan 2026-10-18. */
+const KOLOM_BERKAS = ["Kode produk", "Nama produk", "Kebutuhan barang", "Stok akhir", "Buffer (%)", "Status", "Jumlah kirim", "Keterangan"];
+const LEBAR_KOLOM_PEMILIK = [17, 57, 18, 10, 10, 12, 12, 14];
+const LABEL_TIDAK_ADA_LAGI = ["Periode sumber", "Impor sumber", "Ranking pusat", "Keterangan"];
+
+/** Kolom A dan B baris 1–7; sel C–H di baris itu harus kosong. */
+function kepalaAB(kepalaBerkas: Sel[][]) {
+  expect(kepalaBerkas.flatMap((b) => b.slice(2)).every((s) => s === null)).toBe(true);
+  return kepalaBerkas.map((b) => b.slice(0, 2));
 }
 
 describe("GET ekspor rencana final: kewenangan (diperiksa di server)", () => {
@@ -191,47 +209,76 @@ describe("GET ekspor rencana final: kewenangan (diperiksa di server)", () => {
 });
 
 describe("GET ekspor rencana final: isi berkas dari snapshot", () => {
-  it("berkas .xlsx berisi gudang, tanggal kirim, toko, waktu finalisasi, identitas sumber, ranking, dan baris rencana", async () => {
+  it("berkas .xlsx format packing list: kepala A1:B6, baris 7 kosong, judul kolom baris 8, baris rencana mulai baris 9 (T133)", async () => {
     await masukOperator(cibubur, ["ekspor"]);
     const respons = await ekspor();
     expect(respons.status).toBe(200);
     expect(respons.headers.get("content-type")).toBe(JENIS_XLSX);
     expect(respons.headers.get("content-disposition")).toMatch(/^attachment; filename="rencana-final-[A-Za-z0-9-]+-2026-06-08-v1\.xlsx"$/);
-    const { nilai, semuaNilai, kolom, baris } = await baca(respons);
+    const { semua, kepalaBerkas, kolom, baris } = await baca(respons);
 
-    expect(nilai("Gudang")).toBe("Gudang Cibubur");
-    expect(nilai("Tanggal kirim")).toBe("Senin, 08-06-2026");
-    expect(nilai("Toko")).toBe(tokoA.nama);
+    // Kepala: hanya lima baris label + nilai; Periode sumber, Impor sumber, Ranking pusat, dan Keterangan tidak ada lagi.
     const [r] = await db.select({ pada: rencanaFinal.difinalisasiPada }).from(rencanaFinal).where(eq(rencanaFinal.id, idRencana));
-    expect(nilai("Waktu finalisasi")).toBe(formatWaktu(r.pada));
-    expect(nilai("Periode sumber")).toMatch(new RegExp(`^Juni ${tahun} \\(penetapan #\\d+\\)$`));
-    expect(nilai("Ranking pusat")).toMatch(/^September 2026 versi \d+$/);
+    expect(kepalaAB(kepalaBerkas)).toEqual([
+      ["Rencana final", null],
+      ["Gudang", "Gudang Cibubur"],
+      ["Tanggal kirim", "Senin, 08-06-2026"],
+      ["Toko", tokoA.nama],
+      ["Jenis pengiriman", "Rutin"],
+      ["Waktu finalisasi", formatWaktu(r.pada)],
+      [null, null],
+    ]);
     const [file] = await db
-      .select({ namaFile: impor.namaFile, sha256: impor.sha256, namaSheet: impor.namaSheet })
+      .select({ namaFile: impor.namaFile, sha256: impor.sha256 })
       .from(impor)
       .where(and(eq(impor.tahunImpor, tahun), eq(impor.status, "aktif")));
-    expect(semuaNilai("Impor sumber")).toEqual([[`Juni ${tahun}`, file.namaSheet, file.namaFile, expect.stringMatching(/ byte$/), file.sha256]]);
+    const semuaSel = semua.flat();
+    for (const label of LABEL_TIDAK_ADA_LAGI) expect(semua.map((b) => b[0])).not.toContain(label);
+    expect(semuaSel).not.toContain(file.namaFile);
+    expect(semuaSel).not.toContain(file.sha256);
+    expect(semuaSel.filter((s) => typeof s === "string" && /penetapan #|versi \d|tidak tersedia/.test(s))).toEqual([]);
 
-    expect(kolom).toEqual(["Kode produk", "Nama produk", "Kebutuhan barang", "Stok akhir", "Buffer (%)", "Jumlah kirim", "Status"]);
+    expect(kolom).toEqual(KOLOM_BERKAS);
     expect(baris.map((b) => b["Kode produk"])).toEqual([kode.contoh, kode.manual].sort());
-    // Golden: 56 × 120% − 20 → 48 dengan buffer tujuh besar 20%.
+    // Golden: 56 × 120% − 20 → 48 dengan buffer tujuh besar 20%. Kolom Keterangan kosong untuk catatan gudang.
     expect(baris.find((b) => b["Kode produk"] === kode.contoh)).toEqual({
       "Kode produk": kode.contoh,
       "Nama produk": NAMA_PRODUK,
       "Kebutuhan barang": CONTOH.kebutuhan,
       "Stok akhir": CONTOH.stokAkhir,
       "Buffer (%)": CONTOH.persenBuffer,
-      "Jumlah kirim": CONTOH.jumlahKirim,
       Status: "Otomatis",
+      "Jumlah kirim": CONTOH.jumlahKirim,
+      Keterangan: null,
     });
     // Produk manual: status "Manual", tanpa buffer dan jumlah kirim; stok yang belum diisi ditulis "—", bukan 0.
     expect(baris.find((b) => b["Kode produk"] === kode.manual)).toMatchObject({
       "Nama produk": NAMA_PRODUK,
       "Stok akhir": "—",
       "Buffer (%)": "—",
-      "Jumlah kirim": "—",
       Status: "Manual",
+      "Jumlah kirim": "—",
+      Keterangan: null,
     });
+  });
+
+  it("lebar kolom A–H diatur di berkas, sesuai contoh file pemilik (T133)", async () => {
+    await masukOperator(cibubur, ["ekspor"]);
+    expect((await baca(await ekspor())).lebarKolom).toEqual(LEBAR_KOLOM_PEMILIK);
+  });
+
+  it("baris sumber penjualan tidak ditulis, berapa pun jumlah impor sumbernya (T133)", async () => {
+    const rencana = await bacaRencanaFinal(cibubur, idRencana);
+    if (!rencana) throw new Error("rencana final tidak ditemukan");
+    const [contohImpor] = rencana.sumber.impor;
+    const tigaImpor = [7, 8, 9].map((bulanImpor, i) => ({ ...contohImpor, id: contohImpor.id + i, bulanImpor, namaFile: `penjualan-${bulanImpor}.xlsx` }));
+    const harapan = bacaBerkas(new Uint8Array(buatBerkasEkspor(rencana)));
+    const variasi: ImporRencanaFinal[][] = [[], tigaImpor];
+    for (const daftarImpor of variasi) {
+      const berkas = bacaBerkas(new Uint8Array(buatBerkasEkspor({ ...rencana, sumber: { ...rencana.sumber, impor: daftarImpor } })));
+      expect(berkas.semua).toEqual(harapan.semua);
+      expect(berkas.kepalaBerkas.map((b) => b[0])).toEqual(["Rencana final", "Gudang", "Tanggal kirim", "Toko", "Jenis pengiriman", "Waktu finalisasi", null]);
+    }
   });
 
   it("status setiap baris sama dengan label yang tampil di layar rincian untuk baris yang sama (T77)", async () => {
