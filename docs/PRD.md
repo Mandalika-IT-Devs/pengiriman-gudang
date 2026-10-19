@@ -257,6 +257,69 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 >
 > ▶ Revisi (2026-10-14, pemilik): daftar "Riwayat pengiriman di luar jadwal" pindah dari halaman usulan operator ke halaman **Riwayat**, tab "Di luar jadwal" (A7 ▶ Keputusan 2026-10-14). Halaman usulan operator menyisakan daftar "Perlu tindakan" (usulan Menunggu dengan Tarik; di Pusat, pengiriman berlaku yang masih bisa dibatalkan).
 
+> ▶ Revisi (2026-10-19, pemilik bersama admin): **pola dua mingguan: admin menentukan hari kirim, operator memilih pekannya. Tanggal jangkar dihapus.**
+>
+> Revisi ini menggantikan aturan berikut:
+> - kalimat "Pola dua mingguan membutuhkan tanggal jangkar …" di paragraf pertama A5;
+> - ▶ Keputusan 2026-10-09 dan ▶ Keputusan 2026-10-10 (T54) tentang pekan kirim dua mingguan;
+> - butir "Pekan dua mingguan tetap Senin–Minggu yang memuat tanggal jangkar" pada ▶ Revisi 2026-10-13 (hari Minggu);
+> - kolom Tanggal jangkar pada tabel jadwal awal, serta bacaan "BXC dan CCM bergantian" (jangkar BXC 2026-10-14, CCM 2026-10-21) pada ▶ Keputusan 2026-10-12;
+> - kata "tanggal jangkar" pada kalimat "Aturan pola, hari kirim, persiapan, dan tanggal jangkar tidak berubah" di ▶ Revisi 2026-10-13.
+>
+> **Jadwal tetap dua mingguan**
+> - Admin hanya menentukan hari kirim (minimal satu, Senin–Minggu) beserta persiapannya. Tidak ada tanggal jangkar.
+> - Setiap tanggal yang jatuh pada hari kirim itu, **setiap pekan**, adalah tanggal kirim rutin toko itu. Operator memilih di pekan mana toko benar-benar dikirim, lewat pilihan **"Dikirim pekan ini"** di draft (di bawah).
+> - Contoh: BXC dua mingguan, Rabu (H−1). Setiap Rabu adalah tanggal kirim rutin BXC. Setelah kirim Rabu 21-10-2026, kiriman berikutnya boleh Rabu 28-10 atau Rabu 04-11.
+> - Operator tetap tidak bisa mengirim di hari selain hari kirim. Kebutuhan mendesak di hari lain tetap lewat pengiriman di luar jadwal dengan aturan persetujuan yang sama.
+> - BXC dan CCM tidak lagi diselang-seling oleh sistem. Keduanya boleh dikirim pada Rabu yang sama. Operator mengaturnya dengan melihat kirim terakhir setiap toko di draft.
+> - Pola lain (mingguan, 2× seminggu, 3× seminggu, 1× sebulan) tidak berubah.
+>
+> **Dikirim pekan ini**
+> - Di draft, setiap toko berpola dua mingguan pada tanggal kirim rutinnya punya pilihan **"Dikirim"** atau **"Tidak dikirim pekan ini"**.
+> - **Kirim terakhir** = tanggal kirim rencana final terakhir toko itu sebelum tanggal draft, dari gudang mana pun dan jenis pengiriman apa pun.
+>   - Draft menampilkannya di samping pilihan, misalnya "Kirim terakhir: Rabu, 21-10-2026 (7 hari sebelumnya)".
+>   - Jika toko belum punya rencana final sebelum tanggal itu, draft menampilkan "Belum ada rencana final sebelumnya".
+> - **Nilai awal otomatis:**
+>   - "Dikirim" jika toko belum punya rencana final sebelum tanggal itu, atau kirim terakhirnya 14 hari atau lebih sebelum tanggal itu.
+>   - Selain itu, "Tidak dikirim pekan ini".
+>   - Contoh: kirim terakhir Rabu 21-10-2026 → Rabu 28-10 awalnya Tidak dikirim pekan ini (7 hari), Rabu 04-11 awalnya Dikirim (14 hari).
+>   - Nilai awal selalu mengikuti rencana final terbaru. Jika rencana final tanggal sebelumnya baru dibuat, nilai awal draft sesudahnya ikut menyesuaikan, kecuali operator sudah memilih sendiri.
+> - **Mengubah pilihan:**
+>   - Pilihan diubah operator dengan hak `finalisasi` di gudang itu, karena pilihan ini menentukan apakah toko ikut difinalisasi.
+>   - Pilihan operator disimpan per toko per tanggal kirim, beserta siapa dan kapan, dan tampil di draft (misalnya "Dipilih Operator Cibubur, 20-10-2026"). Pilihan ini tetap berlaku walaupun draft dihitung ulang.
+>   - Admin dan viewer melihat pilihan ini tanpa bisa mengubahnya.
+> - **Toko "Tidak dikirim pekan ini":**
+>   - Toko tetap tampil di draft dengan penanda "Tidak dikirim pekan ini". Kebutuhan dan jumlah kirimnya tetap dihitung sebagai informasi, dan stok boleh diisi.
+>   - Toko itu tidak bisa difinalisasi sebelum pilihannya diubah menjadi "Dikirim".
+>   - Toko itu tidak dihitung sebagai toko yang belum final atau sebagai baris tertahan. Ini berlaku di kartu gudang Pengiriman Gudang, kartu "Perlu tindakan", dan langkah "Mulai di sini" di Beranda.
+> - Toko yang sudah punya rencana final untuk tanggal itu selalu "Dikirim", dan pilihannya tidak bisa diubah.
+> - Pengiriman di luar jadwal toko dua mingguan tidak punya pilihan ini, karena selalu dikirim. Pembatalannya tetap mengikuti aturan pengiriman di luar jadwal.
+>
+> **Cakupan (A6)**
+> - Setiap pengiriman toko dua mingguan, rutin maupun di luar jadwal, memakai **L = 14**, kapan pun kiriman berikutnya. Cakupan H−p sampai H+13 (14 + p hari). Contoh: Rabu dengan persiapan H−1 → Selasa sampai Selasa dua minggu kemudian, 15 hari.
+> - Pengiriman di luar jadwal tidak memendekkan cakupan pengiriman dua mingguan sebelumnya.
+> - Jika toko dikirim lagi sebelum 14 hari, cakupannya bertumpang tindih. Kebutuhan tidak terhitung dua kali, karena jumlah kirim = stok target − stok akhir (A6 ▶ Revisi 2026-10-14), dan sisa kiriman sebelumnya sudah ada di stok akhir. Contoh dengan stok target 34: pekan 1 stok 4 → kirim 30; dikirim lagi pekan 2 dengan stok 20 → kirim 14.
+> - Teks cakupan toko dua mingguan menyebut dua minggu, bukan "sampai sebelum kiriman berikutnya". Contoh: "Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)".
+> - Peringatan "kiriman sebelumnya belum sampai" tidak berubah.
+>
+> **Tampilan jadwal**
+> - Isian "Tanggal jangkar" dihapus dari form jadwal tetap dan form Salin jadwal.
+> - Saat pola Dua mingguan dipilih, form menampilkan keterangan: "Toko dikirim pada hari kirim ini. Operator memilih pekannya di draft, biasanya setiap 2 minggu."
+> - Kolom "Tanggal jangkar" dihapus dari tabel Jadwal toko (admin) dan dari bagian Jadwal toko di Pengiriman Gudang.
+> - Tanggal jangkar juga tidak lagi ditampilkan di riwayat jadwal tetap dan di halaman Persetujuan jadwal.
+> - Rincian rencana final yang dibuat sebelum revisi ini tetap menampilkan tanggal jangkar dari snapshotnya. Bantuan istilahnya menjelaskan bahwa itu aturan lama, sebelum 19-10-2026.
+>
+> **Peralihan**
+> - Jadwal tetap dua mingguan yang sudah ada (BXC, CCM, dan lainnya) tetap berlaku dengan hari kirim dan persiapannya, dan tanggal jangkar yang tersimpan diabaikan. Admin tidak perlu mengatur ulang.
+> - Menyimpan ulang jadwal dengan pola, hari kirim, dan persiapan yang sama tidak membuat versi jadwal baru.
+> - Draft yang belum final ditandai perlu dihitung ulang jika tokonya kini ikut atau L-nya berubah, seperti aturan perubahan jadwal yang sudah ada. Stok yang sudah diisi tetap dipertahankan, dan rencana final tidak berubah.
+> - Sebagian pengiriman di luar jadwal toko dua mingguan dibatalkan otomatis satu kali, saat revisi ini berlaku. Syaratnya:
+>   - tanggal kirimnya kini menjadi tanggal kirim rutin (jatuh pada hari kirimnya);
+>   - statusnya masih Menunggu atau Berlaku;
+>   - tanggalnya belum lewat, dan belum ada rencana finalnya.
+>
+>   Alasannya "Tanggal itu sudah menjadi tanggal kirim rutin". Jika jenisnya pindah, tanggal rutinnya kembali.
+
 
 Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
 
@@ -286,6 +349,8 @@ Kebutuhan barang adalah penjumlahan rata-rata penjualan sesuai kategori efektif 
 > - Peringatan tampil dengan ikon + teks dan **tidak** menahan finalisasi.
 
 > ▶ Revisi (2026-10-13, pemilik): "tanggal kirim berikutnya" (L) dan "tanggal kirim sebelumnya" (peringatan) di dua blok di atas dibaca dari **tanggal kirim toko**, yaitu jadwal tetap ditambah pengiriman di luar jadwal yang berlaku, bukan dari jadwal tetap saja. Rinciannya dan contoh BOTANI ada di A5 ▶ Revisi 2026-10-13.
+
+> ▶ Revisi (2026-10-19, pemilik bersama admin): **pola dua mingguan selalu memakai L = 14**, untuk pengiriman rutin maupun di luar jadwal, kapan pun kiriman berikutnya. Kalimat "dua mingguan dengan satu hari kirim L = 14 … Dua mingguan dengan lebih dari satu hari kirim mengikuti aturan yang sama" di ▶ Revisi 2026-10-12, dan aturan "pengiriman tambahan memendekkan cakupan pengiriman sebelumnya", tidak berlaku untuk toko dua mingguan. Rinciannya dan contoh tumpang tindih cakupan ada di A5 ▶ Revisi 2026-10-19.
 
 Jumlah kirim = nilai terbesar antara 0 dan pembulatan ke atas dari:
 (Kebutuhan barang − Stok akhir) × (1 + Buffer).

@@ -279,7 +279,7 @@ Bagian sumber untuk landing page tidak dipakai: hero, harga, testimoni, blog, FA
 - Identitas teknis file (SHA-256, ukuran dalam byte, nomor penetapan) disembunyikan di bawah bagian "Detail teknis" yang bisa dibuka. Datanya tidak dihapus.
 - Daftar sumber angka di panel rincian tetap memakai alamat sel (§8).
 - Istilah domain tetap memakai istilah CONTEXT.md, tetapi diberi **bantuan singkat**: ikon `CircleHelp` di samping istilah membuka penjelasan satu atau dua kalimat. Minimal untuk istilah berikut:
-  - Persiapan (H, H−1, H−2), Cakupan, Panjang cakupan, Tanggal jangkar.
+  - Persiapan (H, H−1, H−2), Cakupan, Panjang cakupan, Dikirim pekan ini (pola dua mingguan). Tanggal jangkar hanya untuk rincian rencana final lama (PRD A5 ▶ Revisi 2026-10-19).
   - Kategori dasar dan efektif.
   - Produk otomatis dan manual, Buffer.
   - Hanya-baca, Periode sumber.

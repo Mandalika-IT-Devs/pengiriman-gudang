@@ -109,7 +109,7 @@ Bulan laporan yang dipakai gudang sebagai dasar rata-rata. Ditetapkan admin per 
 _Avoid_: bulan ranking, filter Ringkasan
 
 **Jadwal tetap**:
-Pengaturan hari pengiriman rutin satu toko (pola, hari kirim, persiapan, tanggal jangkar). Hanya satu yang aktif per toko. Diatur admin. Disebut "jadwal aktif" di teks lama.
+Pengaturan hari pengiriman rutin satu toko (pola, hari kirim, persiapan). Hanya satu yang aktif per toko. Diatur admin. Disebut "jadwal aktif" di teks lama.
 _Avoid_: template (kecuali menjelaskan ke pemilik), jadwal usulan
 
 **Pengiriman di luar jadwal**:
@@ -132,11 +132,23 @@ Daftar tanggal kirim satu toko: tanggal menurut jadwal tetap, dikurangi tanggal 
 Rentang tanggal H−p sampai H+L−1, inklusif.
 
 **Panjang cakupan (L)**:
-Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya menurut tanggal kirim toko (1× seminggu 7, dua mingguan 14, 2×/3× seminggu selisih ke hari kirim berikutnya); khusus 1× sebulan 30, tetapi berakhir lebih awal jika ada pengiriman di luar jadwal sebelum hari ke-30.
+Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya menurut tanggal kirim toko (1× seminggu 7, 2×/3× seminggu selisih ke hari kirim berikutnya); khusus 1× sebulan 30, tetapi berakhir lebih awal jika ada pengiriman di luar jadwal sebelum hari ke-30. Dua mingguan selalu 14, kapan pun kiriman berikutnya.
 _Avoid_: menganggap L selalu 7 untuk pola mingguan
 
+**Pola dua mingguan**:
+Pola jadwal tetap yang hanya menentukan hari kirim. Setiap pekan, hari itu menjadi tanggal kirim rutin toko, dan operator memilih pekan mana toko dikirim lewat **dikirim pekan ini**. L selalu 14.
+_Avoid_: pekan kirim, pekan ganjil/genap, selang-seling
+
+**Dikirim pekan ini**:
+Pilihan untuk toko dua mingguan pada satu tanggal kirim rutin: "Dikirim" atau "Tidak dikirim pekan ini". Nilai awalnya otomatis dari **kirim terakhir**, lalu boleh diubah operator yang berhak finalisasi. Toko yang tidak dikirim tidak bisa difinalisasi dan tidak dihitung belum final.
+_Avoid_: lewati toko, toko dikeluarkan (itu istilah lain: toko yang tidak lagi mengirim setelah dihitung ulang)
+
+**Kirim terakhir**:
+Tanggal kirim rencana final terakhir satu toko sebelum suatu tanggal. Dipakai untuk nilai awal dikirim pekan ini.
+
 **Tanggal jangkar**:
-Tanggal yang menentukan pekan kirim untuk pola dua mingguan.
+Aturan lama (sebelum 2026-10-19): tanggal yang menentukan pekan kirim pola dua mingguan. Sudah dihapus; nilainya hanya tersisa di data lama dan snapshot rencana final lama.
+_Avoid_: memakainya untuk jadwal baru
 
 **Kebutuhan barang**:
 Jumlah rata-rata sesuai kategori efektif setiap tanggal dalam cakupan.
