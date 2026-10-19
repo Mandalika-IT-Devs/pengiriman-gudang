@@ -97,11 +97,11 @@ Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah B
 
 **Mengatur jadwal tetap** (**Data Master › Jadwal toko**):
 
-- Pilih gudang. Tabel "Toko terhubung" menampilkan setiap toko gudang itu beserta status toko dan jadwal tetapnya (pola, hari kirim beserta persiapan, tanggal jangkar, siapa dan kapan mengatur).
+- Pilih gudang. Tabel "Toko terhubung" menampilkan setiap toko gudang itu beserta status toko dan jadwal tetapnya (pola, hari kirim beserta persiapan, siapa dan kapan mengatur).
 - "Atur jadwal" di baris toko membuka panel samping "Jadwal tetap <toko>":
   - Pilih Pola: Mingguan, 2× seminggu, 3× seminggu, Dua mingguan, atau 1× sebulan.
   - Centang hari kirim (Senin sampai Minggu), masing-masing dengan persiapan H, H−1, atau H−2. Contoh: kirim Minggu dengan persiapan H−1 berarti persiapan hari Sabtu.
-  - Pola Dua mingguan membutuhkan tanggal jangkar.
+  - Pola Dua mingguan hanya menentukan hari kirim dan persiapannya. Form menampilkan keterangan "Toko dikirim pada hari kirim ini. Operator memilih pekannya di draft, biasanya setiap 2 minggu." Setiap tanggal yang jatuh pada hari kirim itu, setiap pekan, adalah tanggal kirim rutin toko itu (lihat "Toko dua mingguan: Dikirim pekan ini" di bagian Operator).
   - "Simpan jadwal" langsung berlaku, tanpa persetujuan, untuk semua gudang termasuk Pusat.
   - "Nonaktifkan jadwal" meminta konfirmasi lebih dulu.
   - Di bawah form ada "Riwayat jadwal tetap" toko itu, terbaru di atas.
@@ -155,6 +155,7 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 
 - Toko yang dikirim di luar jadwal diberi penanda "Di luar jadwal · Tambahan" atau "Di luar jadwal · Pindahan dari <hari, tanggal>". Di bawahnya tampil "Alasan: … · Disetujui <admin>, <waktu>", atau "Langsung berlaku (Pusat)". Penanda yang sama tersimpan di rencana final dan riwayatnya, dan ekspor `.xlsx` punya baris keterangan "Jenis pengiriman".
 - Pengiriman tambahan **memendekkan cakupan** pengiriman sebelumnya toko itu, karena cakupan selalu berakhir sehari sebelum kiriman berikutnya. Contoh BOTANI (Senin H, Kamis H−1) dengan tambahan Selasa H−1: cakupan Senin menjadi Senin saja, dan cakupan Selasa adalah Senin–Rabu.
+- Pengecualian: setiap pengiriman toko dua mingguan, rutin maupun di luar jadwal, selalu mencakup 14 hari (ditambah hari persiapan), kapan pun kiriman berikutnya. Pengiriman di luar jadwal tidak memendekkan cakupan pengiriman dua mingguan sebelumnya.
 - Jika hari persiapan jatuh sebelum kiriman sebelumnya sampai, tampil peringatan "Kiriman <hari, tanggal> belum sampai saat persiapan. Pastikan jumlahnya ikut dihitung di stok akhir." Peringatan ini tidak menahan finalisasi.
 - Saat pengiriman di luar jadwal mulai berlaku atau dibatalkan, draft yang terdampak bertanda "Perlu dihitung ulang" ("Yang berubah: Jadwal toko"). Tekan "Hitung ulang". Stok yang sudah diisi tetap ada. Toko yang tanggal rutinnya dipindah dikeluarkan dari draft tanggal itu, dengan keterangan "Toko … dikeluarkan dari draft karena tidak lagi mengirim pada tanggal ini menurut jadwal aktif."
 
@@ -169,7 +170,7 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
   - Toko itu tidak bisa difinalisasi. Di kepala toko tampil "Belum bisa difinalisasi: toko ini Tidak dikirim pekan ini. Ubah pilihan menjadi Dikirim untuk memfinalisasinya."
   - Toko itu tidak dihitung sebagai toko yang belum final atau sebagai baris tertahan di kartu gudang Pengiriman Gudang, kartu "Perlu tindakan", dan "Mulai di sini".
 - Toko yang sudah final untuk tanggal itu selalu "Dikirim" dan pilihannya tidak bisa diubah. Pengiriman di luar jadwal toko dua mingguan tidak punya pilihan ini, karena selalu dikirim. Toko pola lain juga tidak.
-- Untuk sementara, tanggal kirim rutin toko dua mingguan masih mengikuti pekan tanggal jangkar di jadwal tetapnya, jadi pilihan ini hanya muncul di pekan itu. Contoh: BXC (Rabu, jangkar 14-10-2026) pada Rabu 14-10, 28-10, dan 11-11-2026.
+- Setiap tanggal yang jatuh pada hari kirim toko dua mingguan adalah tanggal kirim rutinnya, jadi pilihan ini muncul setiap pekan. Contoh: BXC (Rabu, H−1) pada Rabu 21-10, 28-10, 04-11-2026, dan seterusnya. Teks cakupannya selalu menyebut dua minggu, misalnya "Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)".
 
 **Mengisi stok.** Tekan "Buka toko" di "Ringkasan per toko".
 

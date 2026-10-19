@@ -746,8 +746,9 @@ export const daftarStatusJadwal = ["aktif", "nonaktif"] as const;
 export type StatusJadwal = (typeof daftarStatusJadwal)[number];
 
 /**
- * Jadwal satu toko (CONTEXT "Jadwal"): pola, hari kirim beserta persiapan per hari (hasil `periksaJadwal`, T54), dan
- * tanggal jangkar (hanya dua mingguan). Paling banyak satu baris `aktif` per toko, ditegakkan unique index parsial.
+ * Jadwal satu toko (CONTEXT "Jadwal"): pola dan hari kirim beserta persiapan per hari (hasil `periksaJadwal`, T54).
+ * `tanggal_jangkar` hanya tersisa di baris lama dua mingguan (aturan lama, PRD A5 ▶ Revisi 2026-10-19, T135): tidak dibaca
+ * dan baris baru tidak mengisinya. Paling banyak satu baris `aktif` per toko, ditegakkan unique index parsial.
  * Mengubah = baris baru; baris aktif sebelumnya menjadi `nonaktif` (riwayat tidak dihapus). Menonaktifkan mencatat siapa
  * dan kapan. Id baris aktif menjadi versi jadwal toko itu (sinyal perubahan jadwal).
  */
@@ -777,10 +778,6 @@ export const jadwalToko = pgTable(
     check("jadwal_toko_pola_dikenal", sql`${tabel.pola} in (${daftarSql(daftarPolaJadwal)})`),
     check("jadwal_toko_status_dikenal", sql`${tabel.status} in (${daftarSql(daftarStatusJadwal)})`),
     check("jadwal_toko_hari_kirim_array", sql`jsonb_typeof(${tabel.hariKirim}) = 'array'`),
-    check(
-      "jadwal_toko_jangkar_dua_mingguan",
-      sql`(${tabel.pola} = 'dua-mingguan') = (${tabel.tanggalJangkar} is not null)`,
-    ),
     check(
       "jadwal_toko_jejak_nonaktif",
       sql`(${tabel.status} = 'nonaktif') = (${tabel.dinonaktifkanOleh} is not null and ${tabel.dinonaktifkanPada} is not null)`,
@@ -1115,7 +1112,10 @@ export type DiLuarJadwalRencanaFinal = {
   disetujuiPada: string | null;
 };
 
-/** Isi jadwal aktif toko saat difinalisasi (PRD A7). */
+/**
+ * Isi jadwal aktif toko saat difinalisasi (PRD A7). `tanggalJangkar` hanya terisi di snapshot dua mingguan lama (sebelum
+ * PRD A5 ▶ Revisi 2026-10-19); snapshot baru selalu `null` (T135).
+ */
 export type JadwalRencanaFinal = {
   pola: PolaJadwal;
   hariKirim: { hari: HariKirim; persiapanHari: 0 | 1 | 2 }[];

@@ -163,3 +163,32 @@ export async function salinRencanaFinalRumusLama({
   );
   return salinan.id;
 }
+
+/**
+ * Salinan rencana final `idRencana` (beserta barisnya) sebagai rencana final dua mingguan dari sebelum PRD A5 ▶ Revisi
+ * 2026-10-19 (T135): tanggal kirim `tanggalKirim`, snapshot jadwal dua mingguan dengan hari kirim jadwal asal dan tanggal
+ * jangkar `tanggalJangkar`, L = 14. Mengembalikan id salinannya.
+ */
+export async function salinRencanaFinalBerjangkar({
+  idRencana,
+  tanggalKirim,
+  tanggalJangkar,
+}: {
+  idRencana: number;
+  tanggalKirim: string;
+  tanggalJangkar: string;
+}) {
+  const [asal] = await db.select().from(rencanaFinal).where(eq(rencanaFinal.id, idRencana));
+  const [salinan] = await db
+    .insert(rencanaFinal)
+    .values({
+      ...tanpaId(asal),
+      tanggalKirim,
+      jadwal: { ...asal.jadwal, pola: "dua-mingguan", tanggalJangkar },
+      panjangCakupan: 14,
+    })
+    .returning({ id: rencanaFinal.id });
+  const baris = await db.select().from(barisRencanaFinal).where(eq(barisRencanaFinal.rencanaFinalId, idRencana));
+  await db.insert(barisRencanaFinal).values(baris.map((b) => ({ ...tanpaId(b), rencanaFinalId: salinan.id })));
+  return salinan.id;
+}

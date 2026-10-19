@@ -16,7 +16,7 @@ import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
 import { finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 import { simpanStokToko } from "@/server/gudang/stok-draft";
-import { buatTokoUji, idGudangUji, salinRencanaFinalRumusLama } from "@/server/gudang/uji-bantu";
+import { buatTokoUji, idGudangUji, salinRencanaFinalBerjangkar, salinRencanaFinalRumusLama } from "@/server/gudang/uji-bantu";
 import { kodeProdukUji, tahunUjiBebas } from "@/server/impor/uji-bantu";
 import { buatPerubahanKategori } from "@/server/kalender/perubahan-kategori";
 import { terapkanPemetaan } from "@/server/keluarga-aroma/pemetaan";
@@ -331,6 +331,10 @@ describe("rincian rencana final", () => {
     expect(jadwal).toContain("Mingguan");
     expect(jadwal).toContain("Senin (H−2)");
     expect(jadwal).toContain('data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari + 7 hari sampai sebelum kiriman berikutnya"');
+    // T135 (PRD A5 ▶ Revisi 2026-10-19): snapshot baru tidak menyimpan tanggal jangkar dan tidak menampilkannya.
+    const [snapshot] = await db.select({ jadwal: rencanaFinal.jadwal }).from(rencanaFinal).where(eq(rencanaFinal.id, rencana.a1v1));
+    expect(snapshot.jadwal.tanggalJangkar).toBeNull();
+    expect(jadwal).not.toContain("Tanggal jangkar");
     const kalender = bagianDasar(html, "kalender");
     expect(kalender).toMatch(/Revisi kalender/);
     for (const t of golden.kasusCakupan.tanggalCakupan) {
@@ -382,6 +386,21 @@ describe("rincian rencana final", () => {
       expect(rincian).toContain("(56 − 20) × 120% = 43,2 → dibulatkan ke atas 44");
       expect(rincian).toMatch(new RegExp(`data-jumlah-kirim-rincian="${CONTOH_RUMUS_LAMA.jumlahKirim}"`));
       expect(rincian).not.toContain("56 × 120% − 20");
+    } finally {
+      await db.delete(rencanaFinal).where(eq(rencanaFinal.id, idLama));
+    }
+  });
+
+  // T135 — PRD A5 ▶ Revisi 2026-10-19 (Tampilan jadwal): rincian rencana final yang dibuat sebelum revisi itu tetap
+  // menampilkan tanggal jangkar dari snapshotnya, dengan bantuan istilah yang menjelaskan bahwa itu aturan lama.
+  it("rencana final dua mingguan lama tetap menampilkan Tanggal jangkar dari snapshot, dengan bantuan istilahnya", async () => {
+    const idLama = await salinRencanaFinalBerjangkar({ idRencana: rencana.a1v1, tanggalKirim: "2026-05-25", tanggalJangkar: "2026-06-08" });
+    try {
+      await masukOperator(cibubur, []);
+      const jadwal = bagianDasar(await bukaRincian(idLama), "jadwal");
+      expect(jadwal).toContain("Dua mingguan");
+      expect(jadwal).toMatch(/<dt[^>]*>Tanggal jangkar.*?data-bantuan-istilah="tanggalJangkar".*?<\/dt><dd>Senin, 08-06-2026<\/dd>/);
+      expect(jadwal).toContain('data-teks-cakupan="Cakupan 16 hari: persiapan 2 hari + 14 hari (dua minggu)"');
     } finally {
       await db.delete(rencanaFinal).where(eq(rencanaFinal.id, idLama));
     }

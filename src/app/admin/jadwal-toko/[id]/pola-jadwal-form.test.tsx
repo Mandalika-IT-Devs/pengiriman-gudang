@@ -3,14 +3,17 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../aksi", () => ({
-  aturJadwalTetapToko: vi.fn(),
+const aksi = vi.hoisted(() => ({
+  aturJadwalTetapToko: vi.fn(async () => ({ keadaan: "berhasil" as const })),
   nonaktifkanJadwalTetapToko: vi.fn(),
+  salinJadwalTetap: vi.fn(),
 }));
+vi.mock("../aksi", () => aksi);
 
 import { isianTerkirim } from "@/app/pengiriman-gudang/[id]/bidang-jadwal";
 
 import { FormJadwalTetap } from "./form-jadwal-tetap";
+import { FormSalinJadwal } from "./form-salin-jadwal";
 
 // T92: pola 1× sebulan bisa dipilih di form jadwal (PRD A5 ▶ Keputusan 2026-10-12, UAT ketiga). Form jadwal operator
 // dihapus (T113); jadwal tetap diatur admin di halaman Jadwal toko (T112), jadi pilihan pola dan hari diuji di form admin.
@@ -84,7 +87,6 @@ describe("hari kirim Senin–Minggu di form jadwal tetap", () => {
           { hari: "Minggu", persiapan: "H-1" },
           { hari: "Kamis", persiapan: "H" },
         ],
-        tanggalJangkar: null,
       }),
     ).toEqual({
       pola: "2x-seminggu",
@@ -92,7 +94,64 @@ describe("hari kirim Senin–Minggu di form jadwal tetap", () => {
         { hari: "Kamis", persiapan: "H" },
         { hari: "Minggu", persiapan: "H-1" },
       ],
-      tanggalJangkar: null,
+    });
+  });
+});
+
+// T135 — PRD A5 ▶ Revisi 2026-10-19 (Tampilan jadwal): isian "Tanggal jangkar" dihapus dari form jadwal tetap dan form Salin
+// jadwal. Saat pola Dua mingguan dipilih, form menampilkan keterangan pola itu.
+const KETERANGAN_DUA_MINGGUAN = "Toko dikirim pada hari kirim ini. Operator memilih pekannya di draft, biasanya setiap 2 minggu.";
+
+/** Memilih pola lewat select bawaan Radix yang mendampingi kontrol Pola (sama seperti isian otomatis peramban). */
+function pilihPola(wadah: HTMLElement, pola: string) {
+  const select = [...wadah.querySelectorAll("select")].find((s) => s.querySelector('option[value="mingguan"]') !== null);
+  if (select === undefined) throw new Error("Kontrol Pola tidak ada.");
+  act(() => {
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set?.call(select, pola);
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+}
+
+const bxc = { id: 7, nama: "BXC", jadwal: { pola: "dua-mingguan" as const, hariKirim: [{ hari: "Rabu" as const, persiapan: "H-1" as const }] } };
+
+describe("form jadwal tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19)", () => {
+  it("form jadwal tetap BXC dua mingguan Rabu (H−1): tanpa isian tanggal jangkar, dengan keterangan pola dua mingguan", () => {
+    const wadah = tampilkan(<FormJadwalTetap idGudang={1} toko={bxc} />);
+    expect(wadah.querySelector('input[type="date"]')).toBeNull();
+    expect(wadah.textContent).not.toMatch(/jangkar/i);
+    expect(wadah.textContent).toContain(KETERANGAN_DUA_MINGGUAN);
+  });
+
+  it("form jadwal tetap: keterangan hanya tampil saat pola Dua mingguan dipilih", () => {
+    const wadah = tampilkan(<FormJadwalTetap idGudang={1} toko={toko} />);
+    expect(wadah.textContent).not.toContain(KETERANGAN_DUA_MINGGUAN);
+    pilihPola(wadah, "dua-mingguan");
+    expect(wadah.textContent).toContain(KETERANGAN_DUA_MINGGUAN);
+    expect(wadah.querySelector('input[type="date"]')).toBeNull();
+    pilihPola(wadah, "mingguan");
+    expect(wadah.textContent).not.toContain(KETERANGAN_DUA_MINGGUAN);
+  });
+
+  it("form Salin jadwal: memilih Dua mingguan menampilkan keterangan, tanpa isian tanggal jangkar", () => {
+    const wadah = tampilkan(<FormSalinJadwal idGudang={1} daftarToko={[{ id: 7, nama: "BXC" }]} />);
+    pilihPola(wadah, "dua-mingguan");
+    expect(wadah.textContent).toContain(KETERANGAN_DUA_MINGGUAN);
+    expect(wadah.querySelector('input[type="date"]')).toBeNull();
+    expect(wadah.textContent).not.toMatch(/jangkar/i);
+  });
+
+  it("menyimpan jadwal dua mingguan Rabu (H−1) mengirim pola dan hari kirim saja, tanpa tanggal jangkar", async () => {
+    const wadah = tampilkan(<FormJadwalTetap idGudang={1} toko={bxc} />);
+    const form = wadah.querySelector("form");
+    if (form === null) throw new Error("Form tidak ada.");
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    expect(aksi.aturJadwalTetapToko).toHaveBeenCalledWith({
+      idGudang: 1,
+      idToko: 7,
+      pola: "dua-mingguan",
+      hariKirim: [{ hari: "Rabu", persiapan: "H-1" }],
     });
   });
 });

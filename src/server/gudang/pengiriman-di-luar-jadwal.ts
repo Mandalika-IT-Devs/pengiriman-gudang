@@ -22,7 +22,7 @@ import {
   type StatusPengirimanDiLuarJadwal,
 } from "@/server/db/schema";
 
-import { bacaJadwalAktif, bacaJangkar, jadwalTokoGudang, type TokoDenganJadwal, type Tx } from "./jadwal";
+import { bacaJadwalAktif, jadwalTokoGudang, type TokoDenganJadwal, type Tx } from "./jadwal";
 import { NAMA_GUDANG_PUSAT } from "./seed-master";
 
 // Pengiriman di luar jadwal (T113, PRD A5 ▶ Revisi 2026-10-13): operator dengan hak `kelola-usulan-jadwal` mengusulkan
@@ -472,10 +472,10 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
   ]);
   if (daftar.length === 0) return [];
   const jadwal = await db
-    .select({ idToko: jadwalToko.tokoId, pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim, tanggalJangkar: jadwalToko.tanggalJangkar })
+    .select({ idToko: jadwalToko.tokoId, pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim })
     .from(jadwalToko)
     .where(and(eq(jadwalToko.status, "aktif"), inArray(jadwalToko.tokoId, daftar.map((d) => d.idToko))));
-  const perToko = new Map(jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim, tanggalJangkar: bacaJangkar(j.tanggalJangkar) }]));
+  const perToko = new Map(jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim }]));
   return daftar.map((d) => ({ ...d, jadwalTetap: perToko.get(d.idToko) ?? null }));
 }
 

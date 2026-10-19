@@ -85,7 +85,9 @@ describe("/admin/jadwal-toko: admin", () => {
       expect(baris).toContain(berjadwal.nama);
       expect(baris).toContain("Dua mingguan");
       expect(baris).toContain("Rabu (H−1)");
-      expect(baris).toContain("Rabu, 14-10-2026");
+      // T135 (PRD A5 ▶ Revisi 2026-10-19): jadwal lama berjangkar tetap berlaku, tetapi jangkarnya tidak ditampilkan.
+      expect(baris).not.toContain("14-10-2026");
+      expect(/<table[^>]*aria-label="Jadwal tetap per toko".*?<\/table>/s.exec(html)?.[0]).not.toMatch(/jangkar/i);
       expect(baris).toContain("Uji admin");
       expect(baris).toContain(`aria-label="Atur jadwal ${berjadwal.nama}"`);
       expect(new RegExp(`<tr[^>]*data-jadwal-toko="${kosong.id}".*?</tr>`).exec(html)?.[0]).toContain("Belum ada jadwal");

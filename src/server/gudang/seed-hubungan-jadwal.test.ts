@@ -108,8 +108,9 @@ describe("seedHubunganJadwalAwal", () => {
       ],
       tanggalJangkar: null,
     });
-    expect(jadwalToko_("BXC")).toEqual({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: "2026-10-14" });
-    expect(jadwalToko_("CCM")).toEqual({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: "2026-10-21" });
+    // BXC dan CCM dua mingguan tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19, T135).
+    expect(jadwalToko_("BXC")).toEqual({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: null });
+    expect(jadwalToko_("CCM")).toEqual({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: null });
     expect(jadwalToko_("LWB")).toEqual({
       pola: "3x-seminggu",
       hariKirim: [

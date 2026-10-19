@@ -41,19 +41,19 @@ describe("nilai awal Dikirim pekan ini dari kirim terakhir (PRD A5 ▶ Revisi 20
 });
 
 // Pilihan hanya untuk toko dua mingguan pada tanggal kirim rutinnya; pengiriman di luar jadwal dan pola lain tidak punya
-// pilihan (PRD A5 ▶ Revisi 2026-10-19). Sebelum T135, tanggal kirim rutin dua mingguan masih mengikuti pekan jangkar
-// (PRD A5 ▶ Keputusan perencanaan M2–M3). Contoh BXC: dua mingguan Rabu (H−1), jangkar 2026-10-14.
+// pilihan (PRD A5 ▶ Revisi 2026-10-19). Tanggal kirim rutin dua mingguan = setiap tanggal yang jatuh pada hari kirimnya
+// (T135, tanpa tanggal jangkar). Contoh BXC: dua mingguan Rabu (H−1).
 describe("punya pilihan dikirim pekan ini: toko dua mingguan pada tanggal kirim rutinnya", () => {
-  const bxc = jadwalValid({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }], tanggalJangkar: "2026-10-14" });
-  const mingguan = jadwalValid({ pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }], tanggalJangkar: null });
+  const bxc = jadwalValid({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] });
+  const mingguan = jadwalValid({ pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] });
 
-  it("tanggal kirim rutin dua mingguan (Rabu 14-10 dan 28-10-2026) punya pilihan", () => {
-    expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-10-14"))).toBe(true);
+  it("setiap tanggal kirim rutin dua mingguan (Rabu 21-10, 28-10, dan 04-11-2026) punya pilihan", () => {
+    expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-10-21"))).toBe(true);
     expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-10-28"))).toBe(true);
+    expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-11-04"))).toBe(true);
   });
 
-  it("bukan tanggal kirim toko itu (Rabu 21-10-2026 di pekan lain, Kamis 29-10-2026) tidak punya pilihan", () => {
-    expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-10-21"))).toBe(false);
+  it("bukan tanggal kirim toko itu (Kamis 29-10-2026) tidak punya pilihan", () => {
     expect(punyaPilihanDikirimPekanIni({ jadwal: bxc, diLuarJadwal: [] }, t("2026-10-29"))).toBe(false);
   });
 

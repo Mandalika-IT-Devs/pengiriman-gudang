@@ -84,7 +84,6 @@ export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; d
             <TableHead>Jadwal tetap</TableHead>
             <TableHead>Pola</TableHead>
             <TableHead>Hari kirim (persiapan)</TableHead>
-            <TableHead>Tanggal jangkar</TableHead>
             <TableHead>Diatur</TableHead>
             <TableHead>Tindakan</TableHead>
           </TableRow>
@@ -99,7 +98,6 @@ export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; d
               <TableCell>{t.jadwal ? <BadgeStatus status="aktif" /> : <BadgeTanpaJadwal />}</TableCell>
               <TableCell>{t.jadwal ? labelPola[t.jadwal.pola] : "—"}</TableCell>
               <TableCell className="whitespace-normal">{t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}</TableCell>
-              <TableCell>{t.jadwal?.tanggalJangkar ? formatTanggal(t.jadwal.tanggalJangkar) : "—"}</TableCell>
               <TableCell className="whitespace-normal text-muted-foreground">
                 {t.jadwal ? (
                   <>

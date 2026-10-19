@@ -26,12 +26,12 @@ import {
 import { bacaPerubahanKategori, bacaRevisiKalender, versiCacheAktif } from "@/server/laporan/cache";
 import { rankingBerlaku } from "@/server/ranking/ranking";
 
-import { bacaJangkar } from "./jadwal";
 import { periksaHitungUlang, perubahanKategoriMengenai, tokoYangMengirim, type AlasanHitungUlang, type TokoKirim } from "./dasar-draft";
 import { bacaDikirimPekanIni, type DikirimPekanIni } from "./dikirim-pekan-ini";
 import { URUTAN_MASALAH, type MasalahBarisDraft } from "./masalah-draft";
 import { bacaKeteranganDiLuarJadwal, type KeteranganDiLuarJadwal } from "./pengiriman-di-luar-jadwal";
 import { bacaPeriodeSumberPerhitungan } from "./periode-sumber";
+import type { PolaJadwal } from "./pilihan-jadwal";
 import type { RincianBarisDraft, SumberKategoriDraft, TanggalCakupanDraft } from "./rincian-draft";
 
 // Draft rencana (T58, PRD A6 ▶ Keputusan perencanaan M2–M3): per gudang dan tanggal kirim. Toko = toko gudang yang
@@ -416,6 +416,8 @@ export type BarisDraft = {
 export type TokoDraft = {
   id: number;
   nama: string;
+  /** Pola jadwal versi draft; dua mingguan menentukan teks cakupan "… hari (dua minggu)" (PRD A5 ▶ Revisi 2026-10-19). */
+  polaJadwal: PolaJadwal;
   persiapanHari: 0 | 1 | 2;
   panjangCakupan: number;
   /** Tanggal cakupan beserta kategori efektif dan sumbernya; `null` = draft dihitung sebelum T60. */
@@ -536,7 +538,7 @@ type TokoTersimpan = {
   pengirimanDiLuarJadwalId: number | null;
   kirimanSebelumnyaBelumSampai: string | null;
   /** Isi jadwal versi draft (`versiJadwal`); baris jadwal tidak pernah diubah, perubahan jadwal = baris baru. */
-  jadwal: Pick<typeof jadwalToko.$inferSelect, "pola" | "hariKirim" | "tanggalJangkar">;
+  jadwal: Pick<typeof jadwalToko.$inferSelect, "pola" | "hariKirim">;
 };
 
 /** Bagian draft yang sama untuk bacaan lengkap dan ringkasan: keterangan tingkat draft dan daftar toko tanpa baris. */
@@ -590,7 +592,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
       jenisPengiriman: tokoDraftRencana.jenisPengiriman,
       pengirimanDiLuarJadwalId: tokoDraftRencana.pengirimanDiLuarJadwalId,
       kirimanSebelumnyaBelumSampai: tokoDraftRencana.kirimanSebelumnyaBelumSampai,
-      jadwal: { pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim, tanggalJangkar: jadwalToko.tanggalJangkar },
+      jadwal: { pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim },
     })
     .from(tokoDraftRencana)
     .innerJoin(toko, eq(toko.id, tokoDraftRencana.tokoId))
@@ -676,12 +678,13 @@ function susunTokoDraft(kepala: KepalaDraft, t: TokoTersimpan, barisToko: BarisD
   return {
     id: t.id,
     nama: t.nama,
+    polaJadwal: t.jadwal.pola,
     persiapanHari: t.persiapanHari,
     panjangCakupan: t.panjangCakupan,
     cakupan: cakupan?.map((c) => ({ ...c, tanggal: parseTanggalBisnis(c.tanggal) })) ?? null,
     kirimanSebelumnyaBelumSampai:
       t.jenisPengiriman === null
-        ? kirimanSebelumnyaBelumSampai({ ...t.jadwal, tanggalJangkar: bacaJangkar(t.jadwal.tanggalJangkar) }, kepala.keterangan.tanggalKirim)
+        ? kirimanSebelumnyaBelumSampai(t.jadwal, kepala.keterangan.tanggalKirim)
         : t.kirimanSebelumnyaBelumSampai === null
           ? null
           : parseTanggalBisnis(t.kirimanSebelumnyaBelumSampai),

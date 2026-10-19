@@ -7,7 +7,6 @@ import { BadgeStatusPengiriman, TabelRiwayatPengiriman, teksJenis, teksTanggalKi
 import { FormBatalkanPengiriman } from "@/app/usulan-jadwal/tindakan-pengiriman";
 import { KeadaanKosong } from "@/components/keadaan-kosong";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatTanggal } from "@/domain/kalender";
 import { AksesDitolakError, wajibAdmin } from "@/server/auth/kewenangan";
 import {
   bisaDibatalkan,
@@ -32,7 +31,7 @@ function JadwalTetap({ usulan }: { usulan: UsulanMenungguPersetujuan }) {
       <dd>
         {j === null
           ? "Tidak ada jadwal tetap aktif"
-          : `${labelPola[j.pola]}: ${labelHariKirim(j.hariKirim)}${j.tanggalJangkar ? `, jangkar ${formatTanggal(j.tanggalJangkar)}` : ""}`}
+          : `${labelPola[j.pola]}: ${labelHariKirim(j.hariKirim)}`}
       </dd>
       <dt className="font-semibold">Usulan</dt>
       <dd>

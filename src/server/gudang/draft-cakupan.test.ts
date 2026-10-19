@@ -74,7 +74,7 @@ describe("draft rencana pola 1× sebulan menyimpan panjang cakupan 30 (T92, PRD 
   it("1× sebulan Senin (H−1), kirim Senin pertama November 2026-11-02 → panjang cakupan 30, cakupan 2026-11-01 s.d. 2026-12-01", async () => {
     await db
       .update(jadwalToko)
-      .set({ pola: "1x-sebulan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], tanggalJangkar: null })
+      .set({ pola: "1x-sebulan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }] })
       .where(eq(jadwalToko.tokoId, toko.id));
     const hasil = await tokoDraft(parseTanggalBisnis("2026-11-02"));
     expect(hasil).toMatchObject({ persiapanHari: 1, panjangCakupan: 30 });
@@ -98,7 +98,6 @@ describe('draft rencana: peringatan "kiriman sebelumnya belum sampai" dari jadwa
           { hari: "Selasa", persiapanHari: 1 },
           { hari: "Jumat", persiapanHari: 0 },
         ],
-        tanggalJangkar: null,
       })
       .where(eq(jadwalToko.tokoId, toko.id));
     expect(await tokoDraft(SELASA)).toMatchObject({ persiapanHari: 1, kirimanSebelumnyaBelumSampai: "2026-10-19" });
@@ -115,7 +114,6 @@ describe('draft rencana: peringatan "kiriman sebelumnya belum sampai" dari jadwa
           { hari: "Senin", persiapanHari: 0 },
           { hari: "Kamis", persiapanHari: 1 },
         ],
-        tanggalJangkar: null,
       })
       .where(eq(jadwalToko.tokoId, toko.id));
     expect(await tokoDraft(KAMIS)).toMatchObject({ kirimanSebelumnyaBelumSampai: null });

@@ -207,7 +207,6 @@ async function buatData() {
       { hari: "Rabu", persiapan: "H-1" },
       { hari: "Jumat", persiapan: "H-1" },
     ],
-    tanggalJangkar: null,
   });
   if (!("jadwal" in jadwal)) throw new Error(jadwal.pesan);
   await db.transaction(async (tx) => {

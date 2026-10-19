@@ -36,8 +36,8 @@ import HalamanPengirimanGudang from "./page";
 // kirim rutinnya menampilkan kirim terakhir dan pilihan Dikirim / Tidak dikirim pekan ini. Pilihan diubah lewat server action
 // dengan hak `finalisasi` (diperiksa di server); admin, viewer, dan operator tanpa hak itu hanya melihat. Toko Tidak dikirim
 // pekan ini diberi penanda di ringkasan per toko dan kepala toko, tidak menampilkan form finalisasi, tetapi kebutuhan, stok,
-// dan jumlah kirimnya tetap tampil dan stok tetap bisa diisi. Contoh BXC: dua mingguan Rabu (H−1), jangkar 2026-10-14
-// (tanggal kirim rutin sebelum T135), draft Rabu 28-10-2026.
+// dan jumlah kirimnya tetap tampil dan stok tetap bisa diisi. Contoh BXC: dua mingguan Rabu (H−1), tanpa tanggal jangkar
+// (T135: setiap Rabu tanggal kirim rutin), draft Rabu 28-10-2026.
 
 const RABU_28 = parseTanggalBisnis("2026-10-28");
 
@@ -54,7 +54,7 @@ beforeAll(async () => {
   ({ toko: bxc, kodeProduk } = await siapkanTokoSmbUji({ idGudang: gudang.id, idAdmin }));
   await db
     .update(jadwalToko)
-    .set({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: "2026-10-14" })
+    .set({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }] })
     .where(eq(jadwalToko.tokoId, bxc.id));
   tokoMingguan = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: tokoMingguan.id, gudangId: gudang.id });
@@ -79,11 +79,11 @@ async function masukOperator(hakTindakan: HakTindakan[], idGudang = gudang.id) {
 }
 
 /** Draft Rabu 28-10-2026 dengan toko `tokoId` dibuka. */
-const bukaToko = async (tokoId = bxc.id) =>
+const bukaToko = async (tokoId = bxc.id, tambahan: Record<string, string> = {}) =>
   renderToStaticMarkup(
     await HalamanPengirimanGudang({
       params: Promise.resolve({ id: String(gudang.id) }),
-      searchParams: Promise.resolve({ tanggal: RABU_28, toko: String(tokoId) }),
+      searchParams: Promise.resolve({ tanggal: RABU_28, toko: String(tokoId), ...tambahan }),
     }),
   );
 
@@ -154,6 +154,24 @@ describe("draft: kirim terakhir dan pilihan Dikirim pekan ini", () => {
       expect(html).not.toContain('data-pilihan-dikirim="');
       expect(ringkasan(html, bxc.id)).toContain("data-tidak-dikirim-pekan-ini");
     }
+  });
+});
+
+// T135 — PRD A5 ▶ Revisi 2026-10-19 (Cakupan): teks cakupan toko dua mingguan di draft dan rincian baris menyebut dua
+// minggu; toko pola lain tetap "sampai sebelum kiriman berikutnya".
+describe("draft: teks cakupan toko dua mingguan", () => {
+  const teksTerbaca = (html: string) => html.replace(/<button[^>]*>.*?<\/button>/g, "").replace(/<[^>]+>/g, "");
+
+  it("BXC: Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu) di kepala toko dan rincian baris; toko mingguan tidak berubah", async () => {
+    await masukOperator(["finalisasi", "input-stok"]);
+    const html = await bukaToko(bxc.id, { rincian: `${bxc.id}|${kodeProduk}` });
+    expect(html).toMatch(new RegExp(`data-draft-toko="${bxc.id}".*?data-teks-cakupan="Cakupan 15 hari: persiapan 1 hari \\+ 14 hari \\(dua minggu\\)"`));
+    const rincian = new RegExp(`<section[^>]*data-rincian-baris="${bxc.id}\\|${kodeProduk}".*?</section>`).exec(html)?.[0] ?? "";
+    expect(teksTerbaca(rincian)).toContain("Selasa, 27-10-2026 – Selasa, 10-11-2026 · Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)");
+
+    expect(await bukaToko(tokoMingguan.id)).toMatch(
+      new RegExp(`data-draft-toko="${tokoMingguan.id}".*?data-teks-cakupan="Cakupan 8 hari: persiapan 1 hari \\+ 7 hari sampai sebelum kiriman berikutnya"`),
+    );
   });
 });
 

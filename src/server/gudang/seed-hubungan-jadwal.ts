@@ -15,19 +15,22 @@ type BarisJadwalAwal = { gudang: string; toko: string } & MasukanJadwal;
 const H1 = "H-1" as const;
 
 const mingguan = (hari: MasukanJadwal["hariKirim"][number]["hari"], persiapan: MasukanJadwal["hariKirim"][number]["persiapan"]) =>
-  ({ pola: "mingguan", hariKirim: [{ hari, persiapan }], tanggalJangkar: null }) as const;
+  ({ pola: "mingguan", hariKirim: [{ hari, persiapan }] }) as const;
 
-/** Tabel PRD A5 ▶ Keputusan (2026-10-12, UAT): 20 toko. PMS, PMJ, QUEEN, MKS, DPM tetap terbuka (OD-12). */
+/**
+ * Tabel PRD A5 ▶ Keputusan (2026-10-12, UAT): 20 toko. PMS, PMJ, QUEEN, MKS, DPM tetap terbuka (OD-12). BXC dan CCM dua
+ * mingguan tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19).
+ */
 const JADWAL_AWAL: readonly BarisJadwalAwal[] = [
-  { gudang: "Gudang Cibubur", toko: "SMB", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }], tanggalJangkar: null },
-  { gudang: "Gudang Cibubur", toko: "BOTANI", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }], tanggalJangkar: null },
-  { gudang: "Gudang Cibubur", toko: "MKG", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }], tanggalJangkar: null },
-  { gudang: "Gudang Cibubur", toko: "KOKAS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }], tanggalJangkar: null },
-  { gudang: "Gudang Cibubur", toko: "SMS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }], tanggalJangkar: null },
+  { gudang: "Gudang Cibubur", toko: "SMB", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }] },
+  { gudang: "Gudang Cibubur", toko: "BOTANI", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }] },
+  { gudang: "Gudang Cibubur", toko: "MKG", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
+  { gudang: "Gudang Cibubur", toko: "KOKAS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
+  { gudang: "Gudang Cibubur", toko: "SMS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
   { gudang: "Gudang Cibubur", toko: "ALSUT", ...mingguan("Selasa", H1) },
-  { gudang: "Gudang Cibubur", toko: "BXC", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: H1 }], tanggalJangkar: "2026-10-14" },
+  { gudang: "Gudang Cibubur", toko: "BXC", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: H1 }] },
   { gudang: "Gudang Cibubur", toko: "KARAWACI", ...mingguan("Rabu", H1) },
-  { gudang: "Gudang Cibubur", toko: "CCM", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: H1 }], tanggalJangkar: "2026-10-21" },
+  { gudang: "Gudang Cibubur", toko: "CCM", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: H1 }] },
   { gudang: "Gudang Cibubur", toko: "BSD", ...mingguan("Rabu", H1) },
   { gudang: "Gudang Cibubur", toko: "DELTAMAS", ...mingguan("Kamis", H1) },
   { gudang: "Gudang Cibubur", toko: "PMB", ...mingguan("Kamis", "H-2") },
@@ -36,8 +39,8 @@ const JADWAL_AWAL: readonly BarisJadwalAwal[] = [
   { gudang: "Gudang Cibubur", toko: "SENTUL", ...mingguan("Sabtu", H1) },
   { gudang: "Gudang Cibubur", toko: "LMK", ...mingguan("Sabtu", H1) },
   { gudang: "Gudang Bali", toko: "DMB", ...mingguan("Senin", H1) },
-  { gudang: "Gudang Bali", toko: "LWB", pola: "3x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Rabu", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }], tanggalJangkar: null },
-  { gudang: "Gudang Bandung", toko: "PASKAL", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }], tanggalJangkar: null },
+  { gudang: "Gudang Bali", toko: "LWB", pola: "3x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Rabu", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
+  { gudang: "Gudang Bandung", toko: "PASKAL", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
   { gudang: "Gudang Bandung", toko: "PVJ", ...mingguan("Selasa", H1) },
 ];
 
@@ -102,7 +105,6 @@ export async function seedHubunganJadwalAwal(): Promise<HasilSeedHubunganJadwal>
           tokoId,
           pola: hasil.jadwal.pola,
           hariKirim: [...hasil.jadwal.hariKirim],
-          tanggalJangkar: hasil.jadwal.tanggalJangkar,
           dibuatOleh: idAdmin,
         });
         jadwalDibuat += 1;

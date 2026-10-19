@@ -129,7 +129,7 @@ function DasarPerhitungan({ rencana }: { rencana: RincianRencanaFinal }) {
             )}
             <dt className="text-muted-foreground">Dipakai untuk tanggal kirim ini</dt>
             <dd>
-              <TeksCakupan persiapanHari={jadwal.persiapanHari} panjangCakupan={jadwal.panjangCakupan} />
+              <TeksCakupan persiapanHari={jadwal.persiapanHari} panjangCakupan={jadwal.panjangCakupan} polaJadwal={jadwal.pola} />
             </dd>
             <dt className="text-muted-foreground">Versi jadwal</dt>
             <dd>{`#${jadwal.versi}`}</dd>
@@ -225,6 +225,7 @@ function PanelRincianBaris({ rencana, terbuka }: { rencana: RincianRencanaFinal;
   const toko = {
     id: rencana.toko.id,
     nama: rencana.toko.nama,
+    polaJadwal: rencana.jadwal.pola,
     persiapanHari: rencana.jadwal.persiapanHari,
     panjangCakupan: rencana.jadwal.panjangCakupan,
     cakupan: rencana.kalender.cakupan,

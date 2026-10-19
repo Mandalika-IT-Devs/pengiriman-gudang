@@ -68,7 +68,6 @@ const pengaturan = {
     { hari: "Kamis", persiapan: "H" },
     { hari: "Senin", persiapan: "H-2" },
   ],
-  tanggalJangkar: null,
 } as const;
 const hariKirimTersimpan = [
   { hari: "Senin", persiapanHari: 2 },
@@ -85,7 +84,7 @@ describe("admin mengatur jadwal tetap", () => {
       const t = await tokoDiGudang(idGudang);
       const admin = await masukAdmin();
 
-      await expect(aturJadwalTetapToko({ idGudang, idToko: t.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }], tanggalJangkar: null })).resolves.toEqual({
+      await expect(aturJadwalTetapToko({ idGudang, idToko: t.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] })).resolves.toEqual({
         keadaan: "berhasil",
       });
       expect(kepala.dimuatUlang).toEqual([`/admin/jadwal-toko/${idGudang}`, `/pengiriman-gudang/${idGudang}`, `/usulan-jadwal/${idGudang}`, "/admin/jadwal"]);
@@ -105,7 +104,6 @@ describe("admin mengatur jadwal tetap", () => {
           id: baru.id,
           pola: "2x-seminggu",
           hariKirim: hariKirimTersimpan,
-          tanggalJangkar: null,
           diaturOleh: "Uji admin",
           diaturPada: baru.dibuatPada,
           berakhir: null,
@@ -114,7 +112,6 @@ describe("admin mengatur jadwal tetap", () => {
           id: lama.id,
           pola: "mingguan",
           hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
-          tanggalJangkar: null,
           diaturOleh: "Uji admin",
           diaturPada: lama.dibuatPada,
           berakhir: { jenis: "diganti", oleh: "Uji admin", pada: baru.dibuatPada },
@@ -136,9 +133,62 @@ describe("admin mengatur jadwal tetap", () => {
   it("aturan jadwal tidak valid → gagal dengan pesan domain", async () => {
     const t = await tokoDiGudang(cibubur);
     await masukAdmin();
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, pola: "dua-mingguan", hariKirim: [] })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Pola dua mingguan membutuhkan minimal 1 hari kirim, dipilih 0.",
+    });
+    expect(await riwayatJadwal(t.id)).toEqual([]);
+  });
+
+  // T135 — PRD A5 ▶ Revisi 2026-10-19: dua mingguan tanpa tanggal jangkar.
+  it("dua mingguan Rabu (H−1) tersimpan tanpa tanggal jangkar", async () => {
+    const t = await tokoDiGudang(cibubur);
+    const admin = await masukAdmin();
     await expect(
-      aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, pola: "dua-mingguan", hariKirim: [{ hari: "Senin", persiapan: "H" }], tanggalJangkar: null }),
-    ).resolves.toEqual({ keadaan: "gagal", pesan: "Pola dua mingguan wajib memiliki tanggal jangkar." });
+      aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] }),
+    ).resolves.toEqual({ keadaan: "berhasil" });
+    expect(await riwayatJadwal(t.id)).toMatchObject([
+      { status: "aktif", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: null, dibuatOleh: admin.id },
+    ]);
+  });
+
+  it("isian tanggal jangkar dari klien lama diabaikan: jadwal tetap tersimpan tanpa jangkar", async () => {
+    const t = await tokoDiGudang(cibubur);
+    await masukAdmin();
+    await expect(
+      aturJadwalTetapToko({
+        idGudang: cibubur,
+        idToko: t.id,
+        pola: "dua-mingguan",
+        hariKirim: [{ hari: "Rabu", persiapan: "H-1" }],
+        tanggalJangkar: "2026-10-14",
+      }),
+    ).resolves.toEqual({ keadaan: "berhasil" });
+    expect(await riwayatJadwal(t.id)).toMatchObject([{ status: "aktif", pola: "dua-mingguan", tanggalJangkar: null }]);
+  });
+
+  it("menyimpan ulang jadwal dua mingguan lama berjangkar dengan pola, hari kirim, dan persiapan sama → tidak membuat versi baru", async () => {
+    const t = await tokoDiGudang(cibubur);
+    const admin = await masukAdmin();
+    // Jadwal lama (seed BXC sebelum T135): dua mingguan Rabu (H−1), jangkar 2026-10-14.
+    const [lama] = await db
+      .insert(jadwalToko)
+      .values({ tokoId: t.id, pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: "2026-10-14", dibuatOleh: admin.id })
+      .returning();
+
+    await expect(
+      aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] }),
+    ).resolves.toEqual({ keadaan: "berhasil" });
+    expect(await riwayatJadwal(t.id)).toEqual([lama]);
+
+    // Persiapan berubah → versi baru tanpa jangkar; versi lama tetap menyimpan jangkarnya sebagai riwayat.
+    await expect(
+      aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-2" }] }),
+    ).resolves.toEqual({ keadaan: "berhasil" });
+    expect(await riwayatJadwal(t.id)).toMatchObject([
+      { id: lama.id, status: "nonaktif", tanggalJangkar: "2026-10-14" },
+      { status: "aktif", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 2 }], tanggalJangkar: null },
+    ]);
   });
 
   it("tersimpan tetapi gagal memuat ulang → keadaan kelima", async () => {
@@ -229,9 +279,9 @@ describe("salin jadwal admin ke beberapa toko", () => {
   it("pengaturan tidak valid → setiap toko ditolak validasi, tidak ada yang dimuat ulang", async () => {
     await masukAdmin();
     const [a, b] = [await tokoDiGudang(cibubur), await tokoDiGudang(cibubur)];
-    const pesan = "Pola dua mingguan wajib memiliki tanggal jangkar.";
+    const pesan = "Pola dua mingguan membutuhkan minimal 1 hari kirim, dipilih 0.";
     await expect(
-      salinJadwalTetap({ idGudang: cibubur, daftarIdToko: [a.id, b.id], pola: "dua-mingguan", hariKirim: [{ hari: "Senin", persiapan: "H" }], tanggalJangkar: null }),
+      salinJadwalTetap({ idGudang: cibubur, daftarIdToko: [a.id, b.id], pola: "dua-mingguan", hariKirim: [] }),
     ).resolves.toEqual({
       keadaan: "berhasil",
       hasil: [
@@ -290,7 +340,6 @@ describe("pembatalan otomatis pengiriman di luar jadwal", () => {
       { hari: "Senin", persiapan: "H" },
       { hari: "Kamis", persiapan: "H-1" },
     ],
-    tanggalJangkar: null,
   } as const;
 
   async function tokoBotani() {

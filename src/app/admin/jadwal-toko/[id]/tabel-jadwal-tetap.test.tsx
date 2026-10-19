@@ -18,7 +18,6 @@ import {
   pasangUntukUji,
   pilihDiDialogKonfirmasi,
 } from "@/components/ui/uji-bantu-dialog-konfirmasi";
-import { parseTanggalBisnis } from "@/domain/kalender";
 
 import { RiwayatJadwalTetap } from "./riwayat-jadwal-tetap";
 import { TabelJadwalTetap, type TokoJadwalTetap } from "./tabel-jadwal-tetap";
@@ -45,7 +44,6 @@ const botani: TokoJadwalTetap = {
       { hari: "Senin", persiapanHari: 0 },
       { hari: "Kamis", persiapanHari: 1 },
     ],
-    tanggalJangkar: null,
     diaturOleh: "Admin Uji",
     diaturPada: DIGANTI,
   },
@@ -57,7 +55,6 @@ const botani: TokoJadwalTetap = {
         { hari: "Senin", persiapanHari: 0 },
         { hari: "Kamis", persiapanHari: 1 },
       ],
-      tanggalJangkar: null,
       diaturOleh: "Admin Uji",
       diaturPada: DIGANTI,
       berakhir: null,
@@ -66,7 +63,6 @@ const botani: TokoJadwalTetap = {
       id: 30,
       pola: "dua-mingguan",
       hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
-      tanggalJangkar: parseTanggalBisnis("2026-10-14"),
       diaturOleh: "Admin Lama",
       diaturPada: DIATUR,
       berakhir: { jenis: "diganti", oleh: "Admin Uji", pada: DIGANTI },
@@ -92,8 +88,11 @@ function klik(wadah: ParentNode, selektor: string) {
 }
 
 describe("TabelJadwalTetap", () => {
-  it("tabel menampilkan pola, hari kirim + persiapan, jangkar, diatur oleh/pada, dan status toko", () => {
+  it("tabel menampilkan pola, hari kirim + persiapan, diatur oleh/pada, dan status toko; tanpa kolom tanggal jangkar", () => {
     const wadah = pasangUntukUji(<TabelJadwalTetap idGudang={2} daftarToko={[botani, tanpaJadwal]} />);
+    // T135 (PRD A5 ▶ Revisi 2026-10-19): kolom "Tanggal jangkar" dihapus.
+    expect([...wadah.querySelectorAll("thead th")].map((th) => th.textContent)).not.toContain("Tanggal jangkar");
+    expect(wadah.textContent).not.toMatch(/jangkar/i);
     const baris = wadah.querySelector('tr[data-jadwal-toko="11"]')?.textContent ?? "";
     expect(baris).toContain("BOTANI");
     expect(baris).toContain("Aktif");
@@ -138,7 +137,6 @@ describe("TabelJadwalTetap", () => {
         { hari: "Senin", persiapan: "H" },
         { hari: "Kamis", persiapan: "H-1" },
       ],
-      tanggalJangkar: null,
     });
     expect(panel()?.textContent).toContain("Berhasil disimpan");
   });
@@ -203,7 +201,6 @@ describe("TabelJadwalTetap", () => {
       daftarIdToko: [11, 12],
       pola: "mingguan",
       hariKirim: [{ hari: "Selasa", persiapan: "H" }],
-      tanggalJangkar: null,
     });
     expect(panel()?.textContent).toContain("1 dari 2 toko berhasil.");
     expect(panel()?.querySelector('[data-hasil-salin-toko="12"]')?.textContent).toContain("Ditolak");
@@ -234,7 +231,9 @@ describe("RiwayatJadwalTetap", () => {
     expect(entri[0]![1]).toContain("Dinonaktifkan 2× seminggu Senin (H), Kamis (H−1)");
     expect(entri[0]![1]).toContain("Diatur oleh Admin Uji, Rabu, 14-10-2026 pukul 09.10 WIB");
     expect(entri[0]![1]).toContain("Dinonaktifkan oleh Admin Uji, Kamis, 15-10-2026 pukul 08.00 WIB");
-    expect(entri[1]![1]).toContain("Diganti Dua mingguan Rabu (H−1) Tanggal jangkar: Rabu, 14-10-2026");
+    // T135 (PRD A5 ▶ Revisi 2026-10-19): tanggal jangkar tidak lagi ditampilkan di riwayat jadwal tetap.
+    expect(entri[1]![1]).toContain("Diganti Dua mingguan Rabu (H−1) Diatur oleh");
+    expect(html).not.toMatch(/jangkar/i);
     expect(entri[1]![1]).toContain("Diatur oleh Admin Lama, Selasa, 13-10-2026 pukul 10.05 WIB");
     expect(entri[1]![1]).toContain("Diganti oleh Admin Uji, Rabu, 14-10-2026 pukul 09.10 WIB");
     expect(html).toContain("lucide-archive");

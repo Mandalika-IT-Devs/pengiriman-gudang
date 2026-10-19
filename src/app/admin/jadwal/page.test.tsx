@@ -109,6 +109,35 @@ describe("/admin/jadwal", () => {
     expect(baris(html, ditolak.id)).not.toContain("Batalkan");
   });
 
+  // T135 — PRD A5 ▶ Revisi 2026-10-19 (Tampilan jadwal): tanggal jangkar jadwal dua mingguan lama tidak lagi ditampilkan.
+  it("jadwal tetap pembanding dua mingguan lama berjangkar tampil tanpa tanggal jangkar", async () => {
+    const t = await tokoDiBandung();
+    const operator = await buatPenggunaUji("viewer");
+    const admin = await buatPenggunaUji("admin");
+    await db.insert(jadwalToko).values({
+      tokoId: t.id,
+      pola: "dua-mingguan",
+      hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
+      tanggalJangkar: "2026-10-14",
+      dibuatOleh: admin.id,
+    });
+    await db.insert(pengirimanDiLuarJadwal).values({
+      gudangId: bandung,
+      tokoId: t.id,
+      jenis: "tambahan",
+      tanggalKirim: "2099-01-08",
+      persiapanHari: 1,
+      alasan: "permintaan mendesak",
+      diusulkanOleh: operator.id,
+    });
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const k = kartu(await buka(), t.nama);
+    expect(k).toContain("Dua mingguan: Rabu (H−1)");
+    expect(k).not.toMatch(/jangkar/i);
+    expect(k).not.toContain("14-10-2026");
+  });
+
   it("riwayat keputusan gudang nonaktif tanpa penanda Nonaktif (penanda hanya di halaman Riwayat, T128)", async () => {
     const nonaktif = await buatGudangUji({ aktif: false });
     try {

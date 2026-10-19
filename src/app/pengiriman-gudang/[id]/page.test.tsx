@@ -247,6 +247,8 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
       m[2]!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
     ]);
 
+  const tabelJadwal = (html: string) => /<table[^>]*aria-label="Jadwal aktif per toko".*?<\/table>/s.exec(html)?.[0] ?? "";
+
   const barisJadwal = (html: string, idToko: number) =>
     new RegExp(`<tr[^>]*data-jadwal-toko="${idToko}".*?</tr>`).exec(html)?.[0] ?? "";
 
@@ -264,7 +266,10 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(aktif).toContain('data-status="aktif"');
     expect(aktif).toContain("Dua mingguan");
     expect(aktif).toContain("Senin (H−2), Kamis (H)");
-    expect(aktif).toContain("Rabu, 10-06-2026");
+    // T135 (PRD A5 ▶ Revisi 2026-10-19): tanggal jangkar jadwal lama tidak lagi ditampilkan; kolomnya dihapus.
+    expect(aktif).not.toContain("10-06-2026");
+    expect(tabelJadwal(html)).toContain("Hari kirim (persiapan)");
+    expect(tabelJadwal(html)).not.toMatch(/jangkar/i);
     // T121 (DESIGN §11.6): kolom Diatur berisi tanggal singkat; waktu lengkap lewat title saat disorot.
     expect(aktif).toMatch(/Uji viewer, <time dateTime="[^"]+" title="\w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB">\w+, \d{2}-\d{2}-\d{4}<\/time>/);
     // Jadwal lama yang nonaktif (Selasa) tidak tampil sebagai jadwal aktif. Diperiksa lewat hari kirim, bukan nama hari
@@ -285,7 +290,7 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(html).not.toContain("/salin-jadwal");
   });
 
-  it("jadwal 1× sebulan tampil dengan label pola \"1× sebulan\" tanpa tanggal jangkar (T92)", async () => {
+  it("jadwal 1× sebulan tampil dengan label pola \"1× sebulan\" (T92)", async () => {
     const pembuat = await buatPenggunaUji("viewer");
     const t = await buatTokoUji();
     await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: pusat });
@@ -293,7 +298,7 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
 
     const baris = barisJadwal(await buka(pusat), t.id);
-    expect(baris).toMatch(/1× sebulan<\/td><td[^>]*>Selasa \(H−1\)<\/td><td[^>]*>—<\/td>/);
+    expect(baris).toMatch(/1× sebulan<\/td><td[^>]*>Selasa \(H−1\)<\/td>/);
   });
 
   it("jadwal dengan hari Minggu tampil dengan urutan hari Senin–Minggu (T106)", async () => {

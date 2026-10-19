@@ -545,6 +545,8 @@ describe("hitungDraftRencana", () => {
     expect(draft?.toko.find((t) => t.id === tokoTanpaVarian.id)).toEqual({
       id: tokoTanpaVarian.id,
       nama: tokoTanpaVarian.nama,
+      // Pola jadwal versi draft untuk teks cakupan (T135).
+      polaJadwal: "mingguan",
       persiapanHari: 1,
       panjangCakupan: 7,
       // Persiapan H−1: cakupan golden tanpa tanggal H−2.

@@ -20,7 +20,7 @@ describe("HasilSalinJadwal", () => {
         namaToko={namaToko}
         hasil={[
           { idToko: 1, status: "berhasil" },
-          { idToko: 2, status: "ditolak", pesan: "Pola dua mingguan wajib memiliki tanggal jangkar." },
+          { idToko: 2, status: "ditolak", pesan: "Pola dua mingguan membutuhkan minimal 1 hari kirim, dipilih 0." },
           { idToko: 4, status: "belumPasti", pesan: "Hasil belum pasti karena terjadi gangguan saat menyimpan toko ini." },
         ]}
       />,
@@ -40,7 +40,7 @@ describe("HasilSalinJadwal", () => {
     expect(ditolak).toContain("Toko Ubud");
     expect(ditolak).toContain("lucide-circle-x");
     expect(ditolak).toContain("Ditolak");
-    expect(ditolak).toContain("Pola dua mingguan wajib memiliki tanggal jangkar.");
+    expect(ditolak).toContain("Pola dua mingguan membutuhkan minimal 1 hari kirim, dipilih 0.");
 
     const belumPasti = baris(html, 4);
     expect(belumPasti).toContain("lucide-triangle-alert");

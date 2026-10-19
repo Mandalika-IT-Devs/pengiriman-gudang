@@ -34,7 +34,7 @@ type BarisRincian = Pick<
   | "masalah"
   | "rincian"
 >;
-type TokoRincian = Pick<TokoDraft, "id" | "nama" | "persiapanHari" | "panjangCakupan" | "cakupan">;
+type TokoRincian = Pick<TokoDraft, "id" | "nama" | "polaJadwal" | "persiapanHari" | "panjangCakupan" | "cakupan">;
 type DasarRincian = Pick<DraftRencana, "bulanSumber" | "ranking">;
 
 const KATEGORI: readonly KategoriDasar[] = ["Senin–Kamis", "Jumat", "Sabtu", "Minggu"];
@@ -100,7 +100,7 @@ function TanggalCakupan({
     <Bagian judul="Tanggal cakupan" bantuan="kategori" data-tahap="cakupan">
       <p className="text-muted-foreground">
         {awal && akhir ? `${formatTanggal(awal.tanggal)} – ${formatTanggal(akhir.tanggal)} · ` : null}
-        <TeksCakupan persiapanHari={toko.persiapanHari} panjangCakupan={toko.panjangCakupan} />
+        <TeksCakupan persiapanHari={toko.persiapanHari} panjangCakupan={toko.panjangCakupan} polaJadwal={toko.polaJadwal} />
       </p>
       <ul aria-label="Tanggal cakupan" className="flex flex-col gap-1">
         {cakupan.map((t) => {

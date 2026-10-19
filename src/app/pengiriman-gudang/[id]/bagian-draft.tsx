@@ -365,7 +365,7 @@ function TabelToko({
           </div>
         </div>
         <p className="text-muted-foreground">
-          <TeksCakupan persiapanHari={toko.persiapanHari} panjangCakupan={toko.panjangCakupan} />
+          <TeksCakupan persiapanHari={toko.persiapanHari} panjangCakupan={toko.panjangCakupan} polaJadwal={toko.polaJadwal} />
         </p>
         <PenandaDiLuarJadwal keterangan={toko.diLuarJadwal} />
         {/* Pilihan diubah dengan hak finalisasi, karena menentukan apakah toko ikut difinalisasi (PRD A5 ▶ Revisi 2026-10-19). */}

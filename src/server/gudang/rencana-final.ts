@@ -195,7 +195,7 @@ export async function finalisasiRencanaToko({
     }
 
     const [jadwal] = await tx
-      .select({ pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim, tanggalJangkar: jadwalToko.tanggalJangkar })
+      .select({ pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim })
       .from(jadwalToko)
       .where(eq(jadwalToko.id, tokoDraft.versiJadwal));
     const [ranking] = await tx
@@ -259,7 +259,8 @@ export async function finalisasiRencanaToko({
         bulanRanking: ranking.bulanRanking,
         versiRanking: ranking.versi,
         versiJadwal: tokoDraft.versiJadwal,
-        jadwal: { pola: jadwal.pola, hariKirim: jadwal.hariKirim, tanggalJangkar: jadwal.tanggalJangkar },
+        // Tanggal jangkar dihapus (PRD A5 ▶ Revisi 2026-10-19, T135): snapshot baru selalu `null`; snapshot lama tetap.
+        jadwal: { pola: jadwal.pola, hariKirim: jadwal.hariKirim, tanggalJangkar: null },
         persiapanHari: tokoDraft.persiapanHari,
         panjangCakupan: tokoDraft.panjangCakupan,
         jenisPengiriman: diLuarJadwal?.jenis ?? "rutin",

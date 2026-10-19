@@ -3,7 +3,6 @@ import { Archive, History } from "lucide-react";
 import { formatWaktu } from "@/app/admin/impor/format";
 import { BadgeStatus } from "@/components/badge-status";
 import { Badge } from "@/components/ui/badge";
-import { formatTanggal } from "@/domain/kalender";
 import type { EntriRiwayatJadwal } from "@/server/gudang/jadwal";
 import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
 
@@ -41,7 +40,6 @@ export function RiwayatJadwalTetap({ riwayat }: { riwayat: EntriRiwayatJadwal[] 
                 <span className="font-semibold">{labelPola[r.pola]}</span>
               </div>
               <span>{labelHariKirim(r.hariKirim)}</span>
-              {r.tanggalJangkar !== null ? <span>Tanggal jangkar: {formatTanggal(r.tanggalJangkar)}</span> : null}
               <span className="text-muted-foreground">
                 Diatur oleh {r.diaturOleh}, {formatWaktu(r.diaturPada)}
               </span>

@@ -3,12 +3,10 @@ import Link from "next/link";
 
 import { BadgeStatusPengiriman, teksJenis, teksTanggalKirim } from "@/app/usulan-jadwal/tampilan-pengiriman";
 import { BadgeStatus } from "@/components/badge-status";
-import { BantuanIstilah } from "@/components/bantuan-istilah";
 import { Badge } from "@/components/ui/badge";
 import { tautanTombolVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { WaktuSingkat } from "@/components/waktu-singkat";
-import { formatTanggal } from "@/domain/kalender";
 import type { TokoDenganJadwal } from "@/server/gudang/jadwal";
 import type { EntriPengirimanDiLuarJadwal } from "@/server/gudang/pengiriman-di-luar-jadwal";
 import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
@@ -60,7 +58,8 @@ function SelDiLuarJadwal({ daftar }: { daftar: EntriPengirimanDiLuarJadwal[] | u
  * setiap toko terhubung ditambah pengiriman di luar jadwal yang akan datang (menunggu dan berlaku) beserta statusnya.
  * `tautan` = pengguna punya hak `kelola-usulan-jadwal` di gudang ini: tampil tautan "Kirim di luar jadwal". Hak diperiksa
  * lagi di halaman tujuan dan server action. T118 (DESIGN §11.5): kolom Status toko menggantikan tabel "Toko terhubung"
- * yang terpisah; bagian ini bisa dibuka-tutup dan awalnya tertutup.
+ * yang terpisah; bagian ini bisa dibuka-tutup dan awalnya tertutup. T135 (PRD A5 ▶ Revisi 2026-10-19): tanpa kolom
+ * tanggal jangkar.
  */
 export function BagianJadwal({
   idGudang,
@@ -73,7 +72,7 @@ export function BagianJadwal({
   diLuarJadwalPerToko: Map<number, EntriPengirimanDiLuarJadwal[]>;
   tautan: boolean;
 }) {
-  const jumlahKolom = 8;
+  const jumlahKolom = 7;
   return (
     <KartuLipat
       idJudul="jadwal-judul"
@@ -90,12 +89,6 @@ export function BagianJadwal({
             <TableHead>Status jadwal</TableHead>
             <TableHead>Pola</TableHead>
             <TableHead>Hari kirim (persiapan)</TableHead>
-            <TableHead>
-              <span className="inline-flex items-center gap-1">
-                Tanggal jangkar
-                <BantuanIstilah istilah="tanggalJangkar" />
-              </span>
-            </TableHead>
             <TableHead>Diatur</TableHead>
             <TableHead>Di luar jadwal (akan datang)</TableHead>
           </TableRow>
@@ -119,7 +112,6 @@ export function BagianJadwal({
                 <TableCell className="whitespace-normal">
                   {t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}
                 </TableCell>
-                <TableCell>{t.jadwal?.tanggalJangkar ? formatTanggal(t.jadwal.tanggalJangkar) : "—"}</TableCell>
                 <TableCell className="whitespace-normal text-muted-foreground">
                   {t.jadwal ? (
                     <>

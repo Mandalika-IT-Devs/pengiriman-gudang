@@ -370,7 +370,6 @@ describe("tanggal kirim terdekat — pola 1× sebulan (T92, PRD A5 ▶ Keputusan
       tokoId: t.id,
       pola: "1x-sebulan",
       hariKirim: [{ hari: "Senin", persiapanHari: 1 }],
-      tanggalJangkar: null,
       dibuatOleh: admin.id,
     });
 
@@ -389,8 +388,8 @@ describe("tanggal kirim terdekat — pola 1× sebulan (T92, PRD A5 ▶ Keputusan
 
 // T134 (PRD A5 ▶ Revisi 2026-10-19): toko dua mingguan yang Tidak dikirim pekan ini tidak dihitung sebagai toko belum final
 // atau sebagai baris tertahan, di kartu "Perlu tindakan" dan langkah "Mulai di sini". Toko dua mingguan uji: hari kirim =
-// hari ini dengan jangkar hari ini (tanggal kirim rutin sebelum T135), dan rencana final 7 hari sebelumnya → nilai awal
-// Tidak dikirim pekan ini.
+// hari ini (tanggal kirim rutin setiap pekan, T135), dan rencana final 7 hari sebelumnya → nilai awal Tidak dikirim pekan
+// ini.
 describe("Dikirim pekan ini: toko Tidak dikirim pekan ini tidak dihitung belum final atau tertahan", () => {
   let duaMingguan: { id: number; versiJadwal: number };
   let operator: PenggunaMasuk;
@@ -410,7 +409,6 @@ describe("Dikirim pekan ini: toko Tidak dikirim pekan ini tidak dihitung belum f
         tokoId: t.id,
         pola: "dua-mingguan",
         hariKirim: [{ hari: hariKirim, persiapanHari: 2 }],
-        tanggalJangkar: tanggalKirimTerdekat,
         dibuatOleh: admin.id,
       })
       .returning({ id: jadwalToko.id });

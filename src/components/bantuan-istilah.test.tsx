@@ -136,3 +136,16 @@ describe("teks bantuan istilah (DESIGN §11.6)", () => {
     }
   });
 });
+
+// T135 — PRD A5 dan A6 ▶ Revisi 2026-10-19: dua mingguan selalu memakai panjang cakupan 14 hari; tanggal jangkar adalah
+// aturan lama sebelum 19-10-2026 yang hanya tersisa di rincian rencana final lama.
+describe("teks bantuan istilah pola dua mingguan (PRD A5 ▶ Revisi 2026-10-19)", () => {
+  it("Cakupan dan Panjang cakupan menyebut dua mingguan selalu 14 hari", () => {
+    expect(TEKS_BANTUAN_ISTILAH.cakupan.penjelasan).toMatch(/dua mingguan selalu 14 hari/);
+    expect(TEKS_BANTUAN_ISTILAH.panjangCakupan.penjelasan).toMatch(/dua mingguan selalu 14 hari/);
+  });
+
+  it("Tanggal jangkar dijelaskan sebagai aturan lama sebelum 19-10-2026", () => {
+    expect(TEKS_BANTUAN_ISTILAH.tanggalJangkar.penjelasan).toMatch(/^Aturan lama sebelum 19-10-2026/);
+  });
+});

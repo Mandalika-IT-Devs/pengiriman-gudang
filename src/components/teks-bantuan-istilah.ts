@@ -10,12 +10,12 @@ export const TEKS_BANTUAN_ISTILAH = {
   cakupan: {
     judul: "Cakupan",
     penjelasan:
-      "Rentang tanggal yang kebutuhannya dihitung: dari hari persiapan sampai sehari sebelum kiriman berikutnya. Kebutuhan barang adalah jumlah rata-rata sesuai kategori setiap tanggal di rentang ini.",
+      "Rentang tanggal yang kebutuhannya dihitung: dari hari persiapan sampai sehari sebelum kiriman berikutnya, kecuali toko dua mingguan selalu 14 hari sejak tanggal kirim. Kebutuhan barang adalah jumlah rata-rata sesuai kategori setiap tanggal di rentang ini.",
   },
   panjangCakupan: {
     judul: "Panjang cakupan",
     penjelasan:
-      "Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya toko ini. Misalnya 7 hari untuk kiriman sekali seminggu dan 14 hari untuk dua mingguan.",
+      "Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya toko ini, misalnya 7 hari untuk kiriman sekali seminggu. Toko dua mingguan selalu 14 hari, kapan pun kiriman berikutnya.",
   },
   dikirimPekanIni: {
     judul: "Dikirim pekan ini",
@@ -25,7 +25,7 @@ export const TEKS_BANTUAN_ISTILAH = {
   tanggalJangkar: {
     judul: "Tanggal jangkar",
     penjelasan:
-      "Tanggal yang menentukan pekan kirim untuk pola dua mingguan. Hari kirim berlaku di pekan (Senin–Minggu) yang memuat tanggal ini, lalu berulang setiap 14 hari.",
+      "Aturan lama sebelum 19-10-2026: tanggal yang menentukan pekan kirim pola dua mingguan, berulang setiap 14 hari. Sekarang toko dua mingguan bisa dikirim setiap pekan pada hari kirimnya dan operator memilih pekannya di draft.",
   },
   kategori: {
     judul: "Kategori dasar dan efektif",

@@ -24,13 +24,16 @@ import { buatGudangUji, buatTokoUji, hapusGudangUji, rencanaFinalUji } from "./u
 // gudang mana pun, jenis apa pun): Dikirim bila belum ada atau ≥ 14 hari, selain itu Tidak dikirim pekan ini. Pilihan operator
 // disimpan per gudang + toko + tanggal kirim dan tetap berlaku setelah draft dihitung ulang. Toko yang sudah final untuk
 // tanggal itu selalu Dikirim. Toko Tidak dikirim pekan ini tidak bisa difinalisasi dan tidak dihitung belum final.
-// Sebelum T135, tanggal kirim rutin dua mingguan masih mengikuti pekan jangkar. Contoh BXC: dua mingguan Rabu (H−1),
-// jangkar 2026-10-14 → tanggal kirim rutin 14-10, 28-10, 11-11-2026.
+// T135: tanggal kirim rutin dua mingguan = setiap tanggal yang jatuh pada hari kirimnya, tanpa tanggal jangkar. Contoh BXC:
+// dua mingguan Rabu (H−1) → setiap Rabu (21-10, 28-10, 04-11, 11-11-2026) adalah tanggal kirim rutin.
 
 const t = parseTanggalBisnis;
 const RABU_21 = t("2026-10-21");
 const RABU_28 = t("2026-10-28");
+const RABU_04_11 = t("2026-11-04");
 const RABU_11_11 = t("2026-11-11");
+/** Bukan hari kirim BXC. */
+const SELASA_27 = t("2026-10-27");
 /** "Hari ini" untuk tanggal kirim terdekat: Kamis sebelum Rabu 28-10. */
 const KAMIS_22 = t("2026-10-22");
 
@@ -66,7 +69,7 @@ beforeAll(async () => {
   ({ toko: bxc, kodeProduk } = await siapkanTokoSmbUji({ idGudang: gudang.id, idAdmin }));
   await db
     .update(jadwalToko)
-    .set({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], tanggalJangkar: "2026-10-14" })
+    .set({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }] })
     .where(eq(jadwalToko.tokoId, bxc.id));
   tokoMingguan = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: tokoMingguan.id, gudangId: gudang.id });
@@ -84,9 +87,15 @@ describe("nilai awal dari kirim terakhir", () => {
     expect(await keadaan(RABU_28)).toEqual({ dikirim: true, kirimTerakhir: null, dipilih: null, sudahFinal: false });
   });
 
+  it("setiap Rabu adalah tanggal kirim rutin BXC dengan pilihan, juga pekan yang dulu bukan pekan jangkar (21-10, 04-11-2026)", async () => {
+    for (const tanggal of [RABU_21, RABU_04_11]) {
+      expect(await keadaan(tanggal)).toEqual({ dikirim: true, kirimTerakhir: null, dipilih: null, sudahFinal: false });
+    }
+  });
+
   it("toko pola lain dan tanggal yang bukan tanggal kirim rutin tidak punya pilihan", async () => {
     expect((await bacaDikirimPekanIni(gudang.id, RABU_28)).has(tokoMingguan.id)).toBe(false);
-    expect(await keadaan(RABU_21)).toBeUndefined();
+    expect(await keadaan(SELASA_27)).toBeUndefined();
   });
 
   it("draft menampilkan keadaan pilihan toko dua mingguan; toko pola lain tanpa pilihan", async () => {
@@ -148,7 +157,7 @@ describe("pilihan operator", () => {
 
   it("ditolak untuk toko pola lain dan tanggal yang bukan tanggal kirim rutin", async () => {
     expect(await pilih(RABU_28, false, tokoMingguan.id)).toEqual({ keadaan: "gagal", pesan: PESAN_BUKAN_DUA_MINGGUAN_RUTIN });
-    expect(await pilih(RABU_21, false)).toEqual({ keadaan: "gagal", pesan: PESAN_BUKAN_DUA_MINGGUAN_RUTIN });
+    expect(await pilih(SELASA_27, false)).toEqual({ keadaan: "gagal", pesan: PESAN_BUKAN_DUA_MINGGUAN_RUTIN });
     expect((await bacaDikirimPekanIni(gudang.id, RABU_28)).has(tokoMingguan.id)).toBe(false);
   });
 

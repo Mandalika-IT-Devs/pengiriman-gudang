@@ -3,7 +3,8 @@ import { z } from "zod";
 import { daftarHariKirim, daftarPersiapan, daftarPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 // Skema isian jadwal satu toko (T55) yang dipakai server action operator (`aksi.ts`) dan admin (`/admin/jadwal-toko`,
-// T112). Aturan jadwal sendiri divalidasi domain (`periksaJadwal`, T54).
+// T112). Aturan jadwal sendiri divalidasi domain (`periksaJadwal`, T54). Tanpa tanggal jangkar (PRD A5 ▶ Revisi
+// 2026-10-19, T135); isian lain di luar skema dibuang.
 
 export const skemaToko = z.object({
   idGudang: z.number().int(),
@@ -19,7 +20,6 @@ export const isianJadwal = {
     }),
     { error: "Pilih hari kirim." },
   ),
-  tanggalJangkar: z.string({ error: "Tanggal jangkar tidak valid." }).nullable(),
 };
 
 export const skemaJadwal = skemaToko.extend(isianJadwal);

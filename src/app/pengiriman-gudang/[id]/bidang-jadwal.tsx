@@ -3,7 +3,6 @@
 import { useId, type ReactNode } from "react";
 
 import { kelasChip } from "@/app/ringkasan/pilihan-ringkasan";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   daftarHariKirim,
@@ -23,28 +22,24 @@ export type { IsianJadwal };
 export const ISIAN_KOSONG: IsianJadwal = {
   pola: "mingguan",
   hariKirim: [],
-  tanggalJangkar: null,
 };
 
 export const kelasLabel = "flex flex-col gap-2 font-semibold";
 
-/** Isian siap kirim: hari kirim urut Senin–Minggu, tanggal jangkar hanya untuk pola dua mingguan. */
+/** Isian siap kirim: hari kirim urut Senin–Minggu. */
 export function isianTerkirim(isian: IsianJadwal): IsianJadwal {
   const persiapanHari = new Map(isian.hariKirim.map((h) => [h.hari, h.persiapan]));
   const hariKirim = daftarHariKirim.flatMap((hari) => {
     const persiapan = persiapanHari.get(hari);
     return persiapan ? [{ hari, persiapan }] : [];
   });
-  return {
-    pola: isian.pola,
-    hariKirim,
-    tanggalJangkar: isian.pola === "dua-mingguan" ? isian.tanggalJangkar : null,
-  };
+  return { pola: isian.pola, hariKirim };
 }
 
 /**
- * Bidang pola, hari kirim beserta persiapannya, dan tanggal jangkar (PRD A5). Dipakai form jadwal satu toko (T55, T56)
- * dan form salin jadwal (T57). `bidangAwal` tampil di baris yang sama dengan pola (mis. pilihan toko).
+ * Bidang pola dan hari kirim beserta persiapannya (PRD A5). Dipakai form jadwal satu toko (T55, T56) dan form salin jadwal
+ * (T57). `bidangAwal` tampil di baris yang sama dengan pola (mis. pilihan toko). Tanpa tanggal jangkar; pola dua mingguan
+ * menampilkan keterangan pemilihan pekannya (PRD A5 ▶ Revisi 2026-10-19, T135).
  */
 export function BidangJadwal({
   isian,
@@ -133,18 +128,9 @@ export function BidangJadwal({
       </fieldset>
 
       {isian.pola === "dua-mingguan" ? (
-        <label className={`${kelasLabel} max-w-sm`}>
-          Tanggal jangkar
-          <Input
-            type="date"
-            value={isian.tanggalJangkar ?? ""}
-            onChange={(e) => ubah({ tanggalJangkar: e.target.value || null })}
-            disabled={nonaktif}
-          />
-          <span className="font-normal text-muted-foreground">
-            Pekan (Senin–Minggu) yang memuat tanggal ini menjadi pekan kirim, lalu berulang setiap 14 hari.
-          </span>
-        </label>
+        <p data-keterangan-dua-mingguan className="text-muted-foreground">
+          Toko dikirim pada hari kirim ini. Operator memilih pekannya di draft, biasanya setiap 2 minggu.
+        </p>
       ) : null}
     </>
   );

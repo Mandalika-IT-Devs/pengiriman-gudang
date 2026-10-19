@@ -146,13 +146,13 @@ async function buatProdukUji(statusKeluargaAroma: "belum-dipetakan" | "tanpa-aro
 }
 
 /**
- * Toko uji terhubung ke `idGudang` dengan jadwal aktif `hari` H−2 (mingguan, atau dua mingguan dengan `tanggalJangkar`);
+ * Toko uji terhubung ke `idGudang` dengan jadwal aktif `hari` H−2 (mingguan, atau dua mingguan bila `duaMingguan`);
  * mengembalikan id toko dan versi jadwalnya.
  */
 async function tokoBerjadwal(
   idGudang: number,
   hari: NamaHari,
-  { aktif = true, tanggalJangkar = null }: { aktif?: boolean; tanggalJangkar?: TanggalBisnis | null } = {},
+  { aktif = true, duaMingguan = false }: { aktif?: boolean; duaMingguan?: boolean } = {},
 ) {
   const t = await buatTokoUji({ aktif });
   await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: idGudang });
@@ -160,9 +160,8 @@ async function tokoBerjadwal(
     .insert(jadwalToko)
     .values({
       tokoId: t.id,
-      pola: tanggalJangkar === null ? "mingguan" : "dua-mingguan",
+      pola: duaMingguan ? "dua-mingguan" : "mingguan",
       hariKirim: [{ hari, persiapanHari: 2 }],
-      tanggalJangkar,
       dibuatOleh: idAdmin,
     })
     .returning({ id: jadwalToko.id });
@@ -624,10 +623,11 @@ describe("/ (beranda)", () => {
     const tokoC = await tokoBerjadwal(cibubur, hari);
     await buatRencanaFinalUji(cibubur, tokoA.id, t, versiRankingId);
     await buatRencanaFinalUji(cibubur, tokoB.id, geserHari(t, -7), versiRankingId);
-    // Tidak dihitung: toko nonaktif berjadwal pada hari itu, toko dua mingguan di pekan lain, toko yang mengirim sesudah
-    // tanggal itu, dan toko gudang lain yang belum final.
+    // Tidak dihitung: toko nonaktif berjadwal pada hari itu, toko dua mingguan yang Tidak dikirim pekan ini (kirim terakhir
+    // 7 hari sebelumnya; T134, T135), toko yang mengirim sesudah tanggal itu, dan toko gudang lain yang belum final.
     await tokoBerjadwal(cibubur, hari, { aktif: false });
-    await tokoBerjadwal(cibubur, hari, { tanggalJangkar: geserHari(t, 7) });
+    const tokoDuaMingguan = await tokoBerjadwal(cibubur, hari, { duaMingguan: true });
+    await buatRencanaFinalUji(cibubur, tokoDuaMingguan.id, geserHari(t, -7), versiRankingId);
     await tokoBerjadwal(cibubur, hariKirim(besok));
     await tokoBerjadwal(jabodetabek, hari);
 
