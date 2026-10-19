@@ -158,6 +158,19 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 - Jika hari persiapan jatuh sebelum kiriman sebelumnya sampai, tampil peringatan "Kiriman <hari, tanggal> belum sampai saat persiapan. Pastikan jumlahnya ikut dihitung di stok akhir." Peringatan ini tidak menahan finalisasi.
 - Saat pengiriman di luar jadwal mulai berlaku atau dibatalkan, draft yang terdampak bertanda "Perlu dihitung ulang" ("Yang berubah: Jadwal toko"). Tekan "Hitung ulang". Stok yang sudah diisi tetap ada. Toko yang tanggal rutinnya dipindah dikeluarkan dari draft tanggal itu, dengan keterangan "Toko … dikeluarkan dari draft karena tidak lagi mengirim pada tanggal ini menurut jadwal aktif."
 
+**Toko dua mingguan: Dikirim pekan ini.** Setelah "Buka toko", toko berpola dua mingguan pada tanggal kirim rutinnya menampilkan pilihan **"Dikirim pekan ini"** di bawah teks cakupan: "Dikirim" atau "Tidak dikirim pekan ini".
+
+- Di sampingnya tampil kirim terakhir toko itu, misalnya "Kirim terakhir: Rabu, 21-10-2026 (7 hari sebelumnya)", atau "Belum ada rencana final sebelumnya". Kirim terakhir adalah tanggal kirim rencana final terakhir toko itu sebelum tanggal draft, dari gudang mana pun dan jenis pengiriman apa pun.
+- Nilai awalnya otomatis. "Dikirim" jika belum ada rencana final sebelumnya atau kirim terakhirnya 14 hari atau lebih sebelumnya; selain itu "Tidak dikirim pekan ini". Nilai awal mengikuti rencana final terbaru, kecuali operator sudah memilih sendiri.
+- Di bawahnya tertulis asal nilainya: "Otomatis dari kirim terakhir, belum dipilih operator.", atau "Dipilih <nama> pada <tanggal>".
+- Operator yang punya hak Finalisasi di gudang itu bisa mengubahnya: pilih salah satu, lalu tekan "Simpan pilihan". Pilihan tetap berlaku walaupun draft dihitung ulang. Admin, viewer, dan operator tanpa hak Finalisasi hanya melihatnya.
+- Toko "Tidak dikirim pekan ini" diberi penanda "Tidak dikirim pekan ini" di "Ringkasan per toko" dan di kepala toko.
+  - Kebutuhan dan jumlah kirimnya tetap tampil, dan stok tetap bisa diisi.
+  - Toko itu tidak bisa difinalisasi. Di kepala toko tampil "Belum bisa difinalisasi: toko ini Tidak dikirim pekan ini. Ubah pilihan menjadi Dikirim untuk memfinalisasinya."
+  - Toko itu tidak dihitung sebagai toko yang belum final atau sebagai baris tertahan di kartu gudang Pengiriman Gudang, kartu "Perlu tindakan", dan "Mulai di sini".
+- Toko yang sudah final untuk tanggal itu selalu "Dikirim" dan pilihannya tidak bisa diubah. Pengiriman di luar jadwal toko dua mingguan tidak punya pilihan ini, karena selalu dikirim. Toko pola lain juga tidak.
+- Untuk sementara, tanggal kirim rutin toko dua mingguan masih mengikuti pekan tanggal jangkar di jadwal tetapnya, jadi pilihan ini hanya muncul di pekan itu. Contoh: BXC (Rabu, jangkar 14-10-2026) pada Rabu 14-10, 28-10, dan 11-11-2026.
+
 **Mengisi stok.** Tekan "Buka toko" di "Ringkasan per toko".
 
 - Kepala toko tetap terlihat saat tabel digulir. Isinya nama toko, status, jumlah baris tertahan, dan tombol Finalisasi (atau alasan belum bisa difinalisasi).
@@ -179,6 +192,7 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 **Finalisasi dan ekspor.**
 
 - Setelah tidak ada baris tertahan, tekan "Finalisasi rencana". Dialog konfirmasi meringkas toko, tanggal kirim, jumlah varian, total jumlah kirim, dan peringatan yang masih tampil.
+- Toko dua mingguan yang "Tidak dikirim pekan ini" tidak punya tombol finalisasi. Ubah pilihannya menjadi "Dikirim" lebih dulu (lihat "Toko dua mingguan: Dikirim pekan ini" di atas).
 - Finalisasi ulang membutuhkan alasan dan menghasilkan versi baru. Versi lama tetap ada di menu **Riwayat**, tab "Rencana final".
 - Finalisasi hanya menyimpan rencana kebutuhan barang, bukan konfirmasi pengiriman fisik.
 - "Ekspor (.xlsx)" tersedia di rencana final bagi operator yang punya hak Ekspor di gudang rencana itu.

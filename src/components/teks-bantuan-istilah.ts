@@ -17,6 +17,11 @@ export const TEKS_BANTUAN_ISTILAH = {
     penjelasan:
       "Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya toko ini. Misalnya 7 hari untuk kiriman sekali seminggu dan 14 hari untuk dua mingguan.",
   },
+  dikirimPekanIni: {
+    judul: "Dikirim pekan ini",
+    penjelasan:
+      "Pilihan untuk toko dua mingguan pada tanggal kirim rutinnya: nilai awalnya Dikirim jika kirim terakhir 14 hari atau lebih sebelumnya atau belum ada, dan operator yang berhak finalisasi boleh mengubahnya. Toko yang Tidak dikirim pekan ini tidak bisa difinalisasi dan tidak dihitung belum final.",
+  },
   tanggalJangkar: {
     judul: "Tanggal jangkar",
     penjelasan:

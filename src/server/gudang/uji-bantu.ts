@@ -10,6 +10,7 @@ import {
   pengirimanDiLuarJadwal,
   penugasanOperator,
   periodeSumberGudang,
+  pilihanDikirimPekanIni,
   rencanaFinal,
   toko,
   versiRanking,
@@ -61,6 +62,7 @@ export async function hapusGudangUji(...id: number[]) {
       await tx.delete(barisRencanaFinal).where(inArray(barisRencanaFinal.rencanaFinalId, rencana.map((r) => r.id)));
     }
     await tx.delete(rencanaFinal).where(inArray(rencanaFinal.gudangId, id));
+    await tx.delete(pilihanDikirimPekanIni).where(inArray(pilihanDikirimPekanIni.gudangId, id));
     await tx.delete(pengirimanDiLuarJadwal).where(inArray(pengirimanDiLuarJadwal.gudangId, id));
     await tx.delete(periodeSumberGudang).where(inArray(periodeSumberGudang.gudangId, id));
     await tx.delete(penugasanOperator).where(inArray(penugasanOperator.gudangId, id));

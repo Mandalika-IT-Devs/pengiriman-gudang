@@ -312,6 +312,17 @@ export function tanggalKirimMenurutToko<P extends PengirimanDiLuarJadwalBerlaku>
 }
 
 /**
+ * Apakah toko punya pilihan "Dikirim pekan ini" pada `tanggal` (PRD A5 ▶ Revisi 2026-10-19): jadwal tetapnya dua mingguan
+ * dan `tanggal` adalah tanggal kirim rutinnya (tidak dipindah). Pengiriman di luar jadwal tidak punya pilihan karena
+ * selalu dikirim; pola lain juga tidak.
+ */
+export function punyaPilihanDikirimPekanIni(toko: JadwalKirimToko, tanggal: TanggalBisnis): boolean {
+  if (toko.jadwal?.pola !== "dua-mingguan") return false;
+  const pengiriman = pengirimanTokoPada(toko, tanggal);
+  return pengiriman !== null && pengiriman.diLuarJadwal === null;
+}
+
+/**
  * Peringatan "kiriman sebelumnya belum sampai" (PRD A6 ▶ Keputusan 2026-10-12 dan ▶ Revisi 2026-10-13): tanggal kirim
  * toko sebelumnya bila hari persiapan pengiriman `tanggalKirim` (H−p) jatuh pada atau sebelum tanggal itu, yaitu p ≥ jarak
  * dari pengiriman sebelumnya; `null` bila tidak ada peringatan atau `tanggalKirim` bukan tanggal kirim toko.

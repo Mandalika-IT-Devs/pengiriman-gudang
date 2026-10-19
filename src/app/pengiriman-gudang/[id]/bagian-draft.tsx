@@ -1,4 +1,4 @@
-import { CircleCheck, ClipboardList, TriangleAlert } from "lucide-react";
+import { CircleCheck, CircleMinus, ClipboardList, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
 import { formatAngka, formatWaktu } from "@/app/admin/impor/format";
@@ -23,6 +23,7 @@ import type {
 import { MASALAH_TANPA_VARIAN } from "@/server/gudang/masalah-draft";
 
 import { DaftarMasalah } from "./daftar-masalah";
+import { BagianDikirimPekanIni, PenandaTidakDikirim } from "./dikirim-pekan-ini";
 import { BarisFilterKosong, BarisVarian, FilterVarian, KontrolFilterVarian, TautanTampilkanTertahan } from "./filter-varian";
 import { FormFinalisasi } from "./form-finalisasi";
 import { AjakanHitung, FormHitungDraft } from "./form-hitung-draft";
@@ -256,7 +257,8 @@ type FinalisasiDraft = { idGudang: number; tanggalKirim: TanggalBisnis } | null;
  * Finalisasi satu toko (T62) untuk operator dengan hak `finalisasi`: form finalisasi bila toko siap, atau alasan belum
  * bisa difinalisasi (dasar perhitungan toko itu berubah, toko tanpa varian, atau ada baris tertahan). Toko yang sudah
  * final mendapat form finalisasi ulang dengan alasan wajib (PRD A7 ▶ Keputusan 2026-10-11, T62); daftar versi dan
- * rincian rencana final adalah bagian riwayat (T63).
+ * rincian rencana final adalah bagian riwayat (T63). Toko Tidak dikirim pekan ini tidak mendapat form; gantinya keterangan
+ * bahwa pilihannya perlu diubah menjadi Dikirim (T134, PRD A5 ▶ Revisi 2026-10-19).
  */
 export function FinalisasiToko({
   toko,
@@ -264,11 +266,26 @@ export function FinalisasiToko({
 }: {
   toko: Pick<
     TokoDraft,
-    "id" | "nama" | "versi" | "versiFinal" | "perluDihitungUlang" | "jumlahTertahan" | "kirimanSebelumnyaBelumSampai"
+    | "id"
+    | "nama"
+    | "versi"
+    | "versiFinal"
+    | "perluDihitungUlang"
+    | "jumlahTertahan"
+    | "kirimanSebelumnyaBelumSampai"
+    | "dikirimPekanIni"
   > & { baris: Pick<BarisDraft, "kodeProduk" | "stokAkhir" | "jumlahKirim">[] };
   finalisasi: FinalisasiDraft;
 }) {
   if (finalisasi === null) return null;
+  if (toko.dikirimPekanIni?.dikirim === false) {
+    return (
+      <p data-finalisasi-tidak-dikirim={toko.id} className="flex items-start gap-2 font-semibold">
+        <CircleMinus aria-hidden strokeWidth={2} className="size-5 shrink-0 text-muted-foreground" />
+        Belum bisa difinalisasi: toko ini Tidak dikirim pekan ini. Ubah pilihan menjadi Dikirim untuk memfinalisasinya.
+      </p>
+    );
+  }
   const alasan =
     toko.perluDihitungUlang.length > 0
       ? `dasar perhitungan toko ini berubah (${toko.perluDihitungUlang.map((a) => labelAlasan[a]).join(", ")}). Hitung ulang draft lebih dulu.`
@@ -341,6 +358,7 @@ function TabelToko({
             {toko.nama}
           </h4>
           <StatusToko toko={toko} terpilih={false} />
+          {toko.dikirimPekanIni?.dikirim === false ? <PenandaTidakDikirim /> : null}
           {toko.baris.length === 0 ? null : <RingkasanTertahan jumlah={toko.jumlahTertahan} />}
           <div className="lg:ml-auto">
             <FinalisasiToko toko={toko} finalisasi={finalisasi} />
@@ -350,6 +368,8 @@ function TabelToko({
           <TeksCakupan persiapanHari={toko.persiapanHari} panjangCakupan={toko.panjangCakupan} />
         </p>
         <PenandaDiLuarJadwal keterangan={toko.diLuarJadwal} />
+        {/* Pilihan diubah dengan hak finalisasi, karena menentukan apakah toko ikut difinalisasi (PRD A5 ▶ Revisi 2026-10-19). */}
+        <BagianDikirimPekanIni toko={toko} ubah={finalisasi} />
         <PeringatanKirimanSebelumnya tanggal={toko.kirimanSebelumnyaBelumSampai} />
         {toko.baris.length === 0 ? (
           <MasalahTanpaVarian />
@@ -512,6 +532,7 @@ function TabelRingkasanToko({
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold">{t.nama}</span>
                   <PenandaDiLuarJadwal keterangan={t.diLuarJadwal} terpilih={dibuka} />
+                  {t.dikirimPekanIni?.dikirim === false ? <PenandaTidakDikirim /> : null}
                 </div>
               </TableCell>
               <TableCell angka data-jumlah-baris={t.jumlahBaris}>

@@ -23,6 +23,7 @@ import {
 } from "@/server/db/schema";
 
 import { periksaHitungUlang } from "./dasar-draft";
+import { bacaDikirimPekanIni } from "./dikirim-pekan-ini";
 import { asalBufferDari, asalJumlahKirim, versiTokoDraft } from "./draft-rencana";
 import { MASALAH_TANPA_VARIAN } from "./masalah-draft";
 import { bacaKeteranganDiLuarJadwal, type KeteranganDiLuarJadwal } from "./pengiriman-di-luar-jadwal";
@@ -33,8 +34,9 @@ import type { RincianBarisDraft, TanggalCakupanDraft } from "./rincian-draft";
 // perlu dihitung ulang untuk toko itu (T61), toko itu punya varian, dan semua baris otomatisnya tanpa masalah (PRD A6).
 // Snapshot lengkapnya (PRD A7, B9) disimpan di `rencana_final` dan `baris_rencana_final`, lalu tidak pernah diubah.
 // Finalisasi ulang membuat versi baru dengan alasan wajib; versi lama tetap utuh (PRD A7 ▶ Keputusan 2026-10-11, T62).
-// Finalisasi hanya menyatakan rencana kebutuhan barang tersimpan, bukan konfirmasi pengiriman fisik. Kewenangan diperiksa
-// pemanggil (server action).
+// Finalisasi hanya menyatakan rencana kebutuhan barang tersimpan, bukan konfirmasi pengiriman fisik. Toko dua mingguan yang
+// Tidak dikirim pekan ini tidak bisa difinalisasi (T134, PRD A5 ▶ Revisi 2026-10-19). Kewenangan diperiksa pemanggil
+// (server action).
 
 /** Draft, toko, atau isi baris toko berubah sejak halaman dibuka (mis. dihitung ulang atau stok diubah). */
 export const PESAN_DRAFT_BERUBAH_FINALISASI =
@@ -46,6 +48,10 @@ export const PESAN_PERLU_DIHITUNG_ULANG =
 export const PESAN_TANPA_VARIAN = `Rencana toko ini tidak bisa difinalisasi karena ${MASALAH_TANPA_VARIAN.toLowerCase()}.`;
 
 export const PESAN_ALASAN_FINALISASI_ULANG = "Alasan finalisasi ulang wajib diisi.";
+
+/** PRD A5 ▶ Revisi 2026-10-19: toko Tidak dikirim pekan ini tidak bisa difinalisasi sebelum pilihannya diubah. */
+export const PESAN_TIDAK_DIKIRIM_PEKAN_INI =
+  "Toko ini Tidak dikirim pekan ini, jadi belum bisa difinalisasi. Ubah pilihannya menjadi Dikirim lebih dulu.";
 
 export function pesanBarisTertahan(jumlah: number) {
   return `Rencana toko ini belum bisa difinalisasi karena ${jumlah.toLocaleString("id-ID")} baris masih tertahan. Selesaikan masalahnya lebih dulu.`;
@@ -68,9 +74,10 @@ function bulanImporUntuk(bulanSumber: readonly string[]) {
 /**
  * Memfinalisasi rencana toko `tokoId` di draft gudang `idGudang` untuk `tanggalKirim`. `versiDilihat` = versi toko draft
  * yang dilihat pengguna (`TokoDraft.versi`); draft yang sudah berubah ditolak agar yang difinalisasi sama dengan yang
- * diperiksa. Ditolak tanpa menulis apa pun bila dasar perhitungan toko itu berubah (perlu dihitung ulang), toko itu
- * tanpa varian, ada baris tertahan, atau toko itu sudah final dan `alasanFinalisasiUlang` kosong. Toko lain di draft
- * yang sama tidak terpengaruh. Toko yang sudah final mendapat versi berikutnya; versi lama tidak diubah.
+ * diperiksa. Ditolak tanpa menulis apa pun bila toko itu Tidak dikirim pekan ini (T134), dasar perhitungan toko itu berubah
+ * (perlu dihitung ulang), toko itu tanpa varian, ada baris tertahan, atau toko itu sudah final dan `alasanFinalisasiUlang`
+ * kosong. Toko lain di draft yang sama tidak terpengaruh. Toko yang sudah final mendapat versi berikutnya; versi lama tidak
+ * diubah.
  */
 export async function finalisasiRencanaToko({
   idGudang,
@@ -111,6 +118,10 @@ export async function finalisasiRencanaToko({
       .from(tokoDraftRencana)
       .where(and(eq(tokoDraftRencana.draftId, draft.id), eq(tokoDraftRencana.tokoId, tokoId)));
     if (!tokoDraft) return gagal(PESAN_DRAFT_BERUBAH_FINALISASI);
+    // Dibaca di transaksi yang sama, setelah kunci gudang yang juga dipakai saat pilihan disimpan.
+    if ((await bacaDikirimPekanIni(idGudang, tanggalKirim, tx)).get(tokoId)?.dikirim === false) {
+      return gagal(PESAN_TIDAK_DIKIRIM_PEKAN_INI);
+    }
 
     const [{ versiTerakhir }] = await tx
       .select({ versiTerakhir: max(rencanaFinal.versi) })

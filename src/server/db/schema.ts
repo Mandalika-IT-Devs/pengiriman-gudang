@@ -1250,6 +1250,35 @@ export const barisRencanaFinal = pgTable(
   ],
 );
 
+// --- Dikirim pekan ini (T134, PRD A5 ▶ Revisi 2026-10-19) ---
+
+/**
+ * Pilihan operator "Dikirim" / "Tidak dikirim pekan ini" (CONTEXT "Dikirim pekan ini") untuk toko dua mingguan pada satu
+ * tanggal kirim rutinnya, per gudang + toko + tanggal kirim, beserta siapa dan kapan memilih. Tidak ada baris = nilai
+ * awal otomatis dari kirim terakhir. Disimpan terpisah dari `toko_draft_rencana`, karena baris itu diganti setiap draft
+ * dihitung ulang, sedangkan pilihan tetap berlaku.
+ */
+export const pilihanDikirimPekanIni = pgTable(
+  "pilihan_dikirim_pekan_ini",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    gudangId: integer("gudang_id")
+      .notNull()
+      .references(() => gudang.id),
+    tokoId: integer("toko_id")
+      .notNull()
+      .references(() => toko.id),
+    tanggalKirim: date("tanggal_kirim", { mode: "string" }).notNull(),
+    /** `true` = Dikirim; `false` = Tidak dikirim pekan ini. */
+    dikirim: boolean("dikirim").notNull(),
+    dipilihOleh: text("dipilih_oleh")
+      .notNull()
+      .references(() => user.id),
+    dipilihPada: timestamp("dipilih_pada", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (tabel) => [uniqueIndex("pilihan_dikirim_pekan_ini_unik").on(tabel.gudangId, tabel.tokoId, tabel.tanggalKirim)],
+);
+
 // --- Alias nama stok (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT: unggah file stok dan alias nama stok) ---
 
 /**

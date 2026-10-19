@@ -120,6 +120,7 @@ describe("teks bantuan istilah (DESIGN §11.6)", () => {
       "persiapan",
       "cakupan",
       "panjangCakupan",
+      "dikirimPekanIni",
       "tanggalJangkar",
       "kategori",
       "klasifikasiProduk",

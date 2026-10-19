@@ -419,6 +419,7 @@ describe("hitungDraftRencana", () => {
         perluDihitungUlang: t.perluDihitungUlang,
         versiFinal: t.versiFinal,
         diLuarJadwal: t.diLuarJadwal,
+        dikirimPekanIni: t.dikirimPekanIni,
       })),
     );
     // Enam produk otomatis tertahan; toko tanpa varian punya nol baris.
@@ -552,6 +553,8 @@ describe("hitungDraftRencana", () => {
       kirimanSebelumnyaBelumSampai: null,
       // Pengiriman rutin (T114).
       diLuarJadwal: null,
+      // Pola mingguan: tanpa pilihan Dikirim pekan ini (T134).
+      dikirimPekanIni: null,
       jumlahTertahan: 0,
       baris: [],
       perluDihitungUlang: [],

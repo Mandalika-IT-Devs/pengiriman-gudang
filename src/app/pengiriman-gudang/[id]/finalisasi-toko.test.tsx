@@ -29,6 +29,7 @@ const TOKO: TokoFinalisasi = {
   perluDihitungUlang: [],
   jumlahTertahan: 0,
   kirimanSebelumnyaBelumSampai: parseTanggalBisnis("2026-06-01"),
+  dikirimPekanIni: null,
   baris: [
     { kodeProduk: "UJI-A", stokAkhir: 3, jumlahKirim: 12 },
     { kodeProduk: "UJI-B", stokAkhir: 0, jumlahKirim: 30 },

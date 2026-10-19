@@ -2,7 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { tanggalWib } from "@/app/admin/impor/format";
-import { namaHari, parseTanggalBisnis, type TanggalBisnis } from "@/domain/kalender";
+import { geserHari, namaHari, parseTanggalBisnis, type TanggalBisnis } from "@/domain/kalender";
 import { buatPenggunaUji } from "@/server/auth/uji-bantu";
 import type { PenggunaMasuk } from "@/server/auth/kewenangan";
 import { db } from "@/server/db";
@@ -14,6 +14,7 @@ import {
   jadwalToko,
   pengirimanDiLuarJadwal,
   periodeSumberGudang,
+  pilihanDikirimPekanIni,
   produk,
   rencanaFinal,
   tokoDraftRencana,
@@ -45,6 +46,7 @@ const rencanaFinalUji: number[] = [];
 
 async function bersihkanGudangUji() {
   if (rencanaFinalUji.length > 0) await db.delete(rencanaFinal).where(inArray(rencanaFinal.id, rencanaFinalUji));
+  await db.delete(pilihanDikirimPekanIni).where(inArray(pilihanDikirimPekanIni.gudangId, [cibubur, jabodetabek]));
   await db.delete(draftRencana).where(inArray(draftRencana.gudangId, [cibubur, jabodetabek]));
   await db.delete(hubunganTokoGudang).where(inArray(hubunganTokoGudang.gudangId, [cibubur, jabodetabek]));
 }
@@ -91,12 +93,12 @@ async function tokoBerjadwal(idGudang: number) {
 /**
  * Draft tersimpan langsung (tanpa menghitung) untuk toko-toko `toko`; `tertahan` = satu dari dua barisnya bermasalah.
  * `mutakhir` = dasar perhitungannya sama dengan yang berlaku; `false` = impor aktif yang dipakai tidak tercatat, yang oleh
- * `periksaHitungUlang` dianggap berubah (perlu dihitung ulang, T61).
+ * `periksaHitungUlang` dianggap berubah (perlu dihitung ulang, T61). `panjangCakupan` = L toko itu (bawaan 7, mingguan).
  */
 async function buatDraftUji(
   idGudang: number,
   tanggalKirim: TanggalBisnis,
-  toko: { id: number; versiJadwal: number; tertahan: boolean }[],
+  toko: { id: number; versiJadwal: number; tertahan: boolean; panjangCakupan?: number }[],
   { mutakhir = true }: { mutakhir?: boolean } = {},
 ) {
   const versiRankingId = await publikasikanRankingUji({ keluarga: [], idPengguna: admin.id });
@@ -121,7 +123,15 @@ async function buatDraftUji(
   for (const t of toko) {
     const [tokoDraft] = await db
       .insert(tokoDraftRencana)
-      .values({ draftId: draft.id, tokoId: t.id, versiJadwal: t.versiJadwal, persiapanHari: 2, panjangCakupan: 7, cakupan: [], perubahanKategori: [] })
+      .values({
+        draftId: draft.id,
+        tokoId: t.id,
+        versiJadwal: t.versiJadwal,
+        persiapanHari: 2,
+        panjangCakupan: t.panjangCakupan ?? 7,
+        cakupan: [],
+        perubahanKategori: [],
+      })
       .returning({ id: tokoDraftRencana.id });
     await db.insert(barisDraftRencana).values(
       [0, 1].map((i) => {
@@ -374,5 +384,68 @@ describe("tanggal kirim terdekat — pola 1× sebulan (T92, PRD A5 ▶ Keputusan
       tanggalKirim: "2026-11-02",
     });
     expect(daftarGudang(isi, cibubur).tanggalKirim).toBe("2026-11-02");
+  });
+});
+
+// T134 (PRD A5 ▶ Revisi 2026-10-19): toko dua mingguan yang Tidak dikirim pekan ini tidak dihitung sebagai toko belum final
+// atau sebagai baris tertahan, di kartu "Perlu tindakan" dan langkah "Mulai di sini". Toko dua mingguan uji: hari kirim =
+// hari ini dengan jangkar hari ini (tanggal kirim rutin sebelum T135), dan rencana final 7 hari sebelumnya → nilai awal
+// Tidak dikirim pekan ini.
+describe("Dikirim pekan ini: toko Tidak dikirim pekan ini tidak dihitung belum final atau tertahan", () => {
+  let duaMingguan: { id: number; versiJadwal: number };
+  let operator: PenggunaMasuk;
+
+  const kartuGudang = (isi: IsiBeranda) =>
+    (isi.kartu ?? []).filter((k) => k.gudang?.id === cibubur).map((k) => [k.jenis, k.jumlah]);
+
+  it("toko mingguan final, toko dua mingguan Tidak dikirim dengan baris tertahan → langkah Selesai, tanpa kartu belum final dan tertahan", async () => {
+    await db.delete(draftRencana).where(eq(draftRencana.gudangId, cibubur));
+    await db.delete(hubunganTokoGudang).where(eq(hubunganTokoGudang.gudangId, cibubur));
+    const mingguan = await tokoBerjadwal(cibubur);
+    const t = await buatTokoUji();
+    await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: cibubur });
+    const [jadwal] = await db
+      .insert(jadwalToko)
+      .values({
+        tokoId: t.id,
+        pola: "dua-mingguan",
+        hariKirim: [{ hari: hariKirim, persiapanHari: 2 }],
+        tanggalJangkar: tanggalKirimTerdekat,
+        dibuatOleh: admin.id,
+      })
+      .returning({ id: jadwalToko.id });
+    duaMingguan = { id: t.id, versiJadwal: jadwal.id };
+    const { versiRankingId } = await buatDraftUji(cibubur, tanggalKirimTerdekat, [
+      { ...mingguan, tertahan: false },
+      { ...duaMingguan, tertahan: true, panjangCakupan: 14 },
+    ]);
+    await finalkan(cibubur, mingguan.id, tanggalKirimTerdekat, versiRankingId);
+    await finalkan(cibubur, duaMingguan.id, geserHari(tanggalKirimTerdekat, -7), versiRankingId);
+    operator = await operatorUji([cibubur]);
+
+    const isi = await muatIsiBeranda(operator, hariIni);
+    expect(daftarGudang(isi, cibubur).langkah.map((l) => [l.jenis, l.selesai])).toEqual([
+      ["hitung-kebutuhan", true],
+      ["isi-stok", true],
+      ["finalisasi", true],
+    ]);
+    expect(kartuGudang(isi)).toEqual([]);
+  });
+
+  it("setelah operator memilih Dikirim → toko itu dihitung lagi: isi stok dan finalisasi Belum, kartu tertahan dan belum final 1", async () => {
+    await db
+      .insert(pilihanDikirimPekanIni)
+      .values({ gudangId: cibubur, tokoId: duaMingguan.id, tanggalKirim: tanggalKirimTerdekat, dikirim: true, dipilihOleh: operator.id });
+
+    const isi = await muatIsiBeranda(operator, hariIni);
+    expect(daftarGudang(isi, cibubur).langkah.map((l) => [l.jenis, l.selesai])).toEqual([
+      ["hitung-kebutuhan", true],
+      ["isi-stok", false],
+      ["finalisasi", false],
+    ]);
+    expect(kartuGudang(isi)).toEqual([
+      ["toko-baris-tertahan", 1],
+      ["toko-belum-final", 1],
+    ]);
   });
 });

@@ -1,4 +1,4 @@
-import { and, asc, count, countDistinct, desc, eq, gte, inArray, isNotNull, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, notInArray, sql, type SQL } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 
 import { parseTanggalBisnis, type TanggalBisnis } from "@/domain/kalender";
@@ -17,6 +17,7 @@ import {
   versiRanking,
 } from "@/server/db/schema";
 import { periksaHitungUlang } from "@/server/gudang/dasar-draft";
+import { tokoTidakDikirimPekanIni } from "@/server/gudang/dikirim-pekan-ini";
 import { tanggalKirimTerdekat, type TanggalKirimTerdekat } from "@/server/gudang/tanggal-kirim-terdekat";
 import { muatStatusCacheLaporan, type StatusCacheLaporan } from "@/server/laporan/cache";
 
@@ -37,6 +38,8 @@ import { muatStatusCacheLaporan, type StatusCacheLaporan } from "@/server/lapora
 // - toko belum difinalisasi untuk tanggal kirim terdekat = tanggal kirim terdekat gudang (tanggal paling dekat, hari ini
 //   atau sesudahnya, saat ada toko aktif gudang itu yang mengirim menurut tanggal kirim tokonya, T114), lalu toko aktif yang mengirim
 //   pada tanggal itu dan belum punya rencana final untuk tanggal itu, walaupun draft tanggal itu belum dihitung.
+// Toko dua mingguan yang Tidak dikirim pekan ini pada tanggal draft tidak dihitung sebagai toko belum final atau sebagai
+// baris tertahan, di kartu maupun langkah "Mulai di sini" (T134, PRD A5 ▶ Revisi 2026-10-19).
 // Definisi kartu operator: DESIGN §9 ▶ Keputusan (2026-10-11, T79).
 // Kewenangan: pemanggil sudah memeriksa sesi (`wajibMasuk`); kartu operator hanya untuk gudang penugasan pengguna.
 //
@@ -46,9 +49,10 @@ import { muatStatusCacheLaporan, type StatusCacheLaporan } from "@/server/lapora
 //   selesai = ada ranking berlaku (versi berstatus `dipublikasikan`); (3) periksa pemetaan selesai = tidak ada produk
 //   `belum-dipetakan`; (4) setujui pengiriman di luar jadwal selesai = tidak ada pengiriman di luar jadwal `menunggu`;
 // - operator, per gudang penugasan, untuk tanggal kirim terdekat gudang (definisi T79 di atas): (1) hitung kebutuhan
-//   selesai = draft tanggal itu ada dan tidak perlu dihitung ulang (`periksaHitungUlang`, DESIGN §11.9); (2) isi stok selesai = draft itu ada dan tidak punya baris tertahan; (3) finalisasi
-//   selesai = semua toko aktif yang mengirim tanggal itu sudah punya rencana final. Gudang tanpa tanggal kirim terdekat
-//   tidak punya langkah.
+//   selesai = draft tanggal itu ada dan tidak perlu dihitung ulang (`periksaHitungUlang`, DESIGN §11.9); (2) isi stok
+//   selesai = draft itu ada dan tidak punya baris tertahan; (3) finalisasi selesai = semua toko aktif yang mengirim
+//   tanggal itu sudah punya rencana final. Toko Tidak dikirim pekan ini tidak dihitung di (2) dan (3) (T134). Gudang
+//   tanpa tanggal kirim terdekat tidak punya langkah.
 
 /** Peran yang ditampilkan (istilah CONTEXT.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
 export type PeranTampil = "admin" | "operator" | "viewer";
@@ -166,11 +170,11 @@ async function jumlahDraftPerluDihitungUlang(idGudang: number, hariIni: TanggalB
 
 /**
  * Jumlah toko (per draft) di draft tersimpan gudang `idGudang` bertanggal kirim `hariIni` atau sesudahnya yang punya baris
- * tertahan (baris bermasalah).
+ * tertahan (baris bermasalah), tanpa toko yang Tidak dikirim pekan ini pada tanggal draft itu.
  */
 async function jumlahTokoBarisTertahan(idGudang: number, hariIni: TanggalBisnis): Promise<number> {
-  const [baris] = await db
-    .select({ jumlah: countDistinct(tokoDraftRencana.id) })
+  const daftar = await db
+    .selectDistinct({ tokoDraftId: tokoDraftRencana.id, tokoId: tokoDraftRencana.tokoId, tanggalKirim: draftRencana.tanggalKirim })
     .from(barisDraftRencana)
     .innerJoin(tokoDraftRencana, eq(tokoDraftRencana.id, barisDraftRencana.tokoDraftId))
     .innerJoin(draftRencana, eq(draftRencana.id, tokoDraftRencana.draftId))
@@ -181,7 +185,14 @@ async function jumlahTokoBarisTertahan(idGudang: number, hariIni: TanggalBisnis)
         sql`jsonb_array_length(${barisDraftRencana.masalah}) > 0`,
       ),
     );
-  return baris?.jumlah ?? 0;
+  const tidakDikirim = new Map(
+    await Promise.all(
+      [...new Set(daftar.map((d) => d.tanggalKirim))].map(
+        async (tanggal) => [tanggal, await tokoTidakDikirimPekanIni(idGudang, parseTanggalBisnis(tanggal))] as const,
+      ),
+    ),
+  );
+  return daftar.filter((d) => !tidakDikirim.get(d.tanggalKirim)?.has(d.tokoId)).length;
 }
 
 /** Gudang penugasan beserta tanggal kirim terdekatnya dan jumlah toko yang belum final untuk tanggal itu. */
@@ -252,6 +263,7 @@ async function langkahGudang({ gudang: g, belumFinal }: GudangTerdekat): Promise
   const perluDihitungUlang =
     draft !== undefined &&
     (await periksaHitungUlang({ ...draft, idDraft: draft.id, idGudang: g.id, tanggalKirim })).alasan.length > 0;
+  const tidakDikirim = [...(await tokoTidakDikirimPekanIni(g.id, tanggalKirim))];
   const barisTertahan =
     draft === undefined
       ? 0
@@ -260,7 +272,15 @@ async function langkahGudang({ gudang: g, belumFinal }: GudangTerdekat): Promise
           and(
             inArray(
               barisDraftRencana.tokoDraftId,
-              db.select({ id: tokoDraftRencana.id }).from(tokoDraftRencana).where(eq(tokoDraftRencana.draftId, draft.id)),
+              db
+                .select({ id: tokoDraftRencana.id })
+                .from(tokoDraftRencana)
+                .where(
+                  and(
+                    eq(tokoDraftRencana.draftId, draft.id),
+                    tidakDikirim.length === 0 ? undefined : notInArray(tokoDraftRencana.tokoId, tidakDikirim),
+                  ),
+                ),
             ),
             sql`jsonb_array_length(${barisDraftRencana.masalah}) > 0`,
           ),

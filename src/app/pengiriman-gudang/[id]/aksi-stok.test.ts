@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { eq, inArray } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { parseTanggalBisnis, type KategoriDasar, type NamaHari } from "@/domain/kalender";
 import { AksesDitolakError } from "@/server/auth/kewenangan";
@@ -144,6 +144,12 @@ beforeAll(async () => {
   expect(await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: parseTanggalBisnis(TANGGAL_KIRIM), idPengguna: idAdmin })).toMatchObject({
     keadaan: "berhasil",
   });
+});
+
+afterAll(async () => {
+  // Draft dan toko uji tidak tertinggal di Gudang Cibubur: berkas test lain mengharapkan gudang ini tanpa draft.
+  await db.delete(draftRencana).where(eq(draftRencana.gudangId, cibubur));
+  await db.delete(hubunganTokoGudang).where(eq(hubunganTokoGudang.tokoId, toko.id));
 });
 
 beforeEach(() => {

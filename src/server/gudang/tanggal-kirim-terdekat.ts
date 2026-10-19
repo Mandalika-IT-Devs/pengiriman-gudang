@@ -5,6 +5,7 @@ import { geserHari, type TanggalBisnis } from "@/domain/kalender";
 import { db } from "@/server/db";
 import { rencanaFinal } from "@/server/db/schema";
 
+import { tokoTidakDikirimPekanIni } from "./dikirim-pekan-ini";
 import { jadwalKirimTokoGudang } from "./pengiriman-di-luar-jadwal";
 
 // Tanggal kirim terdekat gudang (DESIGN §9 ▶ T79, §11.5; T118) dan saran tanggal kirim form "Hitung kebutuhan". Sumbernya
@@ -27,7 +28,8 @@ export type TanggalKirimTerdekat = { tanggalKirim: TanggalBisnis; jumlahBelumFin
 
 /**
  * Tanggal kirim terdekat gudang `idGudang` (hari ini atau sesudahnya) beserta jumlah toko aktif yang mengirim pada tanggal
- * itu dan belum punya rencana final untuk tanggal itu. `null` bila tidak ada toko aktif berjadwal.
+ * itu dan belum punya rencana final untuk tanggal itu. Toko dua mingguan yang Tidak dikirim pekan ini tidak dihitung
+ * belum final (T134, PRD A5 ▶ Revisi 2026-10-19). `null` bila tidak ada toko aktif berjadwal.
  */
 export async function tanggalKirimTerdekat(idGudang: number, hariIni: TanggalBisnis): Promise<TanggalKirimTerdekat | null> {
   const berjadwal = await tokoMengirim(idGudang);
@@ -39,6 +41,7 @@ export async function tanggalKirimTerdekat(idGudang: number, hariIni: TanggalBis
     .reduce<TanggalBisnis | null>((terdekat, calon) => (terdekat === null || calon < terdekat ? calon : terdekat), null);
   if (tanggalKirim === null) return null;
   const mengirim = berjadwal.filter((t) => tanggalKirimMenurutToko(t.sumber, tanggalKirim).kirim).map((t) => t.id);
+  const tidakDikirim = await tokoTidakDikirimPekanIni(idGudang, tanggalKirim);
   const sudahFinal = await db
     .selectDistinct({ tokoId: rencanaFinal.tokoId })
     .from(rencanaFinal)
@@ -49,7 +52,8 @@ export async function tanggalKirimTerdekat(idGudang: number, hariIni: TanggalBis
         inArray(rencanaFinal.tokoId, mengirim),
       ),
     );
-  return { tanggalKirim, jumlahBelumFinal: mengirim.length - sudahFinal.length };
+  const final = new Set(sudahFinal.map((f) => f.tokoId));
+  return { tanggalKirim, jumlahBelumFinal: mengirim.filter((id) => !final.has(id) && !tidakDikirim.has(id)).length };
 }
 
 /**

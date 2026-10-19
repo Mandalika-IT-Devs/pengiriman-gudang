@@ -28,6 +28,7 @@ import { rankingBerlaku } from "@/server/ranking/ranking";
 
 import { bacaJangkar } from "./jadwal";
 import { periksaHitungUlang, perubahanKategoriMengenai, tokoYangMengirim, type AlasanHitungUlang, type TokoKirim } from "./dasar-draft";
+import { bacaDikirimPekanIni, type DikirimPekanIni } from "./dikirim-pekan-ini";
 import { URUTAN_MASALAH, type MasalahBarisDraft } from "./masalah-draft";
 import { bacaKeteranganDiLuarJadwal, type KeteranganDiLuarJadwal } from "./pengiriman-di-luar-jadwal";
 import { bacaPeriodeSumberPerhitungan } from "./periode-sumber";
@@ -427,6 +428,11 @@ export type TokoDraft = {
   kirimanSebelumnyaBelumSampai: TanggalBisnis | null;
   /** Pengiriman di luar jadwal yang menjadi dasar toko ini di draft (T114); `null` = pengiriman rutin. */
   diLuarJadwal: KeteranganDiLuarJadwal | null;
+  /**
+   * Pilihan dikirim pekan ini (T134, PRD A5 ▶ Revisi 2026-10-19), dibaca saat draft dibuka; `null` = toko ini tidak punya
+   * pilihan (bukan toko dua mingguan pada tanggal kirim rutinnya menurut jadwal yang berlaku).
+   */
+  dikirimPekanIni: DikirimPekanIni | null;
   /** Ringkasan masalah: jumlah baris yang tertahan (punya masalah). */
   jumlahTertahan: number;
   baris: BarisDraft[];
@@ -493,7 +499,15 @@ export type DraftRencana = {
 /** Ringkasan satu toko di draft (T73): tanpa baris; baris dibaca hanya untuk toko yang dibuka. */
 export type RingkasanTokoDraft = Pick<
   TokoDraft,
-  "id" | "nama" | "persiapanHari" | "panjangCakupan" | "jumlahTertahan" | "perluDihitungUlang" | "versiFinal" | "diLuarJadwal"
+  | "id"
+  | "nama"
+  | "persiapanHari"
+  | "panjangCakupan"
+  | "jumlahTertahan"
+  | "perluDihitungUlang"
+  | "versiFinal"
+  | "diLuarJadwal"
+  | "dikirimPekanIni"
 > & {
   /** Jumlah baris (varian) toko ini di draft; 0 = toko tanpa varian di periode sumber. */
   jumlahBaris: number;
@@ -595,6 +609,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
     .groupBy(rencanaFinal.tokoId);
   const versiFinal = new Map(daftarFinal.map((f) => [f.tokoId, f.versi]));
   const diLuarJadwal = await bacaKeteranganDiLuarJadwal(daftarToko.flatMap((t) => t.pengirimanDiLuarJadwalId ?? []));
+  const dikirimPekanIni = await bacaDikirimPekanIni(idGudang, tanggalDraft);
 
   const keterangan: Omit<DraftRencana, "toko"> = {
     tanggalKirim: tanggalDraft,
@@ -612,6 +627,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
     perluDihitungUlangToko: (tokoId: number) => hitungUlang.perToko.get(tokoId) ?? [],
     versiFinalToko: (tokoId: number) => versiFinal.get(tokoId) ?? null,
     diLuarJadwalToko: (t: TokoTersimpan) => (t.pengirimanDiLuarJadwalId === null ? null : (diLuarJadwal.get(t.pengirimanDiLuarJadwalId) ?? null)),
+    dikirimPekanIniToko: (tokoId: number) => dikirimPekanIni.get(tokoId) ?? null,
   };
 }
 
@@ -670,6 +686,7 @@ function susunTokoDraft(kepala: KepalaDraft, t: TokoTersimpan, barisToko: BarisD
           ? null
           : parseTanggalBisnis(t.kirimanSebelumnyaBelumSampai),
     diLuarJadwal: kepala.diLuarJadwalToko(t),
+    dikirimPekanIni: kepala.dikirimPekanIniToko(t.id),
     jumlahTertahan: barisToko.filter((b) => b.masalah.length > 0).length,
     baris: barisToko,
     perluDihitungUlang: kepala.perluDihitungUlangToko(t.id),
@@ -737,6 +754,7 @@ export async function bacaRingkasanDraft(
       perluDihitungUlang: kepala.perluDihitungUlangToko(t.id),
       versiFinal: kepala.versiFinalToko(t.id),
       diLuarJadwal: kepala.diLuarJadwalToko(t),
+      dikirimPekanIni: kepala.dikirimPekanIniToko(t.id),
     })),
     tokoDibuka: dibuka === null ? null : susunTokoDraft(kepala, dibuka, barisDibuka),
   };
