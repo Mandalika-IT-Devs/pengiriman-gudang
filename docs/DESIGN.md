@@ -140,6 +140,15 @@ Hanya mode terang (ADR-0010).
 
 > ▶ Keputusan (2026-10-14, pemilik): item **"Riwayat"** (`/riwayat`, PRD A7 ▶ Keputusan 2026-10-14) adalah item tunggal tanpa kelompok, tepat di bawah Beranda, seperti Beranda. Item ini terlihat oleh semua pengguna yang sudah masuk, termasuk viewer. Viewer melihat Beranda, Riwayat, dan Laporan. Halaman Riwayat termasuk zona kerja (§1) dan memakai pola §11: tab, tabel panjang, filter dengan Terapkan, serta cari dan halaman 50 baris.
 
+> ▶ Revisi (2026-10-20, pemilik): item **"Riwayat"** hanya tampil bagi admin dan pengguna yang punya penugasan di gudang aktif (Operator), sesuai PRD A7 ▶ Revisi 2026-10-20. Viewer kembali melihat Beranda dan Laporan saja. Letak item tidak berubah.
+
+> ▶ Keputusan (2026-10-20, pemilik): nama dan peran di bawah sidebar menjadi tautan ke halaman **Akun saya** (`/akun`, PRD A3 ▶ Keputusan 2026-10-20), di atas "Keluar". Tautan ini terlihat oleh semua pengguna yang sudah masuk, di sidebar desktop dan di menu tarik layar < 1024 px. Halaman Akun saya termasuk zona kerja (§1).
+
+> ▶ Keputusan (2026-10-20, pemilik): **tombol mata pada isian kata sandi**. Setiap isian kata sandi di form Ganti kata sandi (Akun saya) dan di dialog Atur ulang kata sandi punya tombol ikon mata di sisi kanan isian, supaya pengguna bisa memeriksa ketikannya sebelum menyimpan.
+> - Isian awalnya tersembunyi. Menekan tombol menampilkan isinya, dan menekan lagi menyembunyikannya. Tombol tidak mengirim form.
+> - Ikon `Eye` tampil saat isi tersembunyi, dan `EyeOff` saat isi terlihat. Nama aksesibelnya tetap "Tampilkan kata sandi", dengan `aria-pressed` bernilai true saat isi terlihat.
+> - Setiap isian punya tombolnya sendiri. Ukuran sentuhnya 44 px (§9).
+
 > ▶ Revisi (2026-10-13 sore, pemilik, audit UI/UX): ukuran tombol `default` menjadi h-11 (44 px, sesuai §9); `sm` h-9 hanya di dalam tabel dan baris filter. Komponen baru: **Panel samping** dan **Dialog** (§11.2), serta **Dialog konfirmasi** (§11.3), dibangun dari Radix Dialog/AlertDialog lewat paket `radix-ui` yang sudah dipakai.
 
 Ikon: lucide-react, stroke 2. Ukuran 20 px di zona kerja dan 28 px di zona suasana. Ikon fitur diletakkan dalam wadah `rounded-2xl bg-primary/10`.

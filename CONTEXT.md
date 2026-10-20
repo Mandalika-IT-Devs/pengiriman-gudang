@@ -28,6 +28,14 @@ Pengguna yang hanya melihat laporan sesuai haknya.
 **Hak tindakan**:
 Izin per operator per gudang untuk satu jenis tindakan (misalnya memfinalisasi atau mengekspor).
 
+**Akun saya**:
+Halaman setiap pengguna yang sudah masuk untuk melihat akunnya dan mengganti kata sandinya sendiri.
+_Avoid_: profil, pengaturan akun
+
+**Atur ulang kata sandi**:
+Admin mengisi kata sandi baru untuk akun lain tanpa mengetahui kata sandi lamanya. Berbeda dengan mengganti kata sandi sendiri di Akun saya.
+_Avoid_: reset password, lupa kata sandi
+
 ## Impor penjualan
 
 **Sheet penjualan**:
@@ -212,5 +220,5 @@ _Avoid_: kirim, terima
 Rencana yang sudah difinalisasi. Tidak berubah oleh perubahan data berikutnya.
 
 **Riwayat**:
-Halaman catatan pengiriman yang sudah terjadi: rencana final (semua versi) dan pengiriman di luar jadwal (semua status), untuk semua gudang. Hanya untuk dibaca dan diekspor; tindakan tetap di halaman kerja.
+Halaman catatan pengiriman yang sudah terjadi: rencana final (semua versi) dan pengiriman di luar jadwal (semua status). Admin melihat semua gudang; pengguna lain hanya gudang tempat ia punya penugasan. Hanya untuk dibaca dan diekspor; tindakan tetap di halaman kerja.
 _Avoid_: arsip, log

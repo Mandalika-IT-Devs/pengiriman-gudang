@@ -123,6 +123,21 @@ Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan 
 >   - Memindah toko = lepas, lalu tambahkan ke gudang lain. Aturan satu toko satu gudang tetap (ADR-0009).
 > - **Jadwal tetap** setiap toko diatur admin; lihat A5 ▶ Revisi 2026-10-13.
 
+> ▶ Keputusan (2026-10-20, pemilik): **kata sandi**. Sebelumnya kata sandi hanya diisi admin saat membuat akun dan tidak bisa diubah siapa pun.
+> - **Ganti kata sandi sendiri.** Semua pengguna yang sudah masuk (admin, operator, viewer) bisa mengganti kata sandinya di halaman **Akun saya** (DESIGN §6 ▶ Keputusan 2026-10-20).
+>   - Isiannya: kata sandi saat ini, kata sandi baru, dan ulangi kata sandi baru. Kata sandi baru minimal 8 karakter, sama dengan aturan membuat akun.
+>   - Setelah berhasil, sesi di perangkat lain berakhir. Perangkat yang sedang dipakai tetap masuk.
+>   - Untuk akun bukan admin, halaman ini menyebut bahwa admin dapat melihat kata sandinya, supaya pengguna tidak memakai kata sandi yang juga dipakainya di tempat lain.
+> - **Admin melihat kata sandi akun bukan admin.** Di halaman Pengguna, admin bisa melihat kata sandi terbaru setiap akun bukan admin (Operator dan Viewer).
+>   - Kata sandi terbaru adalah yang terakhir diisi: saat admin membuat akun, saat admin mengatur ulang, atau saat pengguna menggantinya sendiri.
+>   - Kata sandi tersembunyi sampai admin menekan "Tampilkan".
+>   - Kata sandi yang diisi sebelum fitur ini tersimpan sebagai hash satu arah, jadi tidak bisa ditampilkan. Barisnya bertuliskan "Belum tersedia" sampai kata sandi itu diganti pengguna atau diatur ulang admin.
+>   - Kata sandi akun admin tidak pernah ditampilkan dan tidak disimpan dalam bentuk yang bisa dibaca. Jika akun bukan admin diubah menjadi admin, salinan kata sandinya dihapus.
+>   - Salinan yang bisa dibaca disimpan terenkripsi. Kuncinya tidak ikut backup database.
+>   - Pemilik memilih ini setelah risikonya dijelaskan: salinan kata sandi tersimpan di server, dan catatan seperti "Difinalisasi oleh" tidak lagi membuktikan siapa yang bertindak bila kata sandi itu dipakai orang lain.
+> - **Atur ulang kata sandi.** Admin bisa mengisi kata sandi baru untuk akun lain (bukan akun sendiri) tanpa mengetahui kata sandi lama. Akun itu keluar dari semua perangkat dan harus masuk lagi dengan kata sandi baru. Admin menyampaikan kata sandi baru kepada penggunanya.
+> - **Terakhir diubah.** Halaman Pengguna menampilkan kapan kata sandi setiap akun terakhir diisi dan oleh siapa. Untuk kata sandi yang diisi sebelum fitur ini, ditampilkan "—".
+
 ### A4. Ketika saya menentukan sumber perhitungan gudang
 
 Halaman Pengiriman Gudang harus memiliki kartu Periode sumber penjualan yang jelas dan mudah ditemukan. Pilihan bulan di sini harus mandiri dari filter Ringkasan. Mengubah bulan pada Ringkasan tidak boleh mengubah dasar perhitungan gudang secara diam-diam.
@@ -500,6 +515,14 @@ Saya ingin alur akhirnya terasa sederhana: data penjualan yang valid menghasilka
 > - **Lebar kolom** diatur agar isinya terbaca tanpa perlu diperlebar manual. Tidak ada bingkai sel atau gaya font khusus.
 > - **Ekspor Riwayat** (tab Rencana final) tidak berubah. Kolom tabel produknya tetap Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Jumlah kirim, Status, dan baris keterangan di atas tabel tetap ada.
 > - **Ekspor ke Google Sheets** (T116, belum dibuat) mengikuti isi file `.xlsx` ini.
+
+> ▶ Revisi (2026-10-20, pemilik): **siapa melihat Riwayat**. Revisi ini menggantikan butir "Siapa melihat" pada ▶ Keputusan 2026-10-14 di atas. Riwayat tidak lagi diperlakukan seperti laporan.
+> - **Admin** tetap melihat riwayat semua gudang, termasuk gudang nonaktif.
+> - **Pengguna bukan admin** hanya melihat riwayat gudang tempat ia punya penugasan. Aturannya sama dengan akses lihat halaman Pengiriman Gudang: penugasan apa pun di gudang aktif, termasuk penugasan tanpa hak tindakan (A3 ▶ Keputusan 2026-10-09). Penugasan ke gudang nonaktif tidak memberi akses (A3 ▶ Revisi 2026-10-13).
+> - Aturan ini berlaku di kedua tab (Rencana final dan Di luar jadwal), rincian rencana final, pilihan filter Gudang dan Toko, serta ekspor dari Riwayat. Rincian rencana final gudang lain yang dibuka lewat alamatnya menampilkan halaman tidak ditemukan.
+> - Pengguna tanpa penugasan di gudang aktif (Viewer) tidak melihat menu Riwayat, dan `/riwayat` menampilkan halaman tidak ditemukan. Agar seseorang bisa melihat riwayat suatu gudang tanpa bisa bertindak, admin memberinya penugasan tanpa hak tindakan.
+> - Aturan ekspor tidak berubah. Pemberitahuan "… tidak ikut diekspor" hanya menyebut gudang penugasan yang tanpa hak `ekspor`.
+> - Ringkasan dan Kalender tidak berubah: tetap semua toko (OD-07).
 
 ---
 
