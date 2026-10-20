@@ -118,6 +118,20 @@ Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah B
   - Pembatalan hanya bisa selama tanggal kirimnya belum lewat dan toko itu belum punya rencana final untuk tanggal tersebut.
   - Membatalkan jenis Pindah mengembalikan tanggal rutinnya.
 
+**Mengelola pengguna** (**Pengaturan › Pengguna**):
+
+- "Buat pengguna": nama, email, kata sandi (minimal 8 karakter), dan peran ("Admin" atau "Bukan admin"). Tidak ada pendaftaran mandiri.
+- Kolom "Kata sandi" di "Daftar pengguna":
+  - Akun bukan admin (Operator dan Viewer): kata sandi terbaru tersembunyi ("••••••••"). Tekan "Tampilkan" untuk melihatnya dan "Sembunyikan" untuk menutupnya lagi. Kata sandi terbaru adalah yang terakhir diisi, yaitu saat akun dibuat atau saat kata sandinya diatur ulang.
+  - "Belum tersedia": kata sandi diisi sebelum fitur ini, misalnya akun dari `pnpm uat`, sehingga hanya tersimpan sebagai hash satu arah. Kata sandinya tersedia setelah pengguna menggantinya atau admin mengatur ulang.
+  - "—": akun admin. Kata sandi admin tidak pernah ditampilkan dan tidak disimpan dalam bentuk yang bisa dibaca. Mengubah akun bukan admin menjadi admin menghapus salinan kata sandinya.
+  - Di bawahnya tertulis "Diubah <tanggal> oleh <nama>", yaitu kapan dan oleh siapa kata sandi terakhir diisi. Untuk kata sandi yang diisi sebelum fitur ini tertulis "—".
+  - Salinan kata sandi disimpan terenkripsi. Kuncinya tidak ikut backup database.
+- "Atur ulang kata sandi" mengisi kata sandi baru untuk akun lain, tanpa perlu mengetahui kata sandi lamanya. Tombol ini tidak ada di baris akun Anda sendiri.
+  - Isi "Kata sandi baru" dan "Ulangi kata sandi baru" (minimal 8 karakter, keduanya harus sama), lalu tekan "Simpan kata sandi". Tombol mata di kanan setiap isian menampilkan atau menyembunyikan ketikan.
+  - Akun itu keluar dari semua perangkat dan harus masuk lagi dengan kata sandi baru. Sampaikan kata sandi baru kepada penggunanya.
+- Peran diubah dengan pilihan peran lalu "Simpan peran". Aplikasi selalu harus punya minimal satu admin aktif. "Nonaktifkan" (tidak ada di baris akun sendiri) dan "Aktifkan kembali" meminta konfirmasi lebih dulu.
+
 **Penugasan** (**Pengaturan › Penugasan**): tugaskan operator ke gudang dengan hak tindakan "Usulkan pengiriman di luar jadwal", "Input stok", "Hitung kebutuhan", "Finalisasi", dan "Ekspor". Penugasan tanpa hak memberi akses hanya-baca.
 
 Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**. Menghitung, mengisi stok, dan memfinalisasi adalah pekerjaan operator.

@@ -6,6 +6,8 @@ vi.mock("./aksi", () => ({
   nonaktifkanPengguna: tiruan.nonaktifkanPengguna,
   aktifkanKembaliPengguna: tiruan.aktifkanKembaliPengguna,
   ubahPeran: vi.fn(),
+  tampilkanKataSandi: vi.fn(),
+  aturUlangKataSandi: vi.fn(),
 }));
 
 import {
@@ -28,7 +30,16 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const PENGGUNA: DataPengguna = { id: "u-1", nama: "Sari", email: "sari@contoh.id", peran: "viewer", peranTampil: "viewer", akunSendiri: false, nonaktif: false };
+const PENGGUNA: DataPengguna = {
+  id: "u-1",
+  nama: "Sari",
+  email: "sari@contoh.id",
+  peran: "viewer",
+  peranTampil: "viewer",
+  akunSendiri: false,
+  nonaktif: false,
+  kataSandi: { keadaan: "belumTersedia", diubah: null },
+};
 
 function pasang(nonaktif: boolean) {
   return pasangUntukUji(

@@ -19,6 +19,11 @@ import { Button } from "./button";
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTutup = DialogPrimitive.Close;
+/**
+ * Membungkus `DialogIsi` yang dibuka dari dalam tabel, agar dirender di `body` (hanya di klien). Untuk dialog yang
+ * isinya tidak perlu ikut terender di server (T137: Atur ulang kata sandi di halaman Pengguna).
+ */
+export const DialogPortal = DialogPrimitive.Portal;
 
 const kelasIsi = cva(
   "fixed z-50 flex flex-col border border-border/60 bg-card text-sm text-card-foreground shadow-float outline-none",

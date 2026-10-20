@@ -14,6 +14,8 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import type { Peran } from "@/server/auth/auth";
 
 import { aktifkanKembaliPengguna, nonaktifkanPengguna, ubahPeran } from "./aksi";
+import { DialogAturUlangKataSandi } from "./dialog-atur-ulang-kata-sandi";
+import { KataSandiPengguna, type KataSandiTampil } from "./kata-sandi-pengguna";
 
 /** Peran yang ditampilkan, aturan sama seperti sidebar (CONTEXT.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
 type PeranTampil = "admin" | "operator" | "viewer";
@@ -32,9 +34,14 @@ export type DataPengguna = {
   email: string;
   peran: Peran;
   peranTampil: PeranTampil;
-  /** Akun admin yang sedang masuk: tanpa tombol Nonaktifkan (server juga menolak, PRD A3 ▶ T20). */
+  /**
+   * Akun admin yang sedang masuk: tanpa tombol Nonaktifkan (server juga menolak, PRD A3 ▶ T20) dan tanpa tombol Atur ulang
+   * kata sandi (T137).
+   */
   akunSendiri: boolean;
   nonaktif: boolean;
+  /** Kolom Kata sandi (T137), tanpa kata sandinya sendiri. */
+  kataSandi: KataSandiTampil;
 };
 
 export function BarisPengguna({ pengguna }: { pengguna: DataPengguna }) {
@@ -86,32 +93,44 @@ export function BarisPengguna({ pengguna }: { pengguna: DataPengguna }) {
         )}
       </TableCell>
       <TableCell>
-        {pengguna.nonaktif ? (
-          <DialogKonfirmasi
-            judul={`Aktifkan kembali ${pengguna.nama}?`}
-            akibat="Pengguna ini bisa masuk lagi."
-            labelTindakan="Aktifkan kembali"
-            konfirmasi={() => simpan(() => aktifkanKembaliPengguna({ idPengguna: pengguna.id }))}
-            pemicu={
-              <Button size="sm" variant="outline" disabled={menunggu}>
-                Aktifkan kembali
-              </Button>
-            }
-          />
-        ) : pengguna.akunSendiri ? null : (
-          <DialogKonfirmasi
-            judul={`Nonaktifkan ${pengguna.nama}?`}
-            akibat="Pengguna ini tidak bisa masuk lagi."
-            labelTindakan="Nonaktifkan"
-            destruktif
-            konfirmasi={() => simpan(() => nonaktifkanPengguna({ idPengguna: pengguna.id }))}
-            pemicu={
-              <Button size="sm" variant="destructiveOutline" disabled={menunggu}>
-                Nonaktifkan
-              </Button>
-            }
-          />
-        )}
+        {/* Dipasang ulang saat catatan kata sandi berubah, agar kata sandi lama yang sedang ditampilkan tidak tertinggal. */}
+        <KataSandiPengguna
+          key={`${pengguna.kataSandi.keadaan}-${pengguna.kataSandi.diubah?.pada.toISOString() ?? ""}`}
+          idPengguna={pengguna.id}
+          nama={pengguna.nama}
+          kataSandi={pengguna.kataSandi}
+        />
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-start gap-2">
+          {pengguna.nonaktif ? (
+            <DialogKonfirmasi
+              judul={`Aktifkan kembali ${pengguna.nama}?`}
+              akibat="Pengguna ini bisa masuk lagi."
+              labelTindakan="Aktifkan kembali"
+              konfirmasi={() => simpan(() => aktifkanKembaliPengguna({ idPengguna: pengguna.id }))}
+              pemicu={
+                <Button size="sm" variant="outline" disabled={menunggu}>
+                  Aktifkan kembali
+                </Button>
+              }
+            />
+          ) : pengguna.akunSendiri ? null : (
+            <DialogKonfirmasi
+              judul={`Nonaktifkan ${pengguna.nama}?`}
+              akibat="Pengguna ini tidak bisa masuk lagi."
+              labelTindakan="Nonaktifkan"
+              destruktif
+              konfirmasi={() => simpan(() => nonaktifkanPengguna({ idPengguna: pengguna.id }))}
+              pemicu={
+                <Button size="sm" variant="destructiveOutline" disabled={menunggu}>
+                  Nonaktifkan
+                </Button>
+              }
+            />
+          )}
+          {pengguna.akunSendiri ? null : <DialogAturUlangKataSandi idPengguna={pengguna.id} nama={pengguna.nama} />}
+        </div>
       </TableCell>
       <TableCell className="whitespace-normal">
         {tampilan ? <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} /> : null}

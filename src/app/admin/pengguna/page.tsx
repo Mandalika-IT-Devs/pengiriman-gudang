@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { daftarStatusKataSandi } from "@/server/auth/catatan-kata-sandi";
 import { AksesDitolakError, wajibAdmin } from "@/server/auth/kewenangan";
 import { db } from "@/server/db";
 import { gudang, penugasanOperator, user } from "@/server/db/schema";
@@ -17,19 +18,22 @@ export const metadata: Metadata = {
 /**
  * Semua pengguna. Peran tampil memakai aturan sidebar (CONTEXT.md, `layout.tsx`): admin; operator = bukan admin, tetapi
  * ditugaskan ke gudang aktif; selain itu viewer (DESIGN §11.9). `idAdmin` = akun yang sedang masuk.
+ * Kolom Kata sandi (T137) hanya membawa keadaan dan catatan perubahan; kata sandinya diminta lewat "Tampilkan".
  */
 async function daftarPengguna(idAdmin: string): Promise<DataPengguna[]> {
-  const [baris, ditugaskan] = await Promise.all([
+  const [baris, ditugaskan, statusKataSandi] = await Promise.all([
     db.select().from(user).orderBy(asc(user.name), asc(user.email)),
     db
       .selectDistinct({ userId: penugasanOperator.userId })
       .from(penugasanOperator)
       .innerJoin(gudang, eq(gudang.id, penugasanOperator.gudangId))
       .where(eq(gudang.aktif, true)),
+    daftarStatusKataSandi(),
   ]);
   const punyaPenugasan = new Set(ditugaskan.map((d) => d.userId));
   return baris.map((b) => {
     const peran = b.role === "admin" ? "admin" : "viewer";
+    const kataSandi = statusKataSandi.get(b.id);
     return {
       id: b.id,
       nama: b.name,
@@ -38,6 +42,10 @@ async function daftarPengguna(idAdmin: string): Promise<DataPengguna[]> {
       peranTampil: peran === "admin" ? "admin" : punyaPenugasan.has(b.id) ? "operator" : "viewer",
       akunSendiri: b.id === idAdmin,
       nonaktif: b.banned === true,
+      kataSandi: {
+        keadaan: peran === "admin" ? "admin" : kataSandi?.tersedia ? "tersembunyi" : "belumTersedia",
+        diubah: kataSandi?.diubah ?? null,
+      },
     };
   });
 }
@@ -68,6 +76,7 @@ export default async function HalamanPengguna() {
               <TableHead>Email</TableHead>
               <TableHead>Peran</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Kata sandi</TableHead>
               <TableHead>Tindakan</TableHead>
               <TableHead>Keterangan</TableHead>
             </TableRow>

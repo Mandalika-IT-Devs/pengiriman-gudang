@@ -99,6 +99,23 @@ export const verification = pgTable(
   (tabel) => [index("verification_identifier_idx").on(tabel.identifier)],
 );
 
+/**
+ * Kata sandi yang terakhir diisi untuk satu akun (T137, PRD A3 ▶ Keputusan 2026-10-20). Hash milik Better Auth tetap di
+ * `account.password`; tabel ini hanya menyimpan salinan terenkripsi (kosong untuk akun admin, lihat
+ * `src/server/auth/salinan-kata-sandi.ts`), kapan kata sandi diisi, dan oleh siapa. Akun tanpa baris = kata sandi
+ * diisi sebelum fitur ini.
+ */
+export const catatanKataSandi = pgTable("catatan_kata_sandi", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  salinanTerenkripsi: text("salinan_terenkripsi"),
+  diisiPada: timestamp("diisi_pada", { withTimezone: true }).notNull().defaultNow(),
+  diisiOleh: text("diisi_oleh")
+    .notNull()
+    .references(() => user.id),
+});
+
 // --- Gudang dan toko (T21) ---
 
 /**

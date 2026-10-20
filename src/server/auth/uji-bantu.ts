@@ -23,9 +23,9 @@ export async function buatPenggunaUji(peran: Peran) {
 }
 
 /** Masuk dan kembalikan header `cookie` yang bisa dipakai sebagai header permintaan berikutnya. */
-export async function masukUji(email: string) {
+export async function masukUji(email: string, sandi = sandiUji) {
   const { headers } = await auth.api.signInEmail({
-    body: { email, password: sandiUji },
+    body: { email, password: sandi },
     returnHeaders: true,
   });
   return headers

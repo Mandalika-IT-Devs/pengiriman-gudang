@@ -13,8 +13,9 @@ export type Peran = (typeof daftarPeran)[number];
 
 // Hak plugin admin dibatasi pada yang dipakai: daftar, buat, ubah peran, nonaktifkan (ban).
 // Hak "ban" juga mencakup unban di Better Auth, dipakai untuk mengaktifkan kembali (T23).
+// Atur ulang kata sandi (T137): "set-password" mengganti hash, "revoke" mengakhiri semua sesi akun itu.
 const hakPeran = {
-  admin: defaultAc.newRole({ user: ["create", "list", "set-role", "ban"], session: [] }),
+  admin: defaultAc.newRole({ user: ["create", "list", "set-role", "ban", "set-password"], session: ["revoke"] }),
   viewer: defaultAc.newRole({ user: [], session: [] }),
 } satisfies Record<Peran, unknown>;
 
