@@ -23,7 +23,9 @@ import { GET } from "./route";
 // T129 (PRD A7 ▶ Keputusan 2026-10-14): ekspor .xlsx dari halaman Riwayat untuk tab yang dibuka dan seluruh hasil filter
 // (bukan hanya 50 baris halaman). Admin semua gudang tanpa penugasan; operator hanya baris gudang tempat ia punya hak
 // `ekspor`, dengan pemberitahuan sebelum ekspor; viewer dan operator tanpa hak `ekspor` tidak melihat tombol dan
-// ditolak (403). Kolom dan urutannya dari issue #283 / PRD.
+// ditolak (403). Kolom dan urutannya dari issue #283 / PRD. T136 (PRD A7 ▶ Revisi 2026-10-20): baris dan pemberitahuan
+// dibatasi cakupan lihat Riwayat, jadi gudang di luar penugasan operator tidak pernah disebut; viewer tidak membuka
+// Riwayat (404).
 
 const JENIS_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 const KOLOM_RENCANA_FINAL = [
@@ -398,17 +400,45 @@ describe("hak ekspor Riwayat", () => {
     expect(await buka({ toko: String(tokoX.id), gudang: String(gudangA.id) })).not.toContain("data-gudang-tidak-ikut-ekspor");
   });
 
-  it("viewer dan operator tanpa hak ekspor: tanpa tombol, route membalas 403; tanpa sesi 401", async () => {
-    for (const masuk of [
-      async () => (kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie),
-      async () => masukOperator([{ idGudang: gudangA.id, hakTindakan: ["finalisasi", "input-stok"] }]),
-    ]) {
-      await masuk();
-      expect(await buka({ toko: String(tokoX.id) })).not.toContain('data-ekspor-url="/riwayat/ekspor');
-      expect(await buka({ tab: "di-luar-jadwal", toko: String(tokoX.id) })).not.toContain('data-ekspor-url="/riwayat/ekspor');
-      expect((await ekspor({ toko: String(tokoX.id) })).status).toBe(403);
-      expect((await ekspor({ tab: "di-luar-jadwal" })).status).toBe(403);
+  it("T136: operator yang hanya ditugaskan di gudang A: file hanya baris gudang A dan pemberitahuan tidak menyebut gudang B di luar penugasannya", async () => {
+    await masukOperator([{ idGudang: gudangA.id, hakTindakan: ["ekspor"] }]);
+
+    const keduaTab: Record<string, string>[] = [{}, { tab: "di-luar-jadwal" }];
+    for (const tab of keduaTab) {
+      const html = await buka({ ...tab, toko: String(tokoX.id) });
+      expect(html).toContain('data-ekspor-url="/riwayat/ekspor');
+      expect(html).not.toContain("data-gudang-tidak-ikut-ekspor");
+      expect(html).not.toContain(gudangB.nama);
     }
+    const rencana = await baca(await ekspor({ toko: String(tokoX.id) }), "Riwayat rencana final");
+    expect(rencana.data.map((b) => [b[0], b[3], b[8]])).toEqual([
+      [gudangA.nama, 2, kode.p1],
+      [gudangA.nama, 1, kode.p1],
+      [gudangA.nama, 1, kode.p2],
+    ]);
+    expect(rencana.keterangan).not.toHaveProperty("Tidak ikut diekspor (tanpa hak ekspor)");
+    const diLuarJadwal = await baca(await ekspor({ tab: "di-luar-jadwal", toko: String(tokoX.id) }), "Riwayat di luar jadwal");
+    expect(diLuarJadwal.data).toHaveLength(JUMLAH_DITOLAK_X);
+    expect(new Set(diLuarJadwal.data.map((b) => b[0]))).toEqual(new Set([gudangA.nama]));
+    expect(diLuarJadwal.keterangan).not.toHaveProperty("Tidak ikut diekspor (tanpa hak ekspor)");
+    // `?gudang=<B>` di luar cakupan = Semua gudang (dalam cakupan): tetap hanya gudang A.
+    const gudangLain = await baca(await ekspor({ toko: String(tokoX.id), gudang: String(gudangB.id) }), "Riwayat rencana final");
+    expect(gudangLain.keterangan.Gudang).toBe("Semua gudang");
+    expect(new Set(gudangLain.data.map((b) => b[0]))).toEqual(new Set([gudangA.nama]));
+  });
+
+  it("operator tanpa hak ekspor: tanpa tombol, route membalas 403; viewer: Riwayat 404, route 403; tanpa sesi 401", async () => {
+    await masukOperator([{ idGudang: gudangA.id, hakTindakan: ["finalisasi", "input-stok"] }]);
+    expect(await buka({ toko: String(tokoX.id) })).not.toContain('data-ekspor-url="/riwayat/ekspor');
+    expect(await buka({ tab: "di-luar-jadwal", toko: String(tokoX.id) })).not.toContain('data-ekspor-url="/riwayat/ekspor');
+    expect((await ekspor({ toko: String(tokoX.id) })).status).toBe(403);
+    expect((await ekspor({ tab: "di-luar-jadwal" })).status).toBe(403);
+
+    kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
+    await expect(buka({ toko: String(tokoX.id) })).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+    expect((await ekspor({ toko: String(tokoX.id) })).status).toBe(403);
+    expect((await ekspor({ tab: "di-luar-jadwal" })).status).toBe(403);
+
     kepala.cookie = "";
     expect((await ekspor({})).status).toBe(401);
   });

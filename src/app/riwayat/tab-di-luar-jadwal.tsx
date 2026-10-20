@@ -12,24 +12,26 @@ import type { CakupanEksporRiwayat } from "./muat";
 
 /**
  * Tab "Di luar jadwal" halaman Riwayat (T128; PRD A5 ▶ Revisi 2026-10-14, A7 ▶ Keputusan 2026-10-14). Hanya-baca: semua
- * pengiriman di luar jadwal semua gudang dan semua status, terbaru di atas, dengan isian catatan aktivitas PRD A5 dan
- * kolom Gudang (gudang nonaktif diberi penanda). Tarik dan Batalkan tetap di halaman kerja. Filter `?gudang=<id>`,
- * `?toko=<id>`, rentang tanggal kirim `?dari=`/`?sampai=` (YYYY-MM-DD), cari nama toko `?cari=`, dan halaman 50 baris
- * `?halaman=` (DESIGN §11.1), semuanya bersama `?tab=`. Ekspor seluruh hasil filter sesuai `cakupanEkspor` (T129).
- * Kewenangan lihat diperiksa halaman (`wajibMasuk`).
+ * pengiriman di luar jadwal gudang dalam `cakupanGudang` (T136, PRD A7 ▶ Revisi 2026-10-20) dengan semua status,
+ * terbaru di atas, dengan isian catatan aktivitas PRD A5 dan kolom Gudang (gudang nonaktif diberi penanda). Tarik dan
+ * Batalkan tetap di halaman kerja. Filter `?gudang=<id>`, `?toko=<id>`, rentang tanggal kirim `?dari=`/`?sampai=`
+ * (YYYY-MM-DD), cari nama toko `?cari=`, dan halaman 50 baris `?halaman=` (DESIGN §11.1), semuanya bersama `?tab=`.
+ * Ekspor seluruh hasil filter sesuai `cakupanEkspor` (T129). Kewenangan lihat diperiksa halaman (`wajibAksesRiwayat`).
  */
 export async function isiTabDiLuarJadwal({
+  cakupanGudang,
   cakupanEkspor,
   parameter,
   urlHalaman,
   tab,
 }: {
+  cakupanGudang: readonly number[];
   cakupanEkspor: CakupanEksporRiwayat | null;
   parameter: ParameterUrl;
   urlHalaman: string;
   tab: string;
 }): Promise<ReactNode> {
-  const filter = await hasilFilterDiLuarJadwal(parameter);
+  const filter = await hasilFilterDiLuarJadwal(parameter, cakupanGudang);
   if (filter === null) {
     return (
       <KeadaanKosong
@@ -46,7 +48,7 @@ export async function isiTabDiLuarJadwal({
   return (
     <>
       <p className="text-muted-foreground">
-        Catatan pengiriman di luar jadwal semua gudang dan semua status, terbaru di atas. Daftar ini hanya untuk dibaca.
+        Catatan pengiriman di luar jadwal dengan semua status, terbaru di atas. Daftar ini hanya untuk dibaca.
       </p>
       <FilterRiwayat action={urlHalaman} tab={tab} gudang={pilihan.gudang} toko={pilihan.toko} terapan={terapan} />
       <EksporRiwayat cakupan={cakupanEkspor} parameter={keadaanUrl} idGudangHasil={hasil.map((e) => e.idGudang)} pilihanGudang={pilihan.gudang} />

@@ -65,13 +65,13 @@ Isi sidebar per peran (kelompok bisa dibuka-tutup):
 | Kelompok | Admin | Operator | Viewer |
 |---|---|---|---|
 | Beranda | Beranda | Beranda | Beranda |
-| Riwayat | Riwayat | Riwayat | Riwayat |
+| Riwayat | Riwayat | Riwayat | — |
 | Pekerjaan rutin | Impor penjualan, Ranking pusat, Persetujuan jadwal, Pengiriman Gudang | Pengiriman Gudang, Kirim di luar jadwal | — |
 | Laporan | Ringkasan, Kalender | Ringkasan, Kalender | Ringkasan, Kalender |
 | Data Master | Jadwal toko, Keluarga aroma, Pemetaan produk, Alias nama stok, Libur | — | — |
 | Pengaturan | Gudang, Toko, Pengguna, Penugasan | — | — |
 
-Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah Beranda. "Kirim di luar jadwal" hanya tampil bagi operator yang punya hak "Usulkan pengiriman di luar jadwal" di sedikitnya satu gudang. Operator tanpa hak tindakan apa pun tetap bisa membuka Pengiriman Gudang gudangnya, tetapi hanya-baca.
+Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah Beranda. Riwayat hanya untuk admin dan operator (pengguna yang punya penugasan di gudang aktif), sama seperti Pengiriman Gudang. "Kirim di luar jadwal" hanya tampil bagi operator yang punya hak "Usulkan pengiriman di luar jadwal" di sedikitnya satu gudang. Operator tanpa hak tindakan apa pun tetap bisa membuka Pengiriman Gudang gudangnya, tetapi hanya-baca.
 
 ### Admin
 
@@ -199,7 +199,13 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 - "Ekspor (.xlsx)" tersedia di rencana final bagi operator yang punya hak Ekspor di gudang rencana itu.
 - File ekspor langsung bisa dipakai gudang sebagai packing list. Isinya satu sheet "Rencana final": di atas ada Gudang, Tanggal kirim, Toko, Jenis pengiriman, dan Waktu finalisasi, lalu tabel Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Status, Jumlah kirim, dan Keterangan. Kolom Keterangan dibiarkan kosong untuk catatan tim gudang. Tanda "—" berarti tidak tersedia, bukan 0. Periode sumber, impor sumber, dan ranking tidak ditulis di file; lihat di rincian rencana final.
 
-**Riwayat** (menu **Riwayat**, tepat di bawah Beranda). Tab "Rencana final" berisi semua versi rencana final dari **semua gudang**, termasuk gudang nonaktif (bertanda "Nonaktif"):
+**Riwayat** (menu **Riwayat**, tepat di bawah Beranda). Isinya mengikuti penugasan:
+
+- **Admin** melihat riwayat **semua gudang**, termasuk gudang nonaktif (bertanda "Nonaktif").
+- **Operator** hanya melihat riwayat gudang yang juga bisa ia buka di Pengiriman Gudang: gudang aktif tempat ia ditugaskan, termasuk penugasan tanpa hak tindakan. Penugasan ke gudang nonaktif tidak memberi akses. Pilihan filter Gudang hanya berisi gudang itu, dan pilihan Toko hanya toko yang punya riwayat di sana. Rincian rencana final gudang lain yang dibuka lewat alamatnya menampilkan halaman tidak ditemukan.
+- Agar seseorang bisa melihat riwayat suatu gudang tanpa bisa bertindak, admin memberinya penugasan di gudang itu tanpa hak tindakan.
+
+Tab "Rencana final" berisi semua versi rencana final dari gudang yang bisa Anda lihat:
 
 - Kolom: Tanggal kirim, Gudang, Toko (dengan penanda di luar jadwal), Versi, Status (versi lama berlabel "Digantikan oleh versi n"), Difinalisasi oleh, dan Waktu finalisasi.
 - Filter Gudang, Toko, serta "Tanggal kirim dari" dan "Tanggal kirim sampai" baru berlaku setelah "Terapkan". Tanggal yang dikosongkan berarti tidak dibatasi. Ada juga "Cari toko", dan daftar dibagi per 50 baris.
@@ -216,14 +222,14 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
 - Tab "Rencana final" berisi satu baris per produk per rencana final, termasuk versi yang sudah digantikan. Kolom: Gudang, Tanggal kirim, Toko, Versi, Berlaku ("Ya" atau "Digantikan oleh versi n"), Jenis pengiriman, Difinalisasi oleh, Waktu finalisasi, Kode produk, Nama produk, Kebutuhan barang, Stok akhir, Buffer (%), Jumlah kirim, Status. Angkanya dari snapshot masing-masing rencana final.
 - Tab "Di luar jadwal" berisi satu baris per pengiriman. Kolom: Gudang, Jenis, Toko, Tanggal kirim, Persiapan, Tanggal rutin yang dipindah, Alasan, Status, Pengusul, Waktu usul, Penyetuju/penolak, Waktu keputusan, Alasan penolakan, Ditarik/dibatalkan oleh, Waktu penarikan/pembatalan, Alasan penarikan/pembatalan.
 - **Admin** mengekspor riwayat semua gudang, tanpa perlu penugasan.
-- **Operator** hanya mengekspor baris dari gudang tempat ia punya hak Ekspor. Jika hasil filter memuat gudang lain, halaman menyebutnya sebelum ekspor, misalnya "Gudang Cibubur tidak ikut diekspor karena Anda tidak punya hak ekspor di sana."
-- Viewer dan operator tanpa hak Ekspor di gudang mana pun tidak melihat tombol ini.
+- **Operator** hanya mengekspor baris dari gudang tempat ia punya hak Ekspor. Jika hasil filter memuat gudang penugasannya yang tanpa hak Ekspor, halaman menyebutnya sebelum ekspor, misalnya "Gudang Cibubur tidak ikut diekspor karena Anda tidak punya hak ekspor di sana." Gudang di luar penugasannya tidak pernah disebut, karena riwayatnya memang tidak terlihat.
+- Operator tanpa hak Ekspor di gudang mana pun tidak melihat tombol ini.
 
-Tab "Di luar jadwal" berisi semua pengiriman di luar jadwal dari **semua gudang** dengan semua status, terbaru di atas. Tab ini hanya-baca: Tarik dan Batalkan tetap di halaman Kirim di luar jadwal dan Persetujuan jadwal.
+Tab "Di luar jadwal" berisi semua pengiriman di luar jadwal dari gudang yang bisa Anda lihat (admin: semua gudang), dengan semua status, terbaru di atas. Tab ini hanya-baca: Tarik dan Batalkan tetap di halaman Kirim di luar jadwal dan Persetujuan jadwal.
 
 - Kolom: Toko, Gudang (gudang nonaktif bertanda "Nonaktif"), Status, Jenis (Tambahan, atau "Pindahan dari <hari, tanggal>"), Tanggal kirim (persiapan), Alasan, Diusulkan (siapa dan kapan), Diputuskan (penyetuju atau penolak dan kapan, atau "Langsung berlaku (Pusat)"), dan Keterangan (alasan penolakan, penarikan, atau pembatalan beserta siapa dan kapan).
 - Filter Gudang, Toko, dan rentang tanggal kirim sama dengan tab Rencana final dan baru berlaku setelah "Terapkan". Rentang tanggal memakai tanggal kirim pengiriman itu. Ada juga "Cari toko", dan daftar dibagi per 50 baris.
 
 ### Viewer
 
-Viewer melihat **Beranda**, **Riwayat**, **Ringkasan**, dan **Kalender** untuk semua toko, dan bisa mengekspor hasil Ringkasan. Di Riwayat, viewer melihat dan membuka rincian rencana final semua gudang, tetapi tidak punya tombol ekspor (baik per rencana final maupun ekspor Riwayat). Viewer juga melihat tab "Di luar jadwal". Viewer tidak melihat Pengiriman Gudang dan menu admin.
+Viewer melihat **Beranda**, **Ringkasan**, dan **Kalender** untuk semua toko, dan bisa mengekspor hasil Ringkasan. Viewer tidak melihat Riwayat, Pengiriman Gudang, dan menu admin. Membuka alamat `/riwayat` menampilkan halaman tidak ditemukan. Jika seorang viewer perlu melihat riwayat suatu gudang, admin menugaskannya ke gudang itu tanpa hak tindakan; ia lalu menjadi operator hanya-baca untuk gudang tersebut.

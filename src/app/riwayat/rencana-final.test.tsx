@@ -41,9 +41,10 @@ import AlihkanRiwayatRencanaFinal from "@/app/pengiriman-gudang/[id]/rencana-fin
 import HalamanRiwayat from "./page";
 import HalamanRincianRencanaFinal from "./rencana-final/[idRencana]/page";
 
-// T63: riwayat rencana final. T127: riwayat pindah ke halaman Riwayat (PRD A7 ▶ Keputusan 2026-10-14); semua pengguna
-// yang sudah masuk membuka daftar rencana final semua gudang (filter gudang, toko, dan rentang tanggal kirim; siapa dan
-// kapan memfinalisasi) dan rinciannya, semuanya dibaca dari snapshot (PRD A7, B9). Versi lama tetap
+// T63: riwayat rencana final. T127: riwayat pindah ke halaman Riwayat (PRD A7 ▶ Keputusan 2026-10-14): daftar rencana
+// final (filter gudang, toko, dan rentang tanggal kirim; siapa dan kapan memfinalisasi) dan rinciannya, semuanya dibaca
+// dari snapshot (PRD A7, B9). T136 (PRD A7 ▶ Revisi 2026-10-20): admin melihat semua gudang, pengguna lain hanya gudang
+// penugasannya, viewer mendapat 404. Versi lama tetap
 // tampil; versi baru ditandai "Versi N menggantikan versi N−1" (PRD A7 ▶ Keputusan 2026-10-11, T62). Zona kerja
 // (DESIGN §1), status ikon + teks (DESIGN §7). Contoh PRD A6 / golden `jumlah-kirim.json`: kebutuhan 56, stok 20, tujuh
 // besar → jumlah kirim 48 (stok target, PRD A6 ▶ Revisi 2026-10-14). T126: rencana final lama tetap dengan angka dan
@@ -533,17 +534,20 @@ describe("kewenangan riwayat rencana final (diperiksa di server)", () => {
     ).rejects.toMatchObject(keMasuk);
   });
 
-  it("operator yang hanya ditugaskan di gudang lain melihat riwayat dan rincian Cibubur, tetapi tetap 404 di Pengiriman Gudang Cibubur", async () => {
+  // T136 (PRD A7 ▶ Revisi 2026-10-20): riwayat mengikuti penugasan.
+  it("operator yang hanya ditugaskan di gudang lain tidak melihat riwayat Cibubur: tanpa baris, rincian 404, Pengiriman Gudang 404", async () => {
     await masukOperator(await idGudangUji("Gudang Bali"), [...daftarHakTindakan]);
-    expect(idDiDaftar(await bukaDaftar())).toHaveLength(4);
-    expect(await bukaRincian(rencana.a1v1)).toContain(`Rencana final ${tokoA.nama}`);
+    // `?gudang=<Cibubur>` di luar cakupan berarti "Semua gudang" dalam cakupannya (Bali).
+    const daftar = idDiDaftar(await bukaDaftar());
+    expect(daftar.filter((id) => Object.values(rencana).includes(id))).toEqual([]);
+    await ditolak(bukaRincian(rencana.a1v1));
     await ditolak(HalamanPengirimanGudang({ params: Promise.resolve({ id: String(cibubur) }), searchParams: Promise.resolve({}) }));
   });
 
-  it("viewer tanpa penugasan dan admin tanpa penugasan melihat riwayat dan rincian; viewer tetap 404 di Pengiriman Gudang", async () => {
+  it("viewer tanpa penugasan: Riwayat, rincian, dan Pengiriman Gudang 404; admin tanpa penugasan melihat riwayat dan rincian", async () => {
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
-    expect(idDiDaftar(await bukaDaftar())).toHaveLength(4);
-    expect(await bukaRincian(rencana.a1v1)).toContain(`Rencana final ${tokoA.nama}`);
+    await ditolak(bukaDaftar());
+    await ditolak(bukaRincian(rencana.a1v1));
     await ditolak(HalamanPengirimanGudang({ params: Promise.resolve({ id: String(cibubur) }), searchParams: Promise.resolve({}) }));
 
     await masukAdmin();

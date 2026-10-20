@@ -27,8 +27,9 @@ import HalamanDaftarPengirimanGudang from "./page";
 
 // T110 (PRD A3 ▶ Revisi 2026-10-13): gudang nonaktif tidak muncul di pilihan kerja; penugasan operator ke gudang
 // nonaktif tidak memberi akses. Admin tetap bisa membuka halaman Pengiriman Gudang gudang nonaktif (hanya-baca) dengan
-// badge Nonaktif. T127: riwayat rencana final ada di halaman Riwayat, terbuka bagi semua pengguna yang sudah masuk,
-// termasuk untuk gudang nonaktif (dengan penanda), tanpa membuka halaman kerja gudang itu.
+// badge Nonaktif. T127: riwayat rencana final ada di halaman Riwayat, termasuk untuk gudang nonaktif (dengan penanda),
+// tanpa membuka halaman kerja gudang itu. T136 (PRD A7 ▶ Revisi 2026-10-20): riwayat gudang nonaktif hanya terlihat oleh
+// admin; penugasan ke gudang nonaktif tidak memberi akses ke riwayatnya.
 
 let nonaktif: { id: number; nama: string };
 let bali: number;
@@ -148,36 +149,48 @@ describe("admin dan gudang nonaktif", () => {
   });
 });
 
-describe("riwayat rencana final gudang nonaktif (T127)", () => {
-  it("admin, operator satu gudang lain, operator yang ditugaskan ke gudang nonaktif itu, dan viewer melihat rencana finalnya dengan penanda Nonaktif", async () => {
+describe("riwayat rencana final gudang nonaktif (T127, T136)", () => {
+  it("admin melihat rencana finalnya dengan penanda Nonaktif; operator gudang lain, operator yang ditugaskan ke gudang nonaktif itu, dan viewer tidak", async () => {
     const admin = await kepalaPenggunaUji("admin");
     const toko = await buatTokoUji();
     await tetapkanAktifGudang(nonaktif.id, true);
     const idRencana = await rencanaFinalUji({ idGudang: nonaktif.id, idToko: toko.id, tanggalKirim: "2030-05-06", idPengguna: admin.id });
     await tetapkanAktifGudang(nonaktif.id, false);
-
-    const operatorBali = await kepalaPenggunaUji("viewer");
-    await tugaskanOperator({ idPengguna: operatorBali.id, idGudang: bali, hakTindakan: [...daftarHakTindakan] });
-    const operatorNonaktif = await operatorGudangNonaktif();
-    const viewer = await kepalaPenggunaUji("viewer");
-
-    for (const cookie of [admin.cookie, operatorBali.cookie, operatorNonaktif.cookie, viewer.cookie]) {
-      kepala.cookie = cookie;
-      const baris = new RegExp(`<tr[^>]*data-rencana-final="${idRencana}".*?</tr>`).exec(await riwayat(nonaktif.id))?.[0] ?? "";
-      // Nama gudang dari snapshot rencana final ("UJI", lihat rencanaFinalUji), penanda dari status gudang sekarang.
-      expect(baris).toMatch(/<td[^>]*><div[^>]*><span>UJI<\/span><span[^>]*data-status="gudangNonaktif"/);
-      // Gudang nonaktif tidak memberi hak ekspor.
-      expect(baris).not.toContain("data-ekspor-url");
-      const rincian = renderToStaticMarkup(
+    const baris = (html: string) => new RegExp(`<tr[^>]*data-rencana-final="${idRencana}".*?</tr>`).exec(html)?.[0] ?? "";
+    const rincian = async () =>
+      renderToStaticMarkup(
         await HalamanRincianRencanaFinal({ params: Promise.resolve({ idRencana: String(idRencana) }), searchParams: Promise.resolve({}) }),
       );
-      expect(rincian).toContain('data-status="gudangNonaktif"');
-      expect(rincian).not.toContain("data-ekspor-url");
-    }
+    const tidakDitemukan = { digest: expect.stringContaining("404") };
+
+    kepala.cookie = admin.cookie;
+    const html = await riwayat(nonaktif.id);
+    // Nama gudang dari snapshot rencana final ("UJI", lihat rencanaFinalUji), penanda dari status gudang sekarang.
+    expect(baris(html)).toMatch(/<td[^>]*><div[^>]*><span>UJI<\/span><span[^>]*data-status="gudangNonaktif"/);
+    // Gudang nonaktif tidak memberi hak ekspor.
+    expect(baris(html)).not.toContain("data-ekspor-url");
     // Pilihan filter gudang memuat gudang nonaktif dengan keterangannya.
-    expect(await riwayat(nonaktif.id)).toContain(`${nonaktif.nama} (nonaktif)`);
+    expect(html).toContain(`${nonaktif.nama} (nonaktif)`);
+    expect(await rincian()).toContain('data-status="gudangNonaktif"');
+    expect(await rincian()).not.toContain("data-ekspor-url");
+
+    // Operator gudang lain: `?gudang=<nonaktif>` di luar cakupan berarti "Semua gudang" dalam cakupannya; rincian 404.
+    const operatorBali = await kepalaPenggunaUji("viewer");
+    await tugaskanOperator({ idPengguna: operatorBali.id, idGudang: bali, hakTindakan: [...daftarHakTindakan] });
+    kepala.cookie = operatorBali.cookie;
+    expect(baris(await riwayat(nonaktif.id))).toBe("");
+    await expect(rincian()).rejects.toMatchObject(tidakDitemukan);
+
+    // Penugasan ke gudang nonaktif tidak memberi akses; tanpa gudang lain, Riwayat 404. Viewer juga 404.
+    const operatorNonaktif = await operatorGudangNonaktif();
+    const viewer = await kepalaPenggunaUji("viewer");
+    for (const cookie of [operatorNonaktif.cookie, viewer.cookie]) {
+      kepala.cookie = cookie;
+      await expect(riwayat(nonaktif.id)).rejects.toMatchObject(tidakDitemukan);
+      await expect(rincian()).rejects.toMatchObject(tidakDitemukan);
+    }
     // Riwayat tidak membuka halaman kerja gudang nonaktif bagi bukan admin.
     kepala.cookie = viewer.cookie;
-    await expect(HalamanPengirimanGudang(params(nonaktif.id))).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+    await expect(HalamanPengirimanGudang(params(nonaktif.id))).rejects.toMatchObject(tidakDitemukan);
   });
 });

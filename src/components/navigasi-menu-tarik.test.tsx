@@ -143,3 +143,29 @@ describe("menu tarik di layar kecil", () => {
     expect(terbuka()).toBe(false);
   });
 });
+
+// T136 — DESIGN §6 ▶ Revisi (2026-10-20): item Riwayat hanya untuk admin dan operator, di sidebar desktop maupun menu
+// tarik layar kecil. Viewer tidak melihatnya.
+describe("item Riwayat di menu tarik", () => {
+  const tautanRiwayat = () => [...document.querySelectorAll('a[href="/riwayat"]')];
+
+  it("operator melihat Riwayat di sidebar desktop dan di menu tarik", () => {
+    expect(tautanRiwayat()).toHaveLength(1);
+    bukaMenu();
+    expect(menu()!.querySelector('a[href="/riwayat"]')).not.toBeNull();
+  });
+
+  it("viewer tidak melihat Riwayat di sidebar desktop maupun di menu tarik", () => {
+    act(() =>
+      akar.render(
+        <Navigasi pengguna={{ nama: "Viewer Uji", peran: "viewer" }} tampilkanPengirimanGudang={false} tampilkanJadwalToko={false}>
+          <p>isi</p>
+        </Navigasi>,
+      ),
+    );
+    expect(tautanRiwayat()).toEqual([]);
+    bukaMenu();
+    expect(menu()!.querySelector('a[href="/kalender"]')).not.toBeNull();
+    expect(tautanRiwayat()).toEqual([]);
+  });
+});

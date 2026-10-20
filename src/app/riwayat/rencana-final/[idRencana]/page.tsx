@@ -19,12 +19,11 @@ import { tautanTombolVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatTanggal, parseTanggalBisnis } from "@/domain/kalender";
-import { wajibMasuk } from "@/server/auth/kewenangan";
 import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
 import type { RincianRencanaFinal } from "@/server/gudang/rencana-final";
 
 import { urlEksporRencanaFinal, urlRincianRencanaFinal, urlRiwayat } from "../../alamat";
-import { gudangBolehEkspor, muatRincianRencanaFinal } from "../../muat";
+import { gudangBolehEkspor, muatRincianRencanaFinal, wajibAksesRiwayat } from "../../muat";
 
 export const metadata: Metadata = {
   title: "Rincian rencana final — Dashboard Penjualan MANDALIKA",
@@ -249,9 +248,10 @@ function PanelRincianBaris({ rencana, terbuka }: { rencana: RincianRencanaFinal;
  * ranking, jadwal, dan kalender yang dipakai, semuanya dibaca dari snapshot saat finalisasi (bukan data terkini).
  * `?rincian=<kode produk>` membuka rincian perhitungan satu baris di panel samping (T108). Semua versi berstatus Final; versi baru ditandai
  * "Versi N menggantikan versi N−1" beserta alasannya (PRD A7 ▶ Keputusan 2026-10-11, T62). Bagian dari halaman Riwayat
- * (T127; PRD A7 ▶ Keputusan 2026-10-14): bisa dibuka semua pengguna yang sudah masuk, untuk rencana final gudang mana pun
- * termasuk gudang nonaktif (sesi diperiksa di server). Tombol ekspor (.xlsx) hanya tampil bagi pengguna dengan hak
- * `ekspor` di gudang rencana itu (T64); route ekspor memeriksa hak itu lagi di server.
+ * (T127): bisa dibuka untuk rencana final gudang dalam cakupan lihat Riwayat pengguna (T136; PRD A7 ▶ Revisi
+ * 2026-10-20). Admin semua gudang termasuk nonaktif; pengguna lain hanya gudang yang boleh ia lihat di Pengiriman
+ * Gudang. Rencana final gudang lain dan viewer mendapat 404 (diperiksa di server). Tombol ekspor (.xlsx) hanya tampil
+ * bagi pengguna dengan hak `ekspor` di gudang rencana itu (T64); route ekspor memeriksa hak itu lagi di server.
  */
 export default async function HalamanRincianRencanaFinal({
   params,
@@ -260,9 +260,9 @@ export default async function HalamanRincianRencanaFinal({
   params: Promise<{ idRencana: string }>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const pengguna = await wajibMasuk();
+  const { pengguna, cakupanGudang } = await wajibAksesRiwayat();
   const { idRencana } = await params;
-  const { gudangAktif, rencana } = await muatRincianRencanaFinal(idRencana);
+  const { gudangAktif, rencana } = await muatRincianRencanaFinal(idRencana, cakupanGudang);
   const bolehEkspor = (await gudangBolehEkspor(pengguna)).has(rencana.gudang.id);
   const rincian = (await searchParams)?.rincian;
   const terbuka = typeof rincian === "string" ? rincian : null;

@@ -22,7 +22,7 @@ import {
 // komponen dialog yang sama dengan panel rincian (DESIGN §11.2, T108): role="dialog" dan fokus terkunci di dalam menu.
 // Item hanya untuk halaman yang sudah ada dan boleh dibuka peran itu; penyembunyian ini tambahan,
 // halaman tetap memeriksa sesi dan peran di server (wajibMasuk / wajibAdmin / wajibAksesPengirimanGudang /
-// wajibGudangDenganHak).
+// wajibGudangDenganHak / wajibAksesRiwayat).
 
 /** Peran yang ditampilkan di sidebar (istilah CONTEXT.md). Operator = bukan admin, tetapi punya penugasan gudang. */
 type PeranTampil = "admin" | "operator" | "viewer";
@@ -37,14 +37,15 @@ type Kelompok = { judul: string | null; item: Item[] };
 // Urutan dan pengelompokan persis DESIGN §6 ▶ Keputusan (2026-10-13 sore, pemilik, T105): kelompok Pengiriman Gudang
 // dihapus, Pengiriman Gudang masuk Pekerjaan rutin, diikuti Kirim di luar jadwal (T113). Salin jadwal operator dihapus
 // dan Jadwal toko masuk Data Master (T112). Pilihan buka/tutup tersimpan untuk kelompok lama tidak dibaca lagi.
-// Riwayat (T127, DESIGN §6 ▶ Keputusan 2026-10-14): item tunggal tanpa kelompok tepat di bawah Beranda, untuk semua
-// pengguna yang sudah masuk.
+// Riwayat (T127, DESIGN §6 ▶ Keputusan 2026-10-14): item tunggal tanpa kelompok tepat di bawah Beranda. Sejak T136
+// (DESIGN §6 ▶ Revisi 2026-10-20, PRD A7 ▶ Revisi 2026-10-20) hanya untuk admin dan operator: aksesnya sama dengan
+// Pengiriman Gudang, jadi viewer tidak melihatnya.
 const kelompokMenu: Kelompok[] = [
   {
     judul: null,
     item: [
       { href: "/", label: "Beranda", akses: "masuk" },
-      { href: "/riwayat", label: "Riwayat", akses: "masuk" },
+      { href: "/riwayat", label: "Riwayat", akses: "pengiriman-gudang" },
     ],
   },
   {

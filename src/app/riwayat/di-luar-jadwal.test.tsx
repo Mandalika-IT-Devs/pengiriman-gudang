@@ -18,7 +18,7 @@ import HalamanRiwayat from "./page";
 // T128 (PRD A5 ▶ Revisi 2026-10-14, A7 ▶ Keputusan 2026-10-14): tab "Di luar jadwal" halaman Riwayat. Hanya-baca: semua
 // pengiriman di luar jadwal semua gudang dan semua status, terbaru di atas, dengan isian catatan aktivitas PRD A5 dan
 // kolom Gudang. Filter gudang, toko, dan rentang tanggal kirim (tanggal kirim pengiriman itu), cari, halaman 50 baris.
-// Semua pengguna yang sudah masuk boleh membukanya.
+// T136 (PRD A7 ▶ Revisi 2026-10-20): admin melihat semua gudang; pengguna lain hanya gudang penugasannya; viewer 404.
 
 let gudangA: { id: number; nama: string };
 let gudangB: { id: number; nama: string };
@@ -180,16 +180,14 @@ describe("Riwayat, tab Di luar jadwal", () => {
     expect(filter).toMatch(/<button[^>]*type="submit"[^>]*>Terapkan/);
   });
 
-  it("viewer dan operator tanpa hak tindakan melihat isi yang sama, tanpa tombol tindakan", async () => {
-    for (const masuk of [
-      async () => (kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie),
-      async () => masukOperator([]),
-      async () => masukOperator(["kelola-usulan-jadwal"]),
-    ]) {
-      await masuk();
+  it("operator gudang A (tanpa hak tindakan atau dengan hak usulan) melihat pengiriman gudang A saja, tanpa tombol tindakan; viewer 404", async () => {
+    for (const hakTindakan of [[], ["kelola-usulan-jadwal"]] satisfies HakTindakan[][]) {
+      await masukOperator(hakTindakan);
       const html = await buka({ toko: String(tokoX.id) });
-      expect(idDiDaftar(html)).toEqual([id.dibatalkan, id.berlaku, id.menunggu]);
+      expect(idDiDaftar(html)).toEqual([id.berlaku, id.menunggu]);
       expect(tabel(html)).not.toContain("<button");
     }
+    kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
+    await expect(buka({ toko: String(tokoX.id) })).rejects.toMatchObject({ digest: expect.stringContaining("404") });
   });
 });

@@ -430,16 +430,26 @@ export type RingkasanRencanaFinal = Pick<
   digantikanOlehVersi: number | null;
 };
 
-/** Filter riwayat rencana final (T127): kosong = semua. `dari`/`sampai` = rentang tanggal kirim, termasuk ujungnya. */
-export type FilterRiwayatRencanaFinal = { idGudang?: number; tokoId?: number; dari?: TanggalBisnis; sampai?: TanggalBisnis };
+/**
+ * Filter riwayat rencana final (T127, T136). `cakupanGudang` = id gudang yang riwayatnya boleh dilihat pemanggil (PRD A7
+ * ▶ Revisi 2026-10-20), selalu diterapkan; filter lain kosong = semua. `dari`/`sampai` = rentang tanggal kirim,
+ * termasuk ujungnya.
+ */
+export type FilterRiwayatRencanaFinal = {
+  cakupanGudang: readonly number[];
+  idGudang?: number;
+  tokoId?: number;
+  dari?: TanggalBisnis;
+  sampai?: TanggalBisnis;
+};
 
 /**
- * Riwayat rencana final semua gudang (T63; halaman Riwayat T127, PRD A7 ▶ Keputusan 2026-10-14), semua versi, disaring
- * gudang, toko, dan/atau rentang tanggal kirim bila diberikan. Urut tanggal kirim terbaru, lalu nama gudang dan nama
- * toko (snapshot), lalu versi terbaru. Filter selalu memuat semua versi satu gudang + toko + tanggal kirim, jadi versi
- * pengganti dihitung dari hasil yang sama. Kewenangan diperiksa pemanggil.
+ * Riwayat rencana final gudang dalam `cakupanGudang` (T63; halaman Riwayat T127, T136; PRD A7 ▶ Revisi 2026-10-20),
+ * semua versi, disaring gudang, toko, dan/atau rentang tanggal kirim bila diberikan. Urut tanggal kirim terbaru, lalu
+ * nama gudang dan nama toko (snapshot), lalu versi terbaru. Filter selalu memuat semua versi satu gudang + toko +
+ * tanggal kirim, jadi versi pengganti dihitung dari hasil yang sama. Cakupan ditentukan pemanggil.
  */
-export async function daftarRencanaFinal(filter: FilterRiwayatRencanaFinal = {}): Promise<RingkasanRencanaFinal[]> {
+export async function daftarRencanaFinal(filter: FilterRiwayatRencanaFinal): Promise<RingkasanRencanaFinal[]> {
   const daftar = await db
     .select({
       id: rencanaFinal.id,
@@ -459,6 +469,7 @@ export async function daftarRencanaFinal(filter: FilterRiwayatRencanaFinal = {})
     .innerJoin(gudang, eq(gudang.id, rencanaFinal.gudangId))
     .where(
       and(
+        inArray(rencanaFinal.gudangId, [...filter.cakupanGudang]),
         filter.idGudang === undefined ? undefined : eq(rencanaFinal.gudangId, filter.idGudang),
         filter.tokoId === undefined ? undefined : eq(rencanaFinal.tokoId, filter.tokoId),
         filter.dari === undefined ? undefined : gte(rencanaFinal.tanggalKirim, filter.dari),
@@ -534,19 +545,24 @@ export async function bacaBarisProdukRencanaFinal(idRencana: readonly number[]):
 }
 
 /**
- * Pilihan filter riwayat rencana final (T127): semua gudang (termasuk nonaktif, urut id seperti daftar gudang) dan toko
- * yang punya rencana final di gudang mana pun, dengan nama dari rencana final terakhirnya (snapshot), urut nama.
- * `adaRencanaFinal` = sudah ada rencana final sama sekali.
+ * Pilihan filter riwayat rencana final (T127, T136): gudang dalam `cakupanGudang` (termasuk nonaktif bila ada di
+ * cakupan, urut id seperti daftar gudang) dan toko yang punya rencana final di gudang itu, dengan nama dari rencana
+ * final terakhirnya (snapshot), urut nama. `adaRencanaFinal` = sudah ada rencana final di cakupan itu.
  */
-export async function pilihanFilterRencanaFinal(): Promise<{
+export async function pilihanFilterRencanaFinal(cakupanGudang: readonly number[]): Promise<{
   adaRencanaFinal: boolean;
   gudang: { id: number; nama: string; aktif: boolean }[];
   toko: { id: number; nama: string }[];
 }> {
-  const daftarGudang = await db.select({ id: gudang.id, nama: gudang.nama, aktif: gudang.aktif }).from(gudang).orderBy(asc(gudang.id));
+  const daftarGudang = await db
+    .select({ id: gudang.id, nama: gudang.nama, aktif: gudang.aktif })
+    .from(gudang)
+    .where(inArray(gudang.id, [...cakupanGudang]))
+    .orderBy(asc(gudang.id));
   const daftarToko = await db
     .selectDistinctOn([rencanaFinal.tokoId], { id: rencanaFinal.tokoId, nama: rencanaFinal.namaToko })
     .from(rencanaFinal)
+    .where(inArray(rencanaFinal.gudangId, [...cakupanGudang]))
     .orderBy(asc(rencanaFinal.tokoId), desc(rencanaFinal.id));
   return {
     adaRencanaFinal: daftarToko.length > 0,

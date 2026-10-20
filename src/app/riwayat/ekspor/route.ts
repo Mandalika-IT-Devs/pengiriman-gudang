@@ -5,14 +5,16 @@ import { bacaBarisProdukRencanaFinal } from "@/server/gudang/rencana-final";
 
 import { SEMUA } from "../filter";
 import { hasilFilterDiLuarJadwal, hasilFilterRencanaFinal, type TerapanRiwayat } from "../hasil-filter";
-import { cakupanEksporRiwayat, gudangTidakIkutDiekspor, ikutDiekspor } from "../muat";
+import { cakupanEksporRiwayat, cakupanLihatRiwayat, gudangTidakIkutDiekspor, ikutDiekspor } from "../muat";
 
 import { buatBerkasRiwayatDiLuarJadwal, buatBerkasRiwayatRencanaFinal, namaBerkasEksporRiwayat, type JenisRiwayat, type KeteranganEkspor } from "./berkas";
 
 // Ekspor halaman Riwayat (T129; PRD A7 ▶ Keputusan 2026-10-14): tab yang dibuka, untuk seluruh hasil filter (filter dan
 // kueri yang sama dengan halaman, termasuk cari), satu file satu sheet. Hak diperiksa di server sebelum data dibaca:
 // admin semua gudang tanpa penugasan; operator hanya baris gudang tempat ia punya hak `ekspor`; viewer dan operator
-// tanpa hak `ekspor` di gudang mana pun ditolak (403).
+// tanpa hak `ekspor` di gudang mana pun ditolak (403). Baris = cakupan lihat Riwayat ∩ cakupan ekspor (T136; PRD A7 ▶
+// Revisi 2026-10-20): hasil filter sudah dibatasi cakupan lihat, jadi pemberitahuan "tidak ikut diekspor" hanya
+// menyebut gudang dalam cakupan lihat yang tanpa hak `ekspor`.
 
 function tolak(status: number, pesan: string) {
   return Response.json({ pesan }, { status });
@@ -52,11 +54,12 @@ export async function GET(request: Request) {
   const cakupan = await cakupanEksporRiwayat(pengguna);
   if (cakupan === null) return tolak(403, "Anda tidak punya hak ekspor di gudang mana pun.");
 
+  const cakupanGudang = await cakupanLihatRiwayat(pengguna);
   const parameter: ParameterUrl = Object.fromEntries(new URL(request.url).searchParams);
   const waktuEkspor = new Date();
 
   if (parameter.tab === "di-luar-jadwal") {
-    const filter = await hasilFilterDiLuarJadwal(parameter);
+    const filter = await hasilFilterDiLuarJadwal(parameter, cakupanGudang);
     if (filter === null) return tolak(404, "Belum ada pengiriman di luar jadwal untuk diekspor.");
     const tidakIkut = gudangTidakIkutDiekspor(
       cakupan,
@@ -67,7 +70,7 @@ export async function GET(request: Request) {
     return berkas("di-luar-jadwal", buatBerkasRiwayatDiLuarJadwal(daftar, keterangan(filter.terapan, filter.pilihan, tidakIkut, waktuEkspor)), waktuEkspor);
   }
 
-  const filter = await hasilFilterRencanaFinal(parameter);
+  const filter = await hasilFilterRencanaFinal(parameter, cakupanGudang);
   if (filter === null) return tolak(404, "Belum ada rencana final untuk diekspor.");
   const tidakIkut = gudangTidakIkutDiekspor(
     cakupan,

@@ -1,10 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+// Operator satu gudang (peran bukan admin dengan penugasan; T136: viewer tanpa penugasan mendapat 404).
 vi.mock("@/server/auth/kewenangan", () => ({
-  wajibMasuk: async () => ({ id: "uji", nama: "Uji viewer", email: "uji@contoh.test", peran: "viewer" }),
+  wajibMasuk: async () => ({ id: "uji", nama: "Uji operator", email: "uji@contoh.test", peran: "viewer" }),
 }));
-vi.mock("@/server/gudang/akses", () => ({ daftarGudangDapatDilihat: async () => [] }));
+vi.mock("@/server/gudang/akses", () => ({
+  daftarGudangDapatDilihat: async () => [{ id: 1, nama: "Gudang Uji", aktif: true, hakTindakan: [] }],
+}));
 vi.mock("@/server/gudang/rencana-final", () => ({
   pilihanFilterRencanaFinal: async () => ({ adaRencanaFinal: false, gudang: [], toko: [] }),
   daftarRencanaFinal: async () => [],
@@ -17,8 +20,8 @@ vi.mock("@/server/gudang/pengiriman-di-luar-jadwal", () => ({
 
 const { default: HalamanRiwayat } = await import("./page");
 
-// T120, T127: belum ada rencana final di gudang mana pun → keadaan kosong ikon + teks + langkah berikutnya (DESIGN §11.6),
-// tanpa filter dan tabel.
+// T120, T127: belum ada rencana final di gudang mana pun dalam cakupan lihat pengguna (T136) → keadaan kosong ikon + teks
+// + langkah berikutnya (DESIGN §11.6), tanpa filter dan tabel.
 
 describe("halaman Riwayat tanpa rencana final sama sekali", () => {
   it("keadaan kosong ikon + teks + langkah berikutnya", async () => {

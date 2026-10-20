@@ -417,11 +417,12 @@ export async function pengirimanPerluTindakan(idGudang: number, { bolehBatalkan,
 }
 
 /**
- * Riwayat pengiriman di luar jadwal semua gudang dan semua status, terbaru di atas (T128, halaman Riwayat). Filter
- * opsional: gudang, toko, dan rentang tanggal kirim (inklusif). Riwayat terbuka untuk semua pengguna yang sudah masuk
- * (PRD A7 ▶ Keputusan 2026-10-14); pemeriksaan masuk oleh pemanggil.
+ * Riwayat pengiriman di luar jadwal gudang dalam `cakupanGudang`, semua status, terbaru di atas (T128, T136; halaman
+ * Riwayat). `cakupanGudang` = id gudang yang riwayatnya boleh dilihat pemanggil (PRD A7 ▶ Revisi 2026-10-20), selalu
+ * diterapkan. Filter opsional: gudang, toko, dan rentang tanggal kirim (inklusif). Cakupan ditentukan pemanggil.
  */
 export async function daftarRiwayatPengirimanDiLuarJadwal(filter: {
+  cakupanGudang: readonly number[];
   idGudang?: number;
   tokoId?: number;
   dari?: TanggalBisnis;
@@ -429,6 +430,7 @@ export async function daftarRiwayatPengirimanDiLuarJadwal(filter: {
 }) {
   return bacaEntri(
     and(
+      inArray(pengirimanDiLuarJadwal.gudangId, [...filter.cakupanGudang]),
       filter.idGudang === undefined ? undefined : eq(pengirimanDiLuarJadwal.gudangId, filter.idGudang),
       filter.tokoId === undefined ? undefined : eq(pengirimanDiLuarJadwal.tokoId, filter.tokoId),
       filter.dari === undefined ? undefined : gte(pengirimanDiLuarJadwal.tanggalKirim, filter.dari),
@@ -438,17 +440,25 @@ export async function daftarRiwayatPengirimanDiLuarJadwal(filter: {
   );
 }
 
-/** Pilihan filter tab "Di luar jadwal": semua gudang (urut id) dan toko yang pernah punya pengiriman di luar jadwal. */
-export async function pilihanFilterPengirimanDiLuarJadwal(): Promise<{
+/**
+ * Pilihan filter tab "Di luar jadwal" (T128, T136): gudang dalam `cakupanGudang` (urut id) dan toko yang pernah punya
+ * pengiriman di luar jadwal di gudang itu. `adaPengiriman` = sudah ada pengiriman di luar jadwal di cakupan itu.
+ */
+export async function pilihanFilterPengirimanDiLuarJadwal(cakupanGudang: readonly number[]): Promise<{
   adaPengiriman: boolean;
   gudang: { id: number; nama: string; aktif: boolean }[];
   toko: { id: number; nama: string }[];
 }> {
-  const daftarGudang = await db.select({ id: gudang.id, nama: gudang.nama, aktif: gudang.aktif }).from(gudang).orderBy(asc(gudang.id));
+  const daftarGudang = await db
+    .select({ id: gudang.id, nama: gudang.nama, aktif: gudang.aktif })
+    .from(gudang)
+    .where(inArray(gudang.id, [...cakupanGudang]))
+    .orderBy(asc(gudang.id));
   const daftarToko = await db
     .selectDistinct({ id: toko.id, nama: toko.nama })
     .from(pengirimanDiLuarJadwal)
-    .innerJoin(toko, eq(toko.id, pengirimanDiLuarJadwal.tokoId));
+    .innerJoin(toko, eq(toko.id, pengirimanDiLuarJadwal.tokoId))
+    .where(inArray(pengirimanDiLuarJadwal.gudangId, [...cakupanGudang]));
   return {
     adaPengiriman: daftarToko.length > 0,
     gudang: daftarGudang,

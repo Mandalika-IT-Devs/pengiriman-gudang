@@ -33,12 +33,12 @@ function judulKelompok(html: string) {
 }
 
 describe("Navigasi: kelompok menu per peran", () => {
-  // T127 — DESIGN §6 ▶ Keputusan (2026-10-14, pemilik): "Riwayat" item tunggal tanpa kelompok tepat di bawah Beranda,
-  // untuk admin, operator, dan viewer.
+  // T127 — DESIGN §6 ▶ Keputusan (2026-10-14, pemilik): "Riwayat" item tunggal tanpa kelompok tepat di bawah Beranda.
+  // T136 — DESIGN §6 ▶ Revisi (2026-10-20, pemilik): hanya untuk admin dan operator (akses yang sama dengan Pengiriman
+  // Gudang); viewer tidak melihatnya.
   it.each([
     ["admin", ADMIN, true],
     ["operator", OPERATOR, true],
-    ["viewer", VIEWER, false],
   ] as const)("%s: Riwayat tepat di bawah Beranda, di luar kelompok mana pun", (_peran, pengguna, tampilkanPengirimanGudang) => {
     const html = render({ pengguna, tampilkanPengirimanGudang, tampilkanJadwalToko: false, children: null });
     expect(tautan(html).slice(0, 2)).toEqual([
@@ -125,15 +125,16 @@ describe("Navigasi: kelompok menu per peran", () => {
     expect(html).not.toContain("jadwal");
   });
 
-  it("viewer tanpa penugasan melihat Beranda, Riwayat, dan Laporan saja (tanpa Pekerjaan rutin)", () => {
+  // T136 — DESIGN §6 ▶ Revisi (2026-10-20): viewer kembali melihat Beranda dan Laporan saja, tanpa Riwayat.
+  it("viewer tanpa penugasan melihat Beranda dan Laporan saja (tanpa Riwayat dan Pekerjaan rutin)", () => {
     const html = render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null });
     expect(judulKelompok(html)).toEqual(["Laporan"]);
     expect(tautan(html)).toEqual([
       ["/", "Beranda"],
-      ["/riwayat", "Riwayat"],
       ["/ringkasan", "Ringkasan"],
       ["/kalender", "Kalender"],
     ]);
+    expect(html).not.toContain("/riwayat");
     expect(html).not.toContain("Pekerjaan rutin");
     expect(html).not.toContain("Pengiriman Gudang");
     expect(html).not.toContain("Data Master");
@@ -179,7 +180,7 @@ describe("Navigasi: penanda halaman aktif", () => {
 
   // T127 (DESIGN §6 ▶ Keputusan 2026-10-14): rincian rencana final di bawah /riwayat menandai Riwayat.
   it("/riwayat/rencana-final/7 → Riwayat aktif, tanpa kelompok terbuka", () => {
-    const html = render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null }, "/riwayat/rencana-final/7");
+    const html = render({ pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: false, children: null }, "/riwayat/rencana-final/7");
     expect(tautanAktif(html)).toEqual(["/riwayat"]);
     expect(kelompokTerbuka(html)).toEqual([]);
   });

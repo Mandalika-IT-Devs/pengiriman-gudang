@@ -89,27 +89,29 @@ function BarisRencana({ rencana, bolehEkspor }: { rencana: RingkasanRencanaFinal
 }
 
 /**
- * Tab "Rencana final" halaman Riwayat (T63, T127; PRD A7 ▶ Keputusan 2026-10-14). Semua versi rencana final semua gudang,
- * dibaca dari snapshot; semua versi berstatus Final, versi baru ditandai "Versi N menggantikan versi N−1" (PRD A7 ▶
- * Keputusan 2026-10-11) dan versi yang sudah digantikan berlabel "Digantikan oleh versi n" (DESIGN §11.9). Gudang
- * nonaktif diberi penanda. Filter `?gudang=<id>`, `?toko=<id>`, rentang `?dari=`/`?sampai=` (YYYY-MM-DD), cari nama
- * toko `?cari=`, dan halaman 50 baris `?halaman=` (DESIGN §11.1). Tombol ekspor (.xlsx) per versi hanya tampil bagi
- * pengguna dengan hak `ekspor` di gudang rencana itu (T64); ekspor seluruh hasil filter sesuai `cakupanEkspor` (T129).
- * Kewenangan lihat diperiksa halaman (`wajibMasuk`). Berupa fungsi yang ditunggu halaman (bukan komponen async), sehingga
- * halaman tetap bisa dirender sekali jalan.
+ * Tab "Rencana final" halaman Riwayat (T63, T127; PRD A7 ▶ Keputusan 2026-10-14). Semua versi rencana final gudang dalam
+ * `cakupanGudang` (T136, PRD A7 ▶ Revisi 2026-10-20), dibaca dari snapshot; semua versi berstatus Final, versi baru
+ * ditandai "Versi N menggantikan versi N−1" (PRD A7 ▶ Keputusan 2026-10-11) dan versi yang sudah digantikan berlabel
+ * "Digantikan oleh versi n" (DESIGN §11.9). Gudang nonaktif diberi penanda. Filter `?gudang=<id>`, `?toko=<id>`, rentang
+ * `?dari=`/`?sampai=` (YYYY-MM-DD), cari nama toko `?cari=`, dan halaman 50 baris `?halaman=` (DESIGN §11.1). Tombol
+ * ekspor (.xlsx) per versi hanya tampil bagi pengguna dengan hak `ekspor` di gudang rencana itu (T64); ekspor seluruh
+ * hasil filter sesuai `cakupanEkspor` (T129). Kewenangan lihat diperiksa halaman (`wajibAksesRiwayat`). Berupa fungsi
+ * yang ditunggu halaman (bukan komponen async), sehingga halaman tetap bisa dirender sekali jalan.
  */
 export async function isiTabRencanaFinal({
   pengguna,
+  cakupanGudang,
   cakupanEkspor,
   parameter,
   urlHalaman,
 }: {
   pengguna: PenggunaMasuk;
+  cakupanGudang: readonly number[];
   cakupanEkspor: CakupanEksporRiwayat | null;
   parameter: ParameterUrl;
   urlHalaman: string;
 }): Promise<ReactNode> {
-  const filter = await hasilFilterRencanaFinal(parameter);
+  const filter = await hasilFilterRencanaFinal(parameter, cakupanGudang);
   if (filter === null) {
     return (
       <KeadaanKosong

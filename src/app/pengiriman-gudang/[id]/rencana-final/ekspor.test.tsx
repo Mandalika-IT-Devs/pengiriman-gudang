@@ -386,14 +386,16 @@ describe("tombol ekspor di rincian dan riwayat rencana final (zona kerja; halama
     expect(await bukaDaftar()).not.toContain('data-ekspor-url="/pengiriman-gudang/');
   });
 
-  it("T127: hak ekspor di gudang lain tidak memunculkan tombol untuk rencana Cibubur; viewer tanpa penugasan tanpa tombol", async () => {
+  it("T127, T136: hak ekspor di gudang lain tidak memunculkan tombol untuk rencana Cibubur dan rinciannya 404; viewer tanpa penugasan 404", async () => {
+    const tidakDitemukan = { digest: expect.stringContaining("404") };
     // Hak ekspor di Gudang Bali hanya memunculkan tombol ekspor halaman Riwayat (T129), bukan ekspor rencana Cibubur.
+    // Sejak T136 rencana Cibubur juga tidak terlihat olehnya (PRD A7 ▶ Revisi 2026-10-20).
     await masukOperator(await idGudangUji("Gudang Bali"), ["ekspor"]);
-    expect(await bukaRincian()).not.toContain("data-ekspor-url");
+    await expect(bukaRincian()).rejects.toMatchObject(tidakDitemukan);
     expect(await bukaDaftar()).not.toContain('data-ekspor-url="/pengiriman-gudang/');
 
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
-    expect(await bukaRincian()).not.toContain("data-ekspor-url");
-    expect(await bukaDaftar()).not.toContain("data-ekspor-url");
+    await expect(bukaRincian()).rejects.toMatchObject(tidakDitemukan);
+    await expect(bukaDaftar()).rejects.toMatchObject(tidakDitemukan);
   });
 });
