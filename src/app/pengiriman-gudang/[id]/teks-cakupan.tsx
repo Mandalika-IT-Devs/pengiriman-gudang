@@ -2,7 +2,7 @@ import { BantuanIstilah } from "@/components/bantuan-istilah";
 import type { PolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 // Teks cakupan lengkap (DESIGN §11.6, T121) di draft, rincian baris, dan rincian rencana final. Panjang cakupan (L) dan
-// persiapan (p) adalah hasil hitung yang tersimpan; cakupan H−p sampai H+L−1 (CONTEXT.md) berisi p + L hari. Toko dua
+// persiapan (p) adalah hasil hitung yang tersimpan; cakupan H−p sampai H+L−1 (GLOSSARY.md) berisi p + L hari. Toko dua
 // mingguan selalu memakai L = 14, jadi teksnya menyebut dua minggu, bukan "sampai sebelum kiriman berikutnya" (PRD A5 ▶
 // Revisi 2026-10-19, T135). Snapshot dua mingguan lama dengan L selain 14 (aturan sebelum revisi itu) memakai teks lama.
 

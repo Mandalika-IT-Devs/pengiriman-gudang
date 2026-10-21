@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import { unggahStok, type HasilUnggahStok } from "./aksi-stok";
 
-// Unggah file stok satu toko di draft rencana (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; CONTEXT "Unggah stok"). File
+// Unggah file stok satu toko di draft rencana (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; GLOSSARY "Unggah stok"). File
 // dibaca di server action tanpa menyimpan stok; hasil terisi diterapkan ke isian stok lewat `terapkan` (jalur yang sama
 // dengan mengetik), sehingga "Belum disimpan" dan perlindungan draft berlaku. Ringkasan hasil hanya hidup di memori
 // komponen: hilang saat halaman dimuat ulang. Zona kerja; status ikon + teks (DESIGN §7).

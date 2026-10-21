@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const aksesPengirimanGudang = daftarGudang.length > 0;
   // Halaman jadwal toko (T98): hak kelola-usulan-jadwal di sedikitnya satu gudang, dari penugasan yang sama.
   const aksesJadwalToko = daftarGudang.some((g) => g.hakTindakan.includes("kelola-usulan-jadwal"));
-  // Peran yang ditampilkan di sidebar (CONTEXT.md): operator = bukan admin, tetapi ditugaskan ke gudang.
+  // Peran yang ditampilkan di sidebar (GLOSSARY.md): operator = bukan admin, tetapi ditugaskan ke gudang.
   const penggunaSidebar: ComponentProps<typeof Navigasi>["pengguna"] =
     pengguna === null
       ? null

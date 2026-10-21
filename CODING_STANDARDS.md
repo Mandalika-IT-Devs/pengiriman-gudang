@@ -5,7 +5,7 @@ Dibaca oleh agen saat menulis kode dan oleh skill `code-review` (sumbu Standards
 ## Bahasa dan penamaan
 
 - TypeScript `strict`. Tidak ada `any`; untuk data dari luar pakai `unknown` lalu validasi dengan Zod.
-- Konsep domain memakai istilah Indonesia dari `CONTEXT.md` (`kategoriEfektif`, `mingguLaporan`, `jumlahKirim`). Konsep pemrograman umum memakai bahasa Inggris (`parse`, `result`, `handler`).
+- Konsep domain memakai istilah Indonesia dari `GLOSSARY.md` (`kategoriEfektif`, `mingguLaporan`, `jumlahKirim`). Konsep pemrograman umum memakai bahasa Inggris (`parse`, `result`, `handler`).
 - Teks antarmuka berbahasa Indonesia.
 
 ## Batas modul

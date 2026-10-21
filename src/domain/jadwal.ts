@@ -154,7 +154,7 @@ export type PengirimanDiLuarJadwalBerlaku = {
 };
 
 /**
- * Sumber tanggal kirim satu toko (PRD A5 ▶ Revisi 2026-10-13; CONTEXT "Tanggal kirim toko"): jadwal tetap (`null` = tanpa
+ * Sumber tanggal kirim satu toko (PRD A5 ▶ Revisi 2026-10-13; GLOSSARY "Tanggal kirim toko"): jadwal tetap (`null` = tanpa
  * jadwal tetap aktif) beserta pengiriman di luar jadwal yang berlaku. `P` membawa data tambahan pemanggil (mis. id) yang
  * dikembalikan apa adanya oleh `tanggalKirimMenurutToko`.
  */
@@ -309,7 +309,7 @@ export function tanggalKirimMenurutJadwal(jadwal: Jadwal, tanggal: TanggalBisnis
 }
 
 /**
- * Tanggal kirim toko dalam rentang `dari`–`sampai` (inklusif), urut naik (PRD A5 ▶ Revisi 2026-10-13; CONTEXT "Tanggal
+ * Tanggal kirim toko dalam rentang `dari`–`sampai` (inklusif), urut naik (PRD A5 ▶ Revisi 2026-10-13; GLOSSARY "Tanggal
  * kirim toko"): tanggal menurut jadwal tetap, dikurangi tanggal rutin yang dipindah, ditambah tanggal pengiriman di luar
  * jadwal yang berlaku. `jadwal` = `null` untuk toko tanpa jadwal tetap aktif. `diLuarJadwal` hanya berisi yang berlaku.
  */

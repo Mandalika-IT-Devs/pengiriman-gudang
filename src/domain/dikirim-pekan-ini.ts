@@ -1,4 +1,4 @@
-// Dikirim pekan ini (PRD A5 ▶ Revisi 2026-10-19; CONTEXT "Dikirim pekan ini", "Kirim terakhir"): nilai awal pilihan
+// Dikirim pekan ini (PRD A5 ▶ Revisi 2026-10-19; GLOSSARY "Dikirim pekan ini", "Kirim terakhir"): nilai awal pilihan
 // "Dikirim" / "Tidak dikirim pekan ini" toko dua mingguan pada satu tanggal kirim rutinnya, dari kirim terakhir toko itu.
 
 import { selisihHari, type TanggalBisnis } from "./kalender";

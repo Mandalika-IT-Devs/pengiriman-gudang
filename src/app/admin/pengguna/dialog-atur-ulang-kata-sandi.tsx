@@ -74,7 +74,7 @@ function FormAturUlangKataSandi({ idPengguna, nama }: { idPengguna: string; nama
 }
 
 /**
- * Tombol "Atur ulang kata sandi" dan dialognya (T137, CONTEXT "Atur ulang kata sandi", DESIGN §11.2). Tidak dipasang di
+ * Tombol "Atur ulang kata sandi" dan dialognya (T137, GLOSSARY "Atur ulang kata sandi", DESIGN §11.2). Tidak dipasang di
  * baris akun sendiri; server juga menolaknya. Dialog dirender lewat portal karena pembukanya berada di sel tabel.
  */
 export function DialogAturUlangKataSandi({ idPengguna, nama }: { idPengguna: string; nama: string }) {

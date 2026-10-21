@@ -738,7 +738,7 @@ Membaca Excel dan menghitung rata-rata bertahap tidak dilakukan saat halaman dib
 
 ### C2. Bahasa dan tampilan
 
-Antarmuka berbahasa Indonesia. Tanggal ditampilkan sebagai `Jumat, 05-06-2026`. Istilah layar mengikuti `CONTEXT.md`.
+Antarmuka berbahasa Indonesia. Tanggal ditampilkan sebagai `Jumat, 05-06-2026`. Istilah layar mengikuti `GLOSSARY.md`.
 
 ### C3. Di luar scope
 

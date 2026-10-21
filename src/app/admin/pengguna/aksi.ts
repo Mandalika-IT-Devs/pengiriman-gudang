@@ -176,7 +176,7 @@ export async function tampilkanKataSandi(input: unknown): Promise<HasilTampilkan
 }
 
 /**
- * Atur ulang kata sandi akun lain (T137, CONTEXT "Atur ulang kata sandi"): hash diganti lewat Better Auth, semua sesi akun
+ * Atur ulang kata sandi akun lain (T137, GLOSSARY "Atur ulang kata sandi"): hash diganti lewat Better Auth, semua sesi akun
  * itu diakhiri, lalu kata sandinya dicatat (salinan hanya untuk akun bukan admin). Akun sendiri ditolak.
  */
 export async function aturUlangKataSandi(input: unknown): Promise<HasilSimpan> {

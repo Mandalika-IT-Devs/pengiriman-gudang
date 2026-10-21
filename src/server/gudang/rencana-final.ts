@@ -29,7 +29,7 @@ import { MASALAH_TANPA_VARIAN } from "./masalah-draft";
 import { bacaKeteranganDiLuarJadwal, type KeteranganDiLuarJadwal } from "./pengiriman-di-luar-jadwal";
 import type { RincianBarisDraft, TanggalCakupanDraft } from "./rincian-draft";
 
-// Finalisasi rencana per toko per tanggal kirim (T62; PRD A7 ▶ Keputusan perencanaan M2–M3; CONTEXT "Finalisasi").
+// Finalisasi rencana per toko per tanggal kirim (T62; PRD A7 ▶ Keputusan perencanaan M2–M3; GLOSSARY "Finalisasi").
 // Rencana final disalin dari draft rencana gudang itu dalam satu transaksi (CODING_STANDARDS), hanya bila draft tidak
 // perlu dihitung ulang untuk toko itu (T61), toko itu punya varian, dan semua baris otomatisnya tanpa masalah (PRD A6).
 // Snapshot lengkapnya (PRD A7, B9) disimpan di `rencana_final` dan `baris_rencana_final`, lalu tidak pernah diubah.

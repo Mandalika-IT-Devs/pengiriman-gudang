@@ -9,7 +9,7 @@ import { gudang, pilihanDikirimPekanIni, rencanaFinal, user } from "@/server/db/
 import type { Tx } from "./jadwal";
 import { jadwalKirimTokoGudang } from "./pengiriman-di-luar-jadwal";
 
-// Dikirim pekan ini (T134, PRD A5 ▶ Revisi 2026-10-19; CONTEXT "Dikirim pekan ini", "Kirim terakhir"). Toko dua mingguan
+// Dikirim pekan ini (T134, PRD A5 ▶ Revisi 2026-10-19; GLOSSARY "Dikirim pekan ini", "Kirim terakhir"). Toko dua mingguan
 // pada tanggal kirim rutinnya (menurut jadwal tetap aktif dan pengiriman di luar jadwal yang berlaku) punya pilihan Dikirim
 // / Tidak dikirim pekan ini: pilihan operator yang tersimpan, atau nilai awal otomatis dari kirim terakhir. Toko yang sudah
 // punya rencana final untuk tanggal itu di gudang ini selalu Dikirim. Keadaan dibaca saat dibutuhkan, sehingga nilai awal

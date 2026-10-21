@@ -67,7 +67,7 @@ function pastikanMasukanJumlahKirim(kebutuhan: number, stokAkhir: number, persen
   pastikanTidakNegatif("persenBuffer", persenBuffer);
 }
 
-/** Stok target = ⌈kebutuhan × (100 + persenBuffer) / 100⌉ (CONTEXT "Stok target", ADR-0008). */
+/** Stok target = ⌈kebutuhan × (100 + persenBuffer) / 100⌉ (GLOSSARY "Stok target", ADR-0008). */
 function hitungStokTarget(kebutuhan: number, persenBuffer: number): number {
   return bagiBulatAtas(kaliAman("kebutuhan × (100 + persenBuffer)", kebutuhan, 100 + persenBuffer), 100);
 }

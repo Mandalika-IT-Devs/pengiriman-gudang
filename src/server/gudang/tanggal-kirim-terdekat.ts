@@ -9,7 +9,7 @@ import { tokoTidakDikirimPekanIni } from "./dikirim-pekan-ini";
 import { jadwalKirimTokoGudang } from "./pengiriman-di-luar-jadwal";
 
 // Tanggal kirim terdekat gudang (DESIGN §9 ▶ T79, §11.5; T118) dan saran tanggal kirim form "Hitung kebutuhan". Sumbernya
-// tanggal kirim toko (CONTEXT "Tanggal kirim toko"): jadwal tetap aktif ditambah pengiriman di luar jadwal yang berlaku
+// tanggal kirim toko (GLOSSARY "Tanggal kirim toko"): jadwal tetap aktif ditambah pengiriman di luar jadwal yang berlaku
 // (PRD A5 ▶ Revisi 2026-10-13). Hanya toko aktif dengan jadwal tetap aktif yang dihitung, sama dengan toko yang masuk
 // draft: toko nonaktif tidak mengirim walaupun masih punya jadwal aktif (PRD A6 ▶ Keputusan 2026-10-10). Pemeriksaan
 // akses oleh pemanggil. `hariIni` = tanggal saat ini (WIB), dari pemanggil.

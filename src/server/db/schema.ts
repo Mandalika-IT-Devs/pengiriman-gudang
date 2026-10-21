@@ -197,7 +197,7 @@ export type StatusImpor = (typeof daftarStatusImpor)[number];
 const daftarSql = (nilai: readonly string[]) => sql.raw(nilai.map((n) => `'${n}'`).join(", "));
 
 /**
- * Satu pembacaan satu sheet dari satu file (CONTEXT "Impor"). Hasil validasi (`masalah`) dan produk di sheet
+ * Satu pembacaan satu sheet dari satu file (GLOSSARY "Impor"). Hasil validasi (`masalah`) dan produk di sheet
  * disimpan sebagai JSONB; sel dan cakupan tanggal di tabel tersendiri dengan kunci `impor_id` (staging).
  * ADR-0002: hanya satu impor aktif per bulan impor, ditegakkan unique index parsial.
  */
@@ -437,7 +437,7 @@ export const cacheRataRataBulanan = pgTable(
   ],
 );
 
-/** Total penjualan mentah (CONTEXT) per produk–toko–bulan laporan: jumlah kuantitas teramati tanpa perataan. */
+/** Total penjualan mentah (GLOSSARY) per produk–toko–bulan laporan: jumlah kuantitas teramati tanpa perataan. */
 export const cacheTotalPenjualanMentah = pgTable(
   "cache_total_penjualan_mentah",
   {
@@ -469,7 +469,7 @@ export const daftarStatusSnapshotLibur = ["menunggu-persetujuan", "aktif", "diar
 export type StatusSnapshotLibur = (typeof daftarStatusSnapshotLibur)[number];
 
 /**
- * Daftar libur satu tahun hasil sinkronisasi API (CONTEXT "Snapshot libur"). Hanya satu snapshot aktif per tahun,
+ * Daftar libur satu tahun hasil sinkronisasi API (GLOSSARY "Snapshot libur"). Hanya satu snapshot aktif per tahun,
  * ditegakkan unique index parsial. Sinkronisasi tidak pernah mengubah snapshot yang sudah ada.
  */
 export const snapshotLibur = pgTable(
@@ -655,7 +655,7 @@ export const daftarStatusPerubahanKategori = ["aktif", "dibatalkan"] as const;
 export type StatusPerubahanKategori = (typeof daftarStatusPerubahanKategori)[number];
 
 /**
- * Perubahan kategori satu tanggal oleh admin (CONTEXT "Perubahan kategori"). `tokoId` kosong = seluruh toko.
+ * Perubahan kategori satu tanggal oleh admin (GLOSSARY "Perubahan kategori"). `tokoId` kosong = seluruh toko.
  * Revisi = baris baru dengan nomor revisi +1 pada tanggal + cakupan yang sama; revisi lama tetap tersimpan.
  * Pembatalan mengubah status semua baris aktif tanggal + cakupan itu menjadi `dibatalkan` dan mencatat siapa, kapan,
  * dan alasannya pada baris itu (jejak tidak dihapus). Kategori efektif dihitung dengan `kategoriEfektif` (domain).
@@ -701,7 +701,7 @@ export const daftarStatusVersiRanking = ["draft", "dipublikasikan", "diarsipkan"
 export type StatusVersiRanking = (typeof daftarStatusVersiRanking)[number];
 
 /**
- * Satu unggahan file ranking pusat (CONTEXT "Ranking pusat"). `bulanRanking` = `YYYY-MM` dipilih admin saat
+ * Satu unggahan file ranking pusat (GLOSSARY "Ranking pusat"). `bulanRanking` = `YYYY-MM` dipilih admin saat
  * mengunggah; `versi` = nomor urut unggahan untuk bulan ranking itu (1, 2, …). `errorValidasi` = hasil `bacaRanking`
  * (T52); versi dengan error tidak punya baris dan tidak bisa dipublikasikan. Ranking berlaku untuk semua gudang =
  * versi berstatus `dipublikasikan`, ditegakkan unique index parsial; versi berlaku sebelumnya diarsipkan.
@@ -763,7 +763,7 @@ export const daftarStatusJadwal = ["aktif", "nonaktif"] as const;
 export type StatusJadwal = (typeof daftarStatusJadwal)[number];
 
 /**
- * Jadwal satu toko (CONTEXT "Jadwal"): pola dan hari kirim beserta persiapan per hari (hasil `periksaJadwal`, T54).
+ * Jadwal satu toko (GLOSSARY "Jadwal"): pola dan hari kirim beserta persiapan per hari (hasil `periksaJadwal`, T54).
  * `tanggal_jangkar` hanya tersisa di baris lama dua mingguan (aturan lama, PRD A5 ▶ Revisi 2026-10-19, T135): tidak dibaca
  * dan baris baru tidak mengisinya. Paling banyak satu baris `aktif` per toko, ditegakkan unique index parsial.
  * Mengubah = baris baru; baris aktif sebelumnya menjadi `nonaktif` (riwayat tidak dihapus). Menonaktifkan mencatat siapa
@@ -803,7 +803,7 @@ export const jadwalToko = pgTable(
 );
 
 // --- Usulan jadwal (T56, PRD A5 ▶ OD-06 dan ▶ Keputusan perencanaan M2–M3) ---
-// Alur lama (CONTEXT "Usulan jadwal"): dihapus T113 (PRD A5 ▶ Revisi 2026-10-13). Datanya tetap disimpan sebagai riwayat;
+// Alur lama (GLOSSARY "Usulan jadwal"): dihapus T113 (PRD A5 ▶ Revisi 2026-10-13). Datanya tetap disimpan sebagai riwayat;
 // usulan yang masih menunggu ditutup sebagai ditolak oleh migrasi 0026.
 
 export const daftarJenisUsulanJadwal = ["buat", "ubah", "nonaktifkan"] as const;
@@ -813,7 +813,7 @@ export const daftarStatusUsulanJadwal = ["menunggu", "disetujui", "ditolak"] as 
 export type StatusUsulanJadwal = (typeof daftarStatusUsulanJadwal)[number];
 
 /**
- * Usulan jadwal satu toko gudang selain Pusat (CONTEXT "Usulan jadwal"), dibuat operator dengan hak
+ * Usulan jadwal satu toko gudang selain Pusat (GLOSSARY "Usulan jadwal"), dibuat operator dengan hak
  * `kelola-usulan-jadwal` dan diputuskan admin. Isi jadwal (pola, hari kirim, tanggal jangkar; hasil `periksaJadwal`, T54)
  * kosong untuk usulan `nonaktifkan`. Paling banyak satu usulan `menunggu` per toko, ditegakkan unique index parsial.
  * Usulan tidak mengubah `jadwal_toko` sampai disetujui. `diputuskanOleh`/`diputuskanPada` = penyetuju (admin yang
@@ -884,7 +884,7 @@ export const daftarJenisPengiriman = ["rutin", ...daftarJenisPengirimanDiLuarJad
 export type JenisPengiriman = (typeof daftarJenisPengiriman)[number];
 
 /**
- * Satu pengiriman untuk satu toko pada satu tanggal yang tidak mengubah jadwal tetap (CONTEXT "Pengiriman di luar
+ * Satu pengiriman untuk satu toko pada satu tanggal yang tidak mengubah jadwal tetap (GLOSSARY "Pengiriman di luar
  * jadwal"): `tambahan`, atau `pindah` dari satu tanggal rutin. Diusulkan operator dengan hak `kelola-usulan-jadwal` di
  * gudang `gudangId`; di gudang selain Pusat menunggu persetujuan admin, di Pusat langsung berlaku.
  * Catatan aktivitas (PRD A5 ▶ Revisi 2026-10-13):
@@ -961,7 +961,7 @@ export const pengirimanDiLuarJadwal = pgTable(
 // --- Draft rencana (T58, PRD A6 ▶ Keputusan perencanaan M2–M3: draft rencana dan dasar perhitungannya) ---
 
 /**
- * Draft rencana satu gudang untuk satu tanggal kirim (CONTEXT "Draft rencana"), dibuat operator dengan hak
+ * Draft rencana satu gudang untuk satu tanggal kirim (GLOSSARY "Draft rencana"), dibuat operator dengan hak
  * `hitung-kebutuhan`. Satu draft per gudang + tanggal kirim; menghitung lagi mengganti isi draft itu. Dasar yang dipakai
  * disimpan sebagai sinyal perubahan (T61): versi periode sumber (id penetapan yang berlaku, T51) dan revisi kalender
  * (T42). Toko beserta p, L, dan versi jadwal disimpan di `toko_draft_rencana`. `versiRankingId` = versi ranking pusat
@@ -1140,7 +1140,7 @@ export type JadwalRencanaFinal = {
 };
 
 /**
- * Rencana final satu toko untuk satu tanggal kirim (CONTEXT "Rencana final"), dibuat operator dengan hak `finalisasi`
+ * Rencana final satu toko untuk satu tanggal kirim (GLOSSARY "Rencana final"), dibuat operator dengan hak `finalisasi`
  * dari draft rencana gudang itu. Setiap finalisasi gudang + toko + tanggal kirim membuat versi baru (1, 2, …); versi
  * lama tidak pernah diubah (PRD A7 ▶ Keputusan 2026-10-11, T62). Versi 2 dan seterusnya menggantikan versi sebelumnya
  * dan wajib punya alasan finalisasi ulang; versi 1 tanpa alasan. Semua
@@ -1270,7 +1270,7 @@ export const barisRencanaFinal = pgTable(
 // --- Dikirim pekan ini (T134, PRD A5 ▶ Revisi 2026-10-19) ---
 
 /**
- * Pilihan operator "Dikirim" / "Tidak dikirim pekan ini" (CONTEXT "Dikirim pekan ini") untuk toko dua mingguan pada satu
+ * Pilihan operator "Dikirim" / "Tidak dikirim pekan ini" (GLOSSARY "Dikirim pekan ini") untuk toko dua mingguan pada satu
  * tanggal kirim rutinnya, per gudang + toko + tanggal kirim, beserta siapa dan kapan memilih. Tidak ada baris = nilai
  * awal otomatis dari kirim terakhir. Disimpan terpisah dari `toko_draft_rencana`, karena baris itu diganti setiap draft
  * dihitung ulang, sedangkan pilihan tetap berlaku.
@@ -1299,7 +1299,7 @@ export const pilihanDikirimPekanIni = pgTable(
 // --- Alias nama stok (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT: unggah file stok dan alias nama stok) ---
 
 /**
- * Nama produk di file stok kasir yang dipetakan admin ke tepat satu kode produk (CONTEXT "Alias nama stok").
+ * Nama produk di file stok kasir yang dipetakan admin ke tepat satu kode produk (GLOSSARY "Alias nama stok").
  * `alias` disimpan setelah normalisasi (`normalisasiNamaStok`) dan unik: satu alias hanya untuk satu produk; satu
  * produk boleh punya beberapa alias. Nama master produk tidak disimpan di sini (berlaku sebagai alias bawaan).
  */

@@ -24,7 +24,7 @@ import {
 // halaman tetap memeriksa sesi dan peran di server (wajibMasuk / wajibAdmin / wajibAksesPengirimanGudang /
 // wajibGudangDenganHak / wajibAksesRiwayat).
 
-/** Peran yang ditampilkan di sidebar (istilah CONTEXT.md). Operator = bukan admin, tetapi punya penugasan gudang. */
+/** Peran yang ditampilkan di sidebar (istilah GLOSSARY.md). Operator = bukan admin, tetapi punya penugasan gudang. */
 type PeranTampil = "admin" | "operator" | "viewer";
 
 const labelPeran: Record<PeranTampil, string> = { admin: "Admin", operator: "Operator", viewer: "Viewer" };

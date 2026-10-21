@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * Semua pengguna. Peran tampil memakai aturan sidebar (CONTEXT.md, `layout.tsx`): admin; operator = bukan admin, tetapi
+ * Semua pengguna. Peran tampil memakai aturan sidebar (GLOSSARY.md, `layout.tsx`): admin; operator = bukan admin, tetapi
  * ditugaskan ke gudang aktif; selain itu viewer (DESIGN §11.9). `idAdmin` = akun yang sedang masuk.
  * Kolom Kata sandi (T137) hanya membawa keadaan dan catatan perubahan; kata sandinya diminta lewat "Tampilkan".
  */

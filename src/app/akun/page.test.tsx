@@ -8,7 +8,7 @@ import { user } from "@/server/db/schema";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { idGudangUji } from "@/server/gudang/uji-bantu";
 
-// T138: halaman Akun saya (CONTEXT "Akun saya", PRD A3 ▶ Keputusan 2026-10-20, DESIGN §6 ▶ Keputusan 2026-10-20).
+// T138: halaman Akun saya (GLOSSARY "Akun saya", PRD A3 ▶ Keputusan 2026-10-20, DESIGN §6 ▶ Keputusan 2026-10-20).
 
 const kepala = vi.hoisted(() => ({ cookie: "" }));
 vi.mock("next/headers", () => ({

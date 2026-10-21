@@ -1,5 +1,5 @@
-// Teks bantuan singkat untuk istilah domain (DESIGN §11.6, T121). Istilahnya tetap istilah CONTEXT.md; penjelasannya
-// satu atau dua kalimat yang diturunkan dari definisi CONTEXT.md dan PRD. Semua teks bantuan ditulis di berkas ini.
+// Teks bantuan singkat untuk istilah domain (DESIGN §11.6, T121). Istilahnya tetap istilah GLOSSARY.md; penjelasannya
+// satu atau dua kalimat yang diturunkan dari definisi GLOSSARY.md dan PRD. Semua teks bantuan ditulis di berkas ini.
 
 export const TEKS_BANTUAN_ISTILAH = {
   persiapan: {

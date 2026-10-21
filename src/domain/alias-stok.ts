@@ -1,4 +1,4 @@
-// Alias nama stok (PRD A6 ▶ Keputusan 2026-10-12, UAT; CONTEXT "Alias nama stok"): nama produk di file stok kasir
+// Alias nama stok (PRD A6 ▶ Keputusan 2026-10-12, UAT; GLOSSARY "Alias nama stok"): nama produk di file stok kasir
 // dipetakan ke tepat satu kode produk. Nama master produk berlaku sebagai alias bawaan. Pencocokan persis setelah
 // normalisasi yang sama dengan alias keluarga aroma; tanpa pencocokan mirip. Dipakai T82 (kelola alias) dan T83
 // (unggah stok di draft).

@@ -1,7 +1,7 @@
 import { db } from "@/server/db";
 import { gudang, toko } from "@/server/db/schema";
 
-/** Nama gudang Pusat (PRD A3, CONTEXT "Pusat"): nama gudang, bukan peran. `gudang.nama` unik. */
+/** Nama gudang Pusat (PRD A3, GLOSSARY "Pusat"): nama gudang, bukan peran. `gudang.nama` unik. */
 export const NAMA_GUDANG_PUSAT = "Pusat";
 
 // PRD A3 (OD-02): lima gudang.

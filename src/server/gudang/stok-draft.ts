@@ -6,7 +6,7 @@ import { barisDraftRencana, draftRencana, gudang, tokoDraftRencana } from "@/ser
 
 import { nilaiKirimBaris } from "./draft-rencana";
 
-// Stok akhir per toko–varian di draft rencana (T59; PRD A6, A7; CONTEXT "Stok akhir"). Kosong = belum diketahui (`null`),
+// Stok akhir per toko–varian di draft rencana (T59; PRD A6, A7; GLOSSARY "Stok akhir"). Kosong = belum diketahui (`null`),
 // bukan nol; stok negatif boleh disimpan dan menjadi masalah produk otomatis. Setelah stok disimpan, daftar masalah dan
 // jumlah kirim baris diperbarui dari kebutuhan dan buffer yang tersimpan. Kewenangan diperiksa pemanggil (server action).
 

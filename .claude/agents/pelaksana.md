@@ -7,7 +7,7 @@ Kamu mengerjakan **satu** tiket di branch yang sudah disiapkan. Koordinator yang
 
 ## Langkah
 
-1. Baca isi issue yang diberikan, `AGENTS.md`, dan setiap dokumen yang ditunjuknya untuk area ini (PRD, CONTEXT, ADR, CODING_STANDARDS, DESIGN untuk tampilan). Selesai jika kamu bisa mengutip daftar "Dalam scope" dan "Kriteria penerimaan".
+1. Baca isi issue yang diberikan, `AGENTS.md`, dan setiap dokumen yang ditunjuknya untuk area ini (PRD, GLOSSARY, ADR, CODING_STANDARDS, DESIGN untuk tampilan). Selesai jika kamu bisa mengutip daftar "Dalam scope" dan "Kriteria penerimaan".
 2. Red → green per kriteria. Pakai skill `tdd` jika tersedia. Ekspektasi test diambil dari `tests/golden/`, PRD, atau contoh literal di issue.
 3. Implementasi minimal sampai hijau. Hanya isi "Dalam scope".
 4. Jalankan `pnpm verify` sampai hijau.

@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 
 type PeranTampil = "admin" | "operator" | "viewer";
 
-/** Label peran sama dengan sidebar (CONTEXT.md, `layout.tsx`). */
+/** Label peran sama dengan sidebar (GLOSSARY.md, `layout.tsx`). */
 const labelPeran: Record<PeranTampil, string> = { admin: "Admin", operator: "Operator", viewer: "Viewer" };
 
 /**
- * Akun saya (T138, CONTEXT "Akun saya", PRD A3 ▶ Keputusan 2026-10-20): semua pengguna yang sudah masuk. Zona kerja
+ * Akun saya (T138, GLOSSARY "Akun saya", PRD A3 ▶ Keputusan 2026-10-20): semua pengguna yang sudah masuk. Zona kerja
  * (DESIGN §1), lebar form tunggal (§9). Nama, email, dan peran hanya-baca; peran memakai aturan sidebar: admin; operator =
  * bukan admin, tetapi ditugaskan ke gudang aktif; selain itu viewer.
  */

@@ -22,7 +22,7 @@ Keadaan pekerjaan tersimpan di GitHub (issue terbuka/tertutup, label, PR). Jadi 
 5. **Peninjau.** Kirim subagent `peninjau` yang baru (konteks bersih) dengan: nomor issue, branch, dan basis `main`.
    - `LULUS` → langkah 6.
    - `PERBAIKI` → kirim temuannya ke `pelaksana`, lalu tinjau ulang dengan `peninjau` baru. Maksimal 3 putaran; masih `PERBAIKI` → **Parkir**.
-6. **PR.** Push branch, lalu `gh pr create` dengan template. Isi: `Closes #<n>`, kriteria yang dicentang, bagian "Keputusan teknis" dari pelaksana, dan ringkasan hasil peninjau.
+6. **PR.** Push branch, lalu `gh pr create` dengan template. Isi: `Closes #<n>`, kriteria yang dicentang, bagian "Keputusan teknis" dari pelaksana, dan ringkasan hasil peninjau. Isi PR mengikuti `.github/pull_request_template.md`, bukan skill `pr`: template skill `pr` di mattpocock-skills 1.3 tidak memuat `Closes #n`, padahal CI mewajibkannya.
    - **PR sudah ada (diparkir atau masih draft):** jangan edit deskripsi PR. Push branch, lalu tulis pembaruannya sebagai komentar PR (`gh pr comment <pr> --body-file <berkas>`): keputusan pemilik yang diterapkan, keputusan teknis baru atau yang tidak berlaku lagi, dan hasil peninjau terbaru. Setelah itu jadikan siap dengan perintah tunggal `gh pr ready <pr>`.
 7. **CI.** Jalankan `gh pr checks <pr> --watch`.
    - Hijau → langkah 8.

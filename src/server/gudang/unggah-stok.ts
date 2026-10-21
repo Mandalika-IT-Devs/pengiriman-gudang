@@ -8,7 +8,7 @@ import { aliasNamaStok, barisDraftRencana, draftRencana, produk, tokoDraftRencan
 
 import { PESAN_DRAFT_BERUBAH } from "./stok-draft";
 
-// Unggah stok (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; CONTEXT "Unggah stok"): satu file stok = satu toko di draft.
+// Unggah stok (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; GLOSSARY "Unggah stok"): satu file stok = satu toko di draft.
 // Hanya membaca: hasil pembacaan dikembalikan ke klien sebagai isian yang belum disimpan; menyimpan tetap lewat
 // `simpanStokToko`. Kewenangan diperiksa pemanggil (server action).
 

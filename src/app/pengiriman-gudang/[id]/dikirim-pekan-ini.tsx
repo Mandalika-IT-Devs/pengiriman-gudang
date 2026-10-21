@@ -9,7 +9,7 @@ import type { DikirimPekanIni } from "@/server/gudang/dikirim-pekan-ini";
 
 import { FormDikirimPekanIni } from "./form-dikirim-pekan-ini";
 
-// Dikirim pekan ini di draft (T134, PRD A5 ▶ Revisi 2026-10-19; CONTEXT "Dikirim pekan ini", "Kirim terakhir"). Status
+// Dikirim pekan ini di draft (T134, PRD A5 ▶ Revisi 2026-10-19; GLOSSARY "Dikirim pekan ini", "Kirim terakhir"). Status
 // tampil sebagai ikon + teks (DESIGN §7). DESIGN §7 belum punya baris untuk "Tidak dikirim pekan ini": token `muted` dan
 // `CircleMinus`, yang sudah dipakai untuk keadaan "tidak ikut" lain (hasil unggah stok, alias "Sudah ada").
 

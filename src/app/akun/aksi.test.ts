@@ -8,7 +8,7 @@ import { catatanKataSandi, user } from "@/server/db/schema";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { idGudangUji } from "@/server/gudang/uji-bantu";
 
-// T138 (PRD A3 ▶ Keputusan 2026-10-20, CONTEXT "Akun saya"): setiap pengguna yang sudah masuk mengganti kata sandinya
+// T138 (PRD A3 ▶ Keputusan 2026-10-20, GLOSSARY "Akun saya"): setiap pengguna yang sudah masuk mengganti kata sandinya
 // sendiri. Sesi di perangkat lain berakhir; perangkat yang sedang dipakai tetap masuk. Akun bukan admin menyimpan salinan
 // terenkripsi lewat modul T137 sehingga admin bisa melihatnya; akun admin hanya mencatat waktu dan pengisi.
 
@@ -36,7 +36,7 @@ async function catatan(idPengguna: string) {
   return baris;
 }
 
-/** Operator = akun bukan admin yang ditugaskan ke gudang aktif (CONTEXT.md). Masuk di "perangkat ini". */
+/** Operator = akun bukan admin yang ditugaskan ke gudang aktif (GLOSSARY.md). Masuk di "perangkat ini". */
 async function operatorMasuk() {
   const operator = await kepalaPenggunaUji("viewer");
   await tugaskanOperator({ idPengguna: operator.id, idGudang: await idGudangUji("Gudang Cibubur"), hakTindakan: [] });

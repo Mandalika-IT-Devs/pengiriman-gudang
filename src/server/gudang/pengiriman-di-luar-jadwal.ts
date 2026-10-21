@@ -540,7 +540,7 @@ export type PengirimanBerlaku = PengirimanDiLuarJadwalBerlaku & { id: number; je
 
 /**
  * Toko gudang `idGudang` (urut nama) beserta jadwal tetap aktif dan pengiriman di luar jadwal gudang itu yang berlaku:
- * sumber tanggal kirim toko (CONTEXT "Tanggal kirim toko"). Pemeriksaan akses oleh pemanggil.
+ * sumber tanggal kirim toko (GLOSSARY "Tanggal kirim toko"). Pemeriksaan akses oleh pemanggil.
  */
 export async function jadwalKirimTokoGudang(
   idGudang: number,

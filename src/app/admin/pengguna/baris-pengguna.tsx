@@ -17,7 +17,7 @@ import { aktifkanKembaliPengguna, nonaktifkanPengguna, ubahPeran } from "./aksi"
 import { DialogAturUlangKataSandi } from "./dialog-atur-ulang-kata-sandi";
 import { KataSandiPengguna, type KataSandiTampil } from "./kata-sandi-pengguna";
 
-/** Peran yang ditampilkan, aturan sama seperti sidebar (CONTEXT.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
+/** Peran yang ditampilkan, aturan sama seperti sidebar (GLOSSARY.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
 type PeranTampil = "admin" | "operator" | "viewer";
 
 const labelPeranTampil: Record<PeranTampil, string> = { admin: "Admin", operator: "Operator", viewer: "Viewer" };

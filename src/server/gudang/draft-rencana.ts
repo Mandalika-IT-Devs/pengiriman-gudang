@@ -58,7 +58,7 @@ export const PESAN_PERIODE_TANPA_DATA_AKTIF =
 /** PRD A6 ▶ Keputusan perencanaan M2–M3: belum ada ranking dipublikasikan → perhitungan tidak berjalan. */
 export const PESAN_RANKING_BELUM_DIPUBLIKASIKAN = "Ranking pusat belum dipublikasikan";
 
-/** Buffer (CONTEXT "Buffer"): keluarga aroma tujuh besar ranking berlaku, dan produk otomatis lainnya. */
+/** Buffer (GLOSSARY "Buffer"): keluarga aroma tujuh besar ranking berlaku, dan produk otomatis lainnya. */
 const PERSEN_BUFFER_TUJUH_BESAR = 20;
 const PERSEN_BUFFER_LAINNYA = 10;
 
@@ -377,7 +377,7 @@ export async function daftarTanggalDraft(idGudang: number): Promise<TanggalBisni
   return baris.map((b) => parseTanggalBisnis(b.tanggalKirim));
 }
 
-/** Asal buffer dari persen buffer tersimpan (CONTEXT "Buffer"); `null` = tanpa buffer. Dipakai juga rencana final (T63). */
+/** Asal buffer dari persen buffer tersimpan (GLOSSARY "Buffer"); `null` = tanpa buffer. Dipakai juga rencana final (T63). */
 export function asalBufferDari(persenBuffer: number | null): "tujuh-besar" | "lainnya" | null {
   if (persenBuffer === null) return null;
   return persenBuffer === PERSEN_BUFFER_TUJUH_BESAR ? "tujuh-besar" : "lainnya";

@@ -4,7 +4,7 @@ import { cocokkanNamaStok, normalisasiNamaStok, type AliasNamaStok, type ProdukM
 import { db } from "@/server/db";
 import { aliasNamaStok, produk } from "@/server/db/schema";
 
-// Alias nama stok (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT; CONTEXT "Alias nama stok"). Aturan tambah berlaku sama
+// Alias nama stok (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT; GLOSSARY "Alias nama stok"). Aturan tambah berlaku sama
 // untuk form satu alias dan setiap baris unggahan: kode produk harus ada di master; alias yang sudah ada untuk kode
 // yang sama = "sudah ada" (tidak diubah); alias milik produk lain atau sama dengan nama master produk lain ditolak;
 // alias kosong ditolak. Operasi massal mengembalikan hasil per baris (CODING_STANDARDS).

@@ -5,7 +5,7 @@ Aplikasi web internal: impor penjualan Excel → laporan rata-rata bertahap → 
 ## Sumber kebenaran
 
 - Ketika menyentuh aturan bisnis atau rumus: `docs/PRD.md` adalah satu-satunya sumber. Blok `▶ Revisi` dan `▶ Keputusan` mengalahkan teks di atasnya.
-- Ketika menamai sesuatu (kode, test, issue, PR): pakai istilah `CONTEXT.md`.
+- Ketika menamai sesuatu (kode, test, issue, PR): pakai istilah `GLOSSARY.md`.
 - Ketika bekerja di sebuah area: baca ADR terkait di `docs/adr/`.
 - Ketika tiket menyentuh hal yang belum diputuskan: lihat `docs/OPEN-DECISIONS.md`.
 - Ketika menulis kode: ikuti `CODING_STANDARDS.md`.
@@ -33,7 +33,7 @@ Hasil kerja = persis isi "Dalam scope" issue:
 - Dependency hanya dari `.github/dependency-allowlist.txt`. Di luar daftar itu → parkir tiket.
 - Refactor terbatas pada berkas yang memang diperlukan issue.
 - Rumus diimplementasikan persis seperti PRD, termasuk pembulatan per tahap, walaupun terlihat bisa disederhanakan.
-- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/DESIGN.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `CONTEXT.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `src/domain/AGENTS.md`, `tests/golden/`, `.github/`, `.claude/`.
+- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/DESIGN.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `GLOSSARY.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `src/domain/AGENTS.md`, `tests/golden/`, `.github/`, `.claude/`.
 - Test yang merah diperbaiki di kode, bukan di fixture golden.
 - Perubahan masuk ke `main` hanya lewat PR dengan CI hijau. Label `disetujui-pemilik` adalah milik pemilik. Force-push adalah tindakan manusia.
 
@@ -59,4 +59,4 @@ Lima label kanonik bawaan. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-Single-context: `CONTEXT.md` dan `docs/adr/` di root. See `docs/agents/domain.md`.
+Single-context: `GLOSSARY.md` dan `docs/adr/` di root. See `docs/agents/domain.md`.

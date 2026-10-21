@@ -7,5 +7,5 @@ Impor penjualan Excel → laporan rata-rata bertahap → rencana jumlah kirim gu
 | Pemilik produk: cara menjalankan, menjawab pertanyaan, UAT | `docs/PANDUAN.md` |
 | Agen (Claude Code) | `AGENTS.md` |
 | Aturan bisnis & rumus | `docs/PRD.md` |
-| Istilah | `CONTEXT.md` |
+| Istilah | `GLOSSARY.md` |
 | Keputusan | `docs/adr/`, `docs/OPEN-DECISIONS.md` |

@@ -54,7 +54,7 @@ import { muatStatusCacheLaporan, type StatusCacheLaporan } from "@/server/lapora
 //   tanggal itu sudah punya rencana final. Toko Tidak dikirim pekan ini tidak dihitung di (2) dan (3) (T134). Gudang
 //   tanpa tanggal kirim terdekat tidak punya langkah.
 
-/** Peran yang ditampilkan (istilah CONTEXT.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
+/** Peran yang ditampilkan (istilah GLOSSARY.md): operator = bukan admin, tetapi ditugaskan ke gudang. */
 export type PeranTampil = "admin" | "operator" | "viewer";
 
 type JenisTindakanAdmin =

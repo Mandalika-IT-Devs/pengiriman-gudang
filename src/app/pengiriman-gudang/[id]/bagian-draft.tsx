@@ -392,7 +392,7 @@ function TabelToko({
   );
 }
 
-/** Label dasar perhitungan yang berubah (istilah CONTEXT.md). */
+/** Label dasar perhitungan yang berubah (istilah GLOSSARY.md). */
 const labelAlasan: Record<AlasanHitungUlang, string> = {
   "periode-sumber": "Periode sumber",
   "impor-aktif": "Impor aktif",

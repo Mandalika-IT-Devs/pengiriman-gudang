@@ -1,4 +1,4 @@
-// Pembaca file stok kasir (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; CONTEXT "File stok", "Unggah stok"). Murni: baris
+// Pembaca file stok kasir (T83; PRD A6 ▶ Keputusan 2026-10-12, UAT; GLOSSARY "File stok", "Unggah stok"). Murni: baris
 // sel mentah (baris 1 = judul kolom, seperti pembaca ranking) → baris stok per nama, lalu pengelompokan tiap baris
 // terhadap varian toko di draft lewat pencocokan nama → kode produk dari T82. Pembacaan CSV/xlsx menjadi sel mentah ada
 // di lapisan server.
