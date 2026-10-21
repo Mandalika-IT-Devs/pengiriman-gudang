@@ -199,6 +199,38 @@ function KelompokNavigasi({
   );
 }
 
+/**
+ * T138 — DESIGN §6 ▶ Keputusan (2026-10-20): nama dan peran di bawah sidebar menjadi tautan ke Akun saya (`/akun`), di
+ * atas Keluar, untuk semua pengguna yang sudah masuk. Saat aktif, teks peran memakai accent-foreground, bukan
+ * muted-foreground (DESIGN §2 ▶ Keputusan 2026-10-09).
+ */
+function TautanAkunSaya({
+  pengguna,
+  aktif,
+  onClick,
+}: {
+  pengguna: { nama: string; peran: PeranTampil };
+  aktif: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href="/akun"
+      aria-label="Akun saya"
+      aria-current={aktif ? "page" : undefined}
+      onClick={onClick}
+      className={cn(
+        "flex min-h-11 w-full flex-col justify-center rounded-full px-4 py-1 text-sm transition-colors duration-300 ease-out",
+        aktif ? "bg-accent text-accent-foreground" : "text-foreground hover:bg-primary/10 hover:text-primary",
+        fokusTerlihat,
+      )}
+    >
+      <span className="truncate font-semibold">{pengguna.nama}</span>
+      <span className={aktif ? "text-accent-foreground" : "text-muted-foreground"}>{labelPeran[pengguna.peran]}</span>
+    </Link>
+  );
+}
+
 /** Form kecil agar tombol tetap berfungsi dengan keyboard (Enter/Spasi) dan sebelum JavaScript termuat. */
 function TombolKeluar() {
   return (
@@ -302,10 +334,7 @@ export function Navigasi({
       </nav>
 
       <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
-        <div className="px-4 text-sm">
-          <p className="truncate font-semibold text-foreground">{pengguna.nama}</p>
-          <p className="text-muted-foreground">{labelPeran[pengguna.peran]}</p>
-        </div>
+        <TautanAkunSaya pengguna={pengguna} aktif={halamanAktif(pathname, "/akun")} onClick={tutup} />
         <TombolKeluar />
       </div>
     </>

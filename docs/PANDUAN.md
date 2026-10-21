@@ -73,6 +73,27 @@ Isi sidebar per peran (kelompok bisa dibuka-tutup):
 
 Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah Beranda. Riwayat hanya untuk admin dan operator (pengguna yang punya penugasan di gudang aktif), sama seperti Pengiriman Gudang. "Kirim di luar jadwal" hanya tampil bagi operator yang punya hak "Usulkan pengiriman di luar jadwal" di sedikitnya satu gudang. Operator tanpa hak tindakan apa pun tetap bisa membuka Pengiriman Gudang gudangnya, tetapi hanya-baca.
 
+### Akun saya (semua peran)
+
+Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman **Akun saya**. Di layar kecil, tautan yang sama ada di bawah menu (tombol menu di kanan atas). Halaman ini terbuka untuk admin, operator, dan viewer.
+
+- Halaman ini menampilkan Nama, Email, dan Peran Anda (Admin, Operator, atau Viewer, sama dengan sidebar). Ketiganya hanya bisa dibaca.
+- **Ganti kata sandi**:
+  - Isi "Kata sandi saat ini", "Kata sandi baru", dan "Ulangi kata sandi baru", lalu tekan "Ganti kata sandi".
+  - Kata sandi baru 8–128 karakter, dan ulangannya harus sama.
+  - Tombol mata di kanan setiap isian menampilkan atau menyembunyikan ketikan, tanpa mengirim form. Pakai tombol ini untuk memeriksa ketikan sebelum menyimpan.
+- Jika berhasil, tampil "Kata sandi berhasil diganti. Perangkat lain sudah dikeluarkan." dan semua isian dikosongkan.
+  - Perangkat yang sedang Anda pakai tetap masuk.
+  - Perangkat lain (browser atau ponsel lain) keluar dan harus masuk lagi dengan kata sandi baru.
+- Kata sandi tidak berubah jika isiannya ditolak:
+  - "Kata sandi saat ini salah." jika kata sandi saat ini tidak cocok.
+  - "Kata sandi baru minimal 8 karakter." jika kata sandi baru terlalu pendek.
+  - "Kata sandi baru dan ulangannya tidak sama." jika ulangannya berbeda.
+- Untuk akun bukan admin (Operator dan Viewer), halaman ini menulis "Admin dapat melihat kata sandi akun ini. Jangan memakai kata sandi yang juga Anda pakai di tempat lain."
+  - Kata sandi baru Anda tampil bagi admin di halaman Pengguna, dengan keterangan "Diubah <tanggal> oleh <nama Anda>".
+  - Kata sandi akun admin tidak pernah disimpan dalam bentuk yang bisa dibaca, jadi keterangan ini tidak tampil untuk admin.
+- Lupa kata sandi? Minta admin mengatur ulang kata sandi Anda di halaman Pengguna. Tidak ada pemulihan lewat email.
+
 ### Admin
 
 **Pekerjaan rutin bulanan.** Kartu "Mulai di sini" di Beranda berisi empat langkah: Impor penjualan, Terbitkan ranking pusat, Periksa pemetaan produk, dan Setujui pengiriman di luar jadwal. Kartu "Perlu tindakan" di bawahnya menyebut hal yang masih menunggu, misalnya "Usulan pengiriman di luar jadwal menunggu persetujuan".
@@ -122,7 +143,7 @@ Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah B
 
 - "Buat pengguna": nama, email, kata sandi (minimal 8 karakter), dan peran ("Admin" atau "Bukan admin"). Tidak ada pendaftaran mandiri.
 - Kolom "Kata sandi" di "Daftar pengguna":
-  - Akun bukan admin (Operator dan Viewer): kata sandi terbaru tersembunyi ("••••••••"). Tekan "Tampilkan" untuk melihatnya dan "Sembunyikan" untuk menutupnya lagi. Kata sandi terbaru adalah yang terakhir diisi, yaitu saat akun dibuat atau saat kata sandinya diatur ulang.
+  - Akun bukan admin (Operator dan Viewer): kata sandi terbaru tersembunyi ("••••••••"). Tekan "Tampilkan" untuk melihatnya dan "Sembunyikan" untuk menutupnya lagi. Kata sandi terbaru adalah yang terakhir diisi, yaitu saat akun dibuat, saat kata sandinya diatur ulang, atau saat pengguna menggantinya sendiri di Akun saya.
   - "Belum tersedia": kata sandi diisi sebelum fitur ini, misalnya akun dari `pnpm uat`, sehingga hanya tersimpan sebagai hash satu arah. Kata sandinya tersedia setelah pengguna menggantinya atau admin mengatur ulang.
   - "—": akun admin. Kata sandi admin tidak pernah ditampilkan dan tidak disimpan dalam bentuk yang bisa dibaca. Mengubah akun bukan admin menjadi admin menghapus salinan kata sandinya.
   - Di bawahnya tertulis "Diubah <tanggal> oleh <nama>", yaitu kapan dan oleh siapa kata sandi terakhir diisi. Untuk kata sandi yang diisi sebelum fitur ini tertulis "—".

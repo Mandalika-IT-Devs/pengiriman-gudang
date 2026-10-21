@@ -169,3 +169,32 @@ describe("item Riwayat di menu tarik", () => {
     expect(tautanRiwayat()).toEqual([]);
   });
 });
+
+// T138 — DESIGN §6 ▶ Keputusan (2026-10-20): nama dan peran di bawah menu tarik juga menjadi tautan Akun saya, di atas
+// Keluar, untuk semua peran.
+describe("tautan Akun saya di menu tarik", () => {
+  it.each([
+    ["admin", true],
+    ["operator", true],
+    ["viewer", false],
+  ] as const)("%s: tautan 'Akun saya' ke /akun di atas Keluar; memilihnya menutup menu", (peran, tampilkanPengirimanGudang) => {
+    act(() =>
+      akar.render(
+        <Navigasi pengguna={{ nama: "Pengguna Uji", peran }} tampilkanPengirimanGudang={tampilkanPengirimanGudang} tampilkanJadwalToko={false}>
+          <p>isi</p>
+        </Navigasi>,
+      ),
+    );
+    bukaMenu();
+    const akun = menu()!.querySelector<HTMLAnchorElement>('a[href="/akun"]');
+    expect(akun).not.toBeNull();
+    expect(akun!.getAttribute("aria-label")).toBe("Akun saya");
+    expect(akun!.textContent).toContain("Pengguna Uji");
+    const keluar = [...menu()!.querySelectorAll("button")].find((b) => b.textContent === "Keluar");
+    expect(keluar).toBeDefined();
+    expect(akun!.compareDocumentPosition(keluar!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    klik(akun!);
+    expect(terbuka()).toBe(false);
+  });
+});

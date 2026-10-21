@@ -203,6 +203,25 @@ describe("Navigasi: penanda halaman aktif", () => {
     expect(kelompokTerbuka(html)).toEqual(["Pekerjaan rutin"]);
   });
 
+  // T138: halaman Akun saya menandai tautan nama dan peran; tidak ada item navigasi lain yang aktif.
+  it("/akun → tautan Akun saya aktif (aria-current, latar accent, peran tetap kontras), item lain tidak", () => {
+    const html = render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null }, "/akun");
+    expect(tautanAktif(html)).toEqual(["/akun"]);
+    expect(kelompokTerbuka(html)).toEqual([]);
+    const tautan = html.match(/<a [^>]*href="\/akun"[^>]*>.*?<\/a>/)?.[0] ?? "";
+    expect(tautan).toContain("bg-accent");
+    expect(tautan).toContain("text-accent-foreground");
+    // DESIGN §2 ▶ Keputusan 2026-10-09: teks sekunder di atas accent tidak memakai muted-foreground.
+    expect(tautan).not.toContain("text-muted-foreground");
+  });
+
+  it("di halaman lain tautan Akun saya tidak aktif", () => {
+    const html = render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null }, "/ringkasan");
+    const tautan = html.match(/<a [^>]*href="\/akun"[^>]*>/)?.[0] ?? "";
+    expect(tautan).not.toContain("aria-current");
+    expect(tautan).not.toContain("bg-accent");
+  });
+
   it("item aktif memakai latar accent dan teks accent-foreground (DESIGN §6)", () => {
     const html = render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/ringkasan");
     const aktif = html.match(/<a [^>]*aria-current="page"[^>]*>/)?.[0] ?? "";
@@ -243,6 +262,25 @@ describe("Navigasi: tampilan sidebar", () => {
     expect(posisiPeran).toBeGreaterThan(posisiNama);
     expect(posisiKeluar).toBeGreaterThan(posisiPeran);
     expect([...html.matchAll(/<form[^>]*>\s*<button type="submit"/g)]).toHaveLength(1);
+  });
+
+  // T138 — DESIGN §6 ▶ Keputusan (2026-10-20): nama dan peran menjadi tautan ke Akun saya, di atas Keluar.
+  it.each([
+    ["admin", ADMIN, "Admin Uji", "Admin"],
+    ["operator", OPERATOR, "Operator Uji", "Operator"],
+    ["viewer", VIEWER, "Viewer Uji", "Viewer"],
+  ] as const)("%s: nama dan peran adalah tautan 'Akun saya' ke /akun, di atas Keluar", (_peran, pengguna, nama, peran) => {
+    const html = render({ pengguna, tampilkanPengirimanGudang: pengguna !== VIEWER, tampilkanJadwalToko: false, children: null });
+    const akun = [...html.matchAll(/<a [^>]*href="\/akun"[^>]*>(.*?)<\/a>/g)];
+    // Satu di sidebar desktop; menu tarik baru dirender saat dibuka (navigasi-menu-tarik.test.tsx).
+    expect(akun).toHaveLength(1);
+    const [tautan, isi] = [akun[0]![0], akun[0]![1]!];
+    expect(tautan).toContain('aria-label="Akun saya"');
+    expect(isi.replace(/<[^>]+>/g, "|")).toMatch(new RegExp(`^\\|*${nama}\\|+${peran}\\|*$`));
+    // "Keluar</button>", bukan "Keluarga aroma".
+    expect(html.indexOf(tautan)).toBeLessThan(html.indexOf("Keluar</button>"));
+    // Di luar navigasi utama, di blok bawah bersama Keluar.
+    expect(html.indexOf(tautan)).toBeGreaterThan(html.indexOf("</nav>"));
   });
 
   it("label peran: Admin, Operator, Viewer", () => {
