@@ -1,5 +1,5 @@
 {
-  "kitVersion": "0.1.11",
+  "kitVersion": "1.0.1",
   "language": "id",
   "verifyCommand": "pnpm verify",
   "domainModulePath": "src/domain/",
