@@ -2,6 +2,10 @@
 
 Aplikasi web internal untuk admin dan operator gudang MANDALIKA: impor penjualan Excel → laporan rata-rata bertahap → rencana jumlah kirim dari gudang ke toko. Tidak mencakup konfirmasi pengiriman fisik dan penerimaan barang, model safety stock, maupun pendaftaran akun mandiri. Antarmuka berbahasa Indonesia.
 
+## Bahasa
+
+Semua yang ditulis untuk pemilik memakai bahasa Indonesia: setiap pesan di percakapan, termasuk baris status singkat di sela perintah seperti "Sekarang CI: …", juga issue, PR, komentar, dan commit. Satu pesan memakai satu bahasa saja.
+
 ## Sumber kebenaran
 
 - Ketika menyentuh aturan bisnis atau rumus: `docs/PRD.md` adalah satu-satunya sumber. Blok `▶ Revisi` dan `▶ Keputusan` mengalahkan teks di atasnya. Bahan di `docs/input/` bukan aturan.

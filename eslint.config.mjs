@@ -10,7 +10,7 @@ const config = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "drizzle/**"],
+    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "drizzle/**", ".claude/worktrees/**"],
   },
   {
     rules: {

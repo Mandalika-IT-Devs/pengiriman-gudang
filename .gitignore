@@ -23,4 +23,5 @@ next-env.d.ts
 out/
 blob-report/
 .claude/settings.local.json
+.claude/worktrees/
 *.swp
