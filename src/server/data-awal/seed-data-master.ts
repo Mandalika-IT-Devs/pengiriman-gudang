@@ -115,9 +115,7 @@ export async function seedDataMaster(): Promise<HasilSeedDataMaster> {
     }
 
     const belumDipetakan = new Set(
-      (
-        await tx.select({ kode: produk.kode }).from(produk).where(eq(produk.statusKeluargaAroma, "belum-dipetakan"))
-      ).map((p) => p.kode),
+      (await tx.select({ kode: produk.kode }).from(produk).where(eq(produk.statusKeluargaAroma, "belum-dipetakan"))).map((p) => p.kode),
     );
     const butir = daftarPemetaan
       .filter((p) => belumDipetakan.has(p.kodeProduk))

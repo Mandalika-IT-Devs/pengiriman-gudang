@@ -97,7 +97,8 @@ export async function bacaDikirimPekanIni(
         id,
         {
           dikirim: final || (p?.dikirim ?? awal.dikirim),
-          kirimTerakhir: tanggalTerakhir === null || awal.selisihHari === null ? null : { tanggal: tanggalTerakhir, selisihHari: awal.selisihHari },
+          kirimTerakhir:
+            tanggalTerakhir === null || awal.selisihHari === null ? null : { tanggal: tanggalTerakhir, selisihHari: awal.selisihHari },
           dipilih: p === undefined ? null : { oleh: p.oleh, pada: p.pada },
           sudahFinal: final,
         },

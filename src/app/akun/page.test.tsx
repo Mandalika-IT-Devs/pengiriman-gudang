@@ -17,8 +17,7 @@ vi.mock("next/headers", () => ({
 
 import HalamanAkun from "./page";
 
-const KETERANGAN_ADMIN_MELIHAT =
-  "Admin dapat melihat kata sandi akun ini. Jangan memakai kata sandi yang juga Anda pakai di tempat lain.";
+const KETERANGAN_ADMIN_MELIHAT = "Admin dapat melihat kata sandi akun ini. Jangan memakai kata sandi yang juga Anda pakai di tempat lain.";
 
 beforeEach(() => {
   kepala.cookie = "";

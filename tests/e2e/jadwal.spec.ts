@@ -38,7 +38,9 @@ function tanggalDiLuarJadwal() {
 /** Toko uji berhak operator punya jadwal tetap mingguan Senin (H). */
 async function jadwalSenin(idToko: number) {
   const admin = await buatPenggunaUji("admin");
-  await db.insert(jadwalToko).values({ tokoId: idToko, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 0 }], dibuatOleh: admin.id });
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: idToko, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 0 }], dibuatOleh: admin.id });
 }
 
 async function isiForm(page: Page, namaToko: string, tanggal: string) {
@@ -97,7 +99,9 @@ test("Gudang selain Pusat: Kirim usulan → Menunggu; admin menyetujui di Perset
   await halamanAdmin.getByRole("button", { name: `Setujui usulan pengiriman ${toko.nama}` }).click();
   // Setelah disetujui, usulan pindah dari "Usulan menunggu" ke riwayat keputusan.
   await expect(
-    halamanAdmin.getByRole("table", { name: "Riwayat keputusan pengiriman di luar jadwal" }).getByRole("row", { name: new RegExp(toko.nama) }),
+    halamanAdmin
+      .getByRole("table", { name: "Riwayat keputusan pengiriman di luar jadwal" })
+      .getByRole("row", { name: new RegExp(toko.nama) }),
   ).toContainText("Berlaku");
   await konteksAdmin.close();
 

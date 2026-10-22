@@ -7,7 +7,13 @@ import { SEMUA } from "../filter";
 import { hasilFilterDiLuarJadwal, hasilFilterRencanaFinal, type TerapanRiwayat } from "../hasil-filter";
 import { cakupanEksporRiwayat, cakupanLihatRiwayat, gudangTidakIkutDiekspor, ikutDiekspor } from "../muat";
 
-import { buatBerkasRiwayatDiLuarJadwal, buatBerkasRiwayatRencanaFinal, namaBerkasEksporRiwayat, type JenisRiwayat, type KeteranganEkspor } from "./berkas";
+import {
+  buatBerkasRiwayatDiLuarJadwal,
+  buatBerkasRiwayatRencanaFinal,
+  namaBerkasEksporRiwayat,
+  type JenisRiwayat,
+  type KeteranganEkspor,
+} from "./berkas";
 
 // Ekspor halaman Riwayat (T129; PRD A7 ▶ Keputusan 2026-10-14): tab yang dibuka, untuk seluruh hasil filter (filter dan
 // kueri yang sama dengan halaman, termasuk cari), satu file satu sheet. Hak diperiksa di server sebelum data dibaca:
@@ -27,7 +33,8 @@ function keterangan(
   waktuEkspor: Date,
 ): KeteranganEkspor {
   return {
-    gudang: terapan.gudang === SEMUA ? "Semua gudang" : (pilihan.gudang.find((g) => String(g.id) === terapan.gudang)?.nama ?? terapan.gudang),
+    gudang:
+      terapan.gudang === SEMUA ? "Semua gudang" : (pilihan.gudang.find((g) => String(g.id) === terapan.gudang)?.nama ?? terapan.gudang),
     toko: terapan.toko === SEMUA ? "Semua toko" : (pilihan.toko.find((t) => String(t.id) === terapan.toko)?.nama ?? terapan.toko),
     dari: terapan.dari === "" ? null : parseTanggalBisnis(terapan.dari),
     sampai: terapan.sampai === "" ? null : parseTanggalBisnis(terapan.sampai),
@@ -67,7 +74,11 @@ export async function GET(request: Request) {
       filter.pilihan.gudang,
     );
     const daftar = filter.hasil.filter((e) => ikutDiekspor(cakupan, e.idGudang));
-    return berkas("di-luar-jadwal", buatBerkasRiwayatDiLuarJadwal(daftar, keterangan(filter.terapan, filter.pilihan, tidakIkut, waktuEkspor)), waktuEkspor);
+    return berkas(
+      "di-luar-jadwal",
+      buatBerkasRiwayatDiLuarJadwal(daftar, keterangan(filter.terapan, filter.pilihan, tidakIkut, waktuEkspor)),
+      waktuEkspor,
+    );
   }
 
   const filter = await hasilFilterRencanaFinal(parameter, cakupanGudang);

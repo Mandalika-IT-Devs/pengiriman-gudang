@@ -47,8 +47,8 @@ export default async function HalamanAliasStok({ searchParams }: { searchParams:
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold md:text-3xl">Alias nama stok</h1>
         <p className="text-muted-foreground">
-          Nama produk di file stok kasir yang dipetakan ke kode produk master. Dipakai saat operator mengunggah file
-          stok di draft rencana. Pencocokan persis setelah normalisasi, tanpa pencocokan mirip.
+          Nama produk di file stok kasir yang dipetakan ke kode produk master. Dipakai saat operator mengunggah file stok di draft rencana.
+          Pencocokan persis setelah normalisasi, tanpa pencocokan mirip.
         </p>
       </div>
 
@@ -59,11 +59,7 @@ export default async function HalamanAliasStok({ searchParams }: { searchParams:
         <h2 className="text-xl font-semibold">Daftar alias</h2>
         <KotakCari action={PATH_HALAMAN} name="cari" nilai={cari} label="Cari alias, kode, atau nama produk" />
         <DaftarAlias daftar={daftar.baris} adaPencarian={cari !== ""} />
-        <NavigasiHalaman
-          potongan={daftar}
-          label="Halaman daftar alias"
-          url={(halaman) => urlDaftar(PATH_HALAMAN, { cari }, { halaman })}
-        />
+        <NavigasiHalaman potongan={daftar} label="Halaman daftar alias" url={(halaman) => urlDaftar(PATH_HALAMAN, { cari }, { halaman })} />
       </section>
     </main>
   );

@@ -29,10 +29,7 @@ function sheetSatuBlok(toko: string, header: Sel[], produk: Sel[][]): Sel[][] {
   ];
 }
 
-function baca(
-  baris: Sel[][],
-  opsi: { namaSheet?: string; tahun?: number; bulan?: number; toko?: string[]; tokoNonaktif?: string[] } = {},
-) {
+function baca(baris: Sel[][], opsi: { namaSheet?: string; tahun?: number; bulan?: number; toko?: string[]; tokoNonaktif?: string[] } = {}) {
   const namaSheet = opsi.namaSheet ?? "JUNI (S)";
   return bacaSheetPenjualan({
     workbook: buatWorkbook({ [namaSheet]: baris }),
@@ -51,9 +48,9 @@ type KasusHeader = {
   hasil: { status: "valid" | "invalid" | "di-luar-bulan-impor"; tanggal?: string };
 };
 
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../../tests/golden/tanggal-impor.json"), "utf8"),
-) as { kasusHeader: KasusHeader[] };
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../tests/golden/tanggal-impor.json"), "utf8")) as {
+  kasusHeader: KasusHeader[];
+};
 
 describe("bacaSheetPenjualan — header tanggal (golden tanggal-impor)", () => {
   it.each(golden.kasusHeader)("header $header (impor $tahunImpor-$bulanImpor) → $hasil.status", (kasus) => {
@@ -115,7 +112,16 @@ describe("bacaSheetPenjualan — kolom tanggal invalid (ADR-0005)", () => {
 
 describe("bacaSheetPenjualan — kuantitas", () => {
   it("sel berisi 0 tersimpan sebagai pengamatan; sel kosong tidak muncul", () => {
-    const hasil = baca(sheetSatuBlok("PMS", [46174, 46175], [[...PRODUK_A, 0, null], [...PRODUK_B, null, 3]]));
+    const hasil = baca(
+      sheetSatuBlok(
+        "PMS",
+        [46174, 46175],
+        [
+          [...PRODUK_A, 0, null],
+          [...PRODUK_B, null, 3],
+        ],
+      ),
+    );
 
     expect(hasil.masalah).toEqual([]);
     expect(hasil.selBernilai).toEqual([
@@ -165,16 +171,12 @@ describe("bacaSheetPenjualan — struktur sheet", () => {
         kategoriProduk: "15ML GLITTER/LEATHER",
       },
     ]);
-    expect(hasil.selBernilai).toEqual([
-      { alamat: "H4", namaToko: "PMJ", kodeProduk: "15GL-GOR", tanggal: "2026-06-01", kuantitas: 4 },
-    ]);
+    expect(hasil.selBernilai).toEqual([{ alamat: "H4", namaToko: "PMJ", kodeProduk: "15GL-GOR", tanggal: "2026-06-01", kuantitas: 4 }]);
   });
 
   it("sheet berawalan MP → error di luar cakupan saat ini", () => {
     const hasil = baca(sheetSatuBlok("PMS", [46174], [PRODUK_A]), { namaSheet: "MP JUNI (S)" });
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "sheet-di-luar-cakupan", lokasi: "MP JUNI (S)!A1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "sheet-di-luar-cakupan", lokasi: "MP JUNI (S)!A1" })]);
     expect(hasil.masalah[0]!.pesan).toContain("di luar cakupan saat ini");
     expect(hasil.blokToko).toEqual([]);
   });
@@ -183,9 +185,7 @@ describe("bacaSheetPenjualan — struktur sheet", () => {
     const baris = sheetSatuBlok("PMS", [46174], [PRODUK_A]);
     baris[0]![0] = "BARDAT";
     const hasil = baca(baris, { namaSheet: "BARDAT Schedule" });
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "a1-bukan-sales", lokasi: "BARDAT Schedule!A1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "a1-bukan-sales", lokasi: "BARDAT Schedule!A1" })]);
     expect(hasil.blokToko).toEqual([]);
   });
 
@@ -197,16 +197,12 @@ describe("bacaSheetPenjualan — struktur sheet", () => {
       bulanImpor: 7,
       namaTokoMaster: ["PMS"],
     });
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "sheet-tidak-ditemukan", lokasi: "JULI (S)!A1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "sheet-tidak-ditemukan", lokasi: "JULI (S)!A1" })]);
   });
 
   it("nama toko tidak ada di master → error di sel nama toko", () => {
     const hasil = baca(sheetSatuBlok("ASOY", [46174], [PRODUK_A]));
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "toko-tidak-dikenal", lokasi: "JUNI (S)!F1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "toko-tidak-dikenal", lokasi: "JUNI (S)!F1" })]);
   });
 
   it("blok toko ganda → error di blok kedua", () => {
@@ -216,23 +212,17 @@ describe("bacaSheetPenjualan — struktur sheet", () => {
       [...JUDUL_KOLOM, 0, 0],
       PRODUK_A,
     ]);
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "blok-toko-ganda", lokasi: "JUNI (S)!G1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "blok-toko-ganda", lokasi: "JUNI (S)!G1" })]);
   });
 
   it("kode produk ganda → error di baris kedua", () => {
     const hasil = baca(sheetSatuBlok("PMS", [46174], [PRODUK_A, [2, ...PRODUK_A.slice(1)]]));
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "kode-produk-ganda", lokasi: "JUNI (S)!B5" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "kode-produk-ganda", lokasi: "JUNI (S)!B5" })]);
   });
 
   it("tanggal ganda dalam satu blok → error di header kedua", () => {
     const hasil = baca(sheetSatuBlok("PMS", [46174, "1/6"], [PRODUK_A]));
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "tanggal-ganda", lokasi: "JUNI (S)!G2" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "tanggal-ganda", lokasi: "JUNI (S)!G2" })]);
   });
 
   it("tanggal yang sama di blok toko berbeda bukan tanggal ganda", () => {
@@ -253,9 +243,7 @@ describe("bacaSheetPenjualan — struktur sheet", () => {
 
   it("baris berisi kuantitas tanpa kode produk → error", () => {
     const hasil = baca(sheetSatuBlok("PMS", [46174], [PRODUK_A, [null, null, null, null, null, 5]]));
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "kode-produk-kosong", lokasi: "JUNI (S)!B5" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "kode-produk-kosong", lokasi: "JUNI (S)!B5" })]);
   });
 
   it("setiap masalah punya pesan dan cara memperbaiki", () => {
@@ -290,16 +278,12 @@ describe("bacaSheetPenjualan — normalisasi nama toko (keputusan T10)", () => {
       [...JUDUL_KOLOM, 0, 0],
       PRODUK_A,
     ]);
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "blok-toko-ganda", lokasi: "JUNI (S)!G1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "blok-toko-ganda", lokasi: "JUNI (S)!G1" })]);
   });
 
   it("nama yang hanya mirip (PMSS) tetap toko-tidak-dikenal", () => {
     const hasil = baca(sheetSatuBlok("PMSS", [46174], [PRODUK_A]));
-    expect(hasil.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "toko-tidak-dikenal", lokasi: "JUNI (S)!F1" }),
-    ]);
+    expect(hasil.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "toko-tidak-dikenal", lokasi: "JUNI (S)!F1" })]);
     expect(hasil.blokToko.map((b) => b.namaToko)).toEqual(["PMSS"]);
   });
 });

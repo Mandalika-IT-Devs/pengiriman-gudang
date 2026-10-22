@@ -130,11 +130,7 @@ const idBagianToko = (tokoId: number) => `draft-toko-${tokoId}`;
  * Halaman draft ini: tanpa `toko` = ringkasan per toko saja; dengan `toko` = toko itu dibuka (T73), dan dengan
  * `rincian` = rincian satu baris toko itu terbuka di panel samping (T60, T108).
  */
-function urlDraft(
-  idGudang: number,
-  tanggalKirim: TanggalBisnis,
-  buka: { toko?: number; rincian?: string; tanpaJangkar?: boolean } = {},
-) {
+function urlDraft(idGudang: number, tanggalKirim: TanggalBisnis, buka: { toko?: number; rincian?: string; tanpaJangkar?: boolean } = {}) {
   const parameter = new URLSearchParams({ tanggal: tanggalKirim });
   if (buka.toko === undefined) return `/pengiriman-gudang/${idGudang}?${parameter.toString()}`;
   parameter.set("toko", String(buka.toko));
@@ -266,14 +262,7 @@ export function FinalisasiToko({
 }: {
   toko: Pick<
     TokoDraft,
-    | "id"
-    | "nama"
-    | "versi"
-    | "versiFinal"
-    | "perluDihitungUlang"
-    | "jumlahTertahan"
-    | "kirimanSebelumnyaBelumSampai"
-    | "dikirimPekanIni"
+    "id" | "nama" | "versi" | "versiFinal" | "perluDihitungUlang" | "jumlahTertahan" | "kirimanSebelumnyaBelumSampai" | "dikirimPekanIni"
   > & { baris: Pick<BarisDraft, "kodeProduk" | "stokAkhir" | "jumlahKirim">[] };
   finalisasi: FinalisasiDraft;
 }) {
@@ -320,8 +309,7 @@ export function FinalisasiToko({
         jumlahVarian: toko.baris.length,
         // Produk manual tidak punya jumlah kirim (PRD A6), jadi tidak menambah total.
         totalJumlahKirim: toko.baris.reduce((total, b) => total + (b.jumlahKirim ?? 0), 0),
-        peringatan:
-          toko.kirimanSebelumnyaBelumSampai === null ? [] : [teksKirimanSebelumnya(toko.kirimanSebelumnyaBelumSampai)],
+        peringatan: toko.kirimanSebelumnyaBelumSampai === null ? [] : [teksKirimanSebelumnya(toko.kirimanSebelumnyaBelumSampai)],
       }}
     />
   );
@@ -414,8 +402,8 @@ function PenandaHitungUlang({ alasan, hitungUlang }: { alasan: readonly AlasanHi
       <BadgeStatus status="perluDihitungUlang" className="w-fit" />
       {/* DESIGN §11.6: paling banyak dua kalimat; keterangan stok yang tetap disimpan ada di bantuan istilah. */}
       <p>
-        Dasar perhitungan berubah sejak draft ini dihitung. Toko yang terkena perubahan ini tidak bisa difinalisasi sebelum
-        draft dihitung ulang.
+        Dasar perhitungan berubah sejak draft ini dihitung. Toko yang terkena perubahan ini tidak bisa difinalisasi sebelum draft dihitung
+        ulang.
         <BantuanIstilah istilah="perluDihitungUlang" className="ml-1" />
       </p>
       <div className="flex flex-col gap-1">
@@ -464,7 +452,11 @@ function KeteranganStokTidakDipakai({ daftarStok }: { daftarStok: readonly StokT
       {daftarStok.map((s) => {
         const produk = s.namaProduk === null ? s.kodeProduk : `${s.kodeProduk} (${s.namaProduk})`;
         return (
-          <li key={`${s.toko.id}|${s.kodeProduk}`} data-stok-tidak-dipakai={`${s.toko.id}|${s.kodeProduk}`} className="flex items-start gap-2 font-semibold">
+          <li
+            key={`${s.toko.id}|${s.kodeProduk}`}
+            data-stok-tidak-dipakai={`${s.toko.id}|${s.kodeProduk}`}
+            className="flex items-start gap-2 font-semibold"
+          >
             <TriangleAlert aria-hidden strokeWidth={2} className="size-5 shrink-0 text-warning" />
             {`Stok ${produk} di Toko ${s.toko.nama} (${formatAngka(s.stokAkhir)}) tidak dipakai karena ${keteranganAlasanStok[s.alasan]}.`}
           </li>
@@ -583,8 +575,7 @@ function IsiDraft({
           <h3 className="text-lg font-semibold">Tanggal kirim {formatTanggal(draft.tanggalKirim)}</h3>
         </div>
         <p className="text-muted-foreground">
-          Dihitung oleh <span className="font-semibold text-foreground">{draft.dihitungOleh}</span> pada{" "}
-          {formatWaktu(draft.dihitungPada)}.
+          Dihitung oleh <span className="font-semibold text-foreground">{draft.dihitungOleh}</span> pada {formatWaktu(draft.dihitungPada)}.
         </p>
       </div>
       {draft.perluDihitungUlang.length > 0 ? <PenandaHitungUlang alasan={draft.perluDihitungUlang} hitungUlang={hitungUlang} /> : null}
@@ -633,15 +624,16 @@ function PeringatanTokoNonaktif({ daftarToko }: { daftarToko: readonly { id: num
  */
 function urutDariTerdekat(daftarTanggal: readonly TanggalBisnis[], hariIni: TanggalBisnis): TanggalBisnis[] {
   const akanDatang = daftarTanggal.filter((t) => t >= hariIni).sort();
-  const lewat = daftarTanggal.filter((t) => t < hariIni).sort().reverse();
+  const lewat = daftarTanggal
+    .filter((t) => t < hariIni)
+    .sort()
+    .reverse();
   return [...akanDatang, ...lewat];
 }
 
 /** Penanda chip tanggal kirim terdekat (T118). Latar `card` + teks `foreground` terbaca di chip biasa maupun terpilih. */
 function PenandaTerdekat() {
-  return (
-    <span className="rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold text-foreground">Terdekat</span>
-  );
+  return <span className="rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold text-foreground">Terdekat</span>;
 }
 
 /**
@@ -700,8 +692,8 @@ export function BagianDraft({
           Draft rencana
         </h2>
         <CardDescription>
-          Kebutuhan barang, stok akhir, dan jumlah kirim setiap varian untuk toko yang mengirim pada tanggal kirim. Lihat
-          rincian baris untuk asal perhitungannya, termasuk buffer dari ranking pusat.
+          Kebutuhan barang, stok akhir, dan jumlah kirim setiap varian untuk toko yang mengirim pada tanggal kirim. Lihat rincian baris
+          untuk asal perhitungannya, termasuk buffer dari ranking pusat.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">

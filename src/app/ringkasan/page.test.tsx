@@ -44,7 +44,20 @@ beforeEach(() => {
   kepala.cookie = "";
 });
 
-const NAMA_SHEET = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+const NAMA_SHEET = [
+  "JANUARI",
+  "FEBRUARI",
+  "MARET",
+  "APRIL",
+  "MEI",
+  "JUNI",
+  "JULI",
+  "AGUSTUS",
+  "SEPTEMBER",
+  "OKTOBER",
+  "NOVEMBER",
+  "DESEMBER",
+];
 
 async function imporAktif({
   idAdmin,
@@ -316,11 +329,7 @@ describe("/ringkasan: filter toko, kategori produk, dan produk (T35)", () => {
     expect(tokoB.indexOf("data-filter-toko=")).toBeLessThan(tokoB.indexOf("data-baris="));
 
     // T38: tombol Ekspor membawa periode dan filter yang diterapkan (tanpa halaman), di dekat filter aktif.
-    const ekspor = new URLSearchParams([
-      ...d.bulan.map((b) => ["bulan", b]),
-      ["toko", String(d.tokoB.id)],
-      ["kategoriProduk", d.x],
-    ]);
+    const ekspor = new URLSearchParams([...d.bulan.map((b) => ["bulan", b]), ["toko", String(d.tokoB.id)], ["kategoriProduk", d.x]]);
     expect(tokoB).toContain(`data-ekspor-url="/ringkasan/ekspor?${ekspor.toString().replaceAll("&", "&amp;")}"`);
     expect(tokoB.indexOf("data-ekspor-url=")).toBeLessThan(tokoB.indexOf("data-baris="));
   });
@@ -369,7 +378,12 @@ describe("/ringkasan: filter toko, kategori produk, dan produk (T35)", () => {
 
   it("filter di URL yang tidak ada di data ditolak dengan pesan", async () => {
     const d = await siapkan();
-    const daftarParameter: Record<string, string>[] = [{ toko: "abc" }, { toko: "999999999" }, { kategoriProduk: "TIDAK ADA" }, { produk: "TIDAK-ADA" }];
+    const daftarParameter: Record<string, string>[] = [
+      { toko: "abc" },
+      { toko: "999999999" },
+      { kategoriProduk: "TIDAK ADA" },
+      { produk: "TIDAK-ADA" },
+    ];
     for (const parameter of daftarParameter) {
       const html = await buka("viewer", { bulan: d.bulan, ...parameter });
       expect(html).toContain('role="alert"');
@@ -394,7 +408,14 @@ describe("/ringkasan: perbandingan minggu yang sama antarbulan (T36, PRD A2)", (
     await imporAktif({ idAdmin: admin.id, toko: toko.nama, tahun: 2029, bulan: 5, hari: [5], produk: [produkUji(kode, [3])] });
     const tokoLain = denganTokoLain ? await buatTokoUji() : null;
     if (tokoLain !== null) {
-      await imporAktif({ idAdmin: admin.id, toko: tokoLain.nama, tahun: 2029, bulan: 6, hari: [2], produk: [produkUji(kodeProdukUji(), [1])] });
+      await imporAktif({
+        idAdmin: admin.id,
+        toko: tokoLain.nama,
+        tahun: 2029,
+        bulan: 6,
+        hari: [2],
+        produk: [produkUji(kodeProdukUji(), [1])],
+      });
     }
     await hitungUlangCacheLaporan();
     return { toko, kode, tokoLain, pasangan: `${toko.id}|${kode}` };
@@ -776,7 +797,9 @@ describe("/ringkasan: kartu jumlah rata-rata per kategori hari (T80, PRD A2 ▶ 
   /** Tanggal-tanggal `bulan` `tahun` yang kategori dasarnya `kategori`. */
   function hariKategori(tahun: number, bulan: number, kategori: KategoriDasar, sampai: number) {
     return Array.from({ length: sampai }, (_, i) => i + 1).filter(
-      (h) => posisiLaporan(parseTanggalBisnis(`${tahun}-${String(bulan).padStart(2, "0")}-${String(h).padStart(2, "0")}`)).kategoriDasar === kategori,
+      (h) =>
+        posisiLaporan(parseTanggalBisnis(`${tahun}-${String(bulan).padStart(2, "0")}-${String(h).padStart(2, "0")}`)).kategoriDasar ===
+        kategori,
     );
   }
 
@@ -816,8 +839,20 @@ describe("/ringkasan: kartu jumlah rata-rata per kategori hari (T80, PRD A2 ▶ 
       bulan: 7,
       hari: sabtuJuli,
       produk: [
-        { ...produkUji(kodeR, sabtuJuli.map(() => 2)), kategori: kategoriQR },
-        { ...produkUji(kodeQ, sabtuJuli.map(() => 3)), kategori: kategoriQR },
+        {
+          ...produkUji(
+            kodeR,
+            sabtuJuli.map(() => 2),
+          ),
+          kategori: kategoriQR,
+        },
+        {
+          ...produkUji(
+            kodeQ,
+            sabtuJuli.map(() => 3),
+          ),
+          kategori: kategoriQR,
+        },
       ],
     });
     const sabtuAgustus = hariKategori(tahun, 8, "Sabtu", 31);
@@ -827,7 +862,12 @@ describe("/ringkasan: kartu jumlah rata-rata per kategori hari (T80, PRD A2 ▶ 
       tahun,
       bulan: 8,
       hari: sabtuAgustus,
-      produk: [produkUji(kodeS, sabtuAgustus.map(() => 5))],
+      produk: [
+        produkUji(
+          kodeS,
+          sabtuAgustus.map(() => 5),
+        ),
+      ],
     });
     await hitungUlangCacheLaporan();
     const bulan = [`${tahun}-06`, `${tahun}-07`, `${tahun}-08`];

@@ -141,8 +141,8 @@ export function UnggahStok({
       </div>
       {/* DESIGN §11.6: paling banyak dua kalimat; format file stok ada di bantuan istilah. */}
       <p className="text-muted-foreground">
-        Pilih file stok kasir untuk toko ini; hasilnya mengisi stok di bawah sebagai perubahan yang belum disimpan. Periksa,
-        lalu tekan Simpan stok.
+        Pilih file stok kasir untuk toko ini; hasilnya mengisi stok di bawah sebagai perubahan yang belum disimpan. Periksa, lalu tekan
+        Simpan stok.
         <BantuanIstilah istilah="fileStok" className="-my-1 ml-1" />
       </p>
       {hasil?.keadaan === "berhasil" ? <RingkasanUnggahStok hasil={hasil} /> : null}

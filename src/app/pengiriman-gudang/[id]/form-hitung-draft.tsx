@@ -75,13 +75,7 @@ export function FormHitungDraft({ idGudang, saranTanggal }: { idGudang: number; 
       <div className="flex flex-wrap items-end gap-4">
         <label className={kelasLabel}>
           Tanggal kirim
-          <Input
-            type="date"
-            required
-            value={tanggalKirim}
-            onChange={(event) => pilih(event.target.value)}
-            className="w-auto"
-          />
+          <Input type="date" required value={tanggalKirim} onChange={(event) => pilih(event.target.value)} className="w-auto" />
         </label>
         <Button type="submit" disabled={menunggu || tanggalKirim === ""} className="active:scale-95">
           Hitung kebutuhan

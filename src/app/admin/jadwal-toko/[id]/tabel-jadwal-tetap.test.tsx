@@ -179,7 +179,13 @@ describe("TabelJadwalTetap", () => {
     expect(isi?.textContent).toContain("Salin jadwal ke beberapa toko");
     expect([...(isi?.querySelectorAll<HTMLInputElement>('input[name="toko"]') ?? [])].map((c) => c.value)).toEqual(["11", "12"]);
     const pola = [...(isi?.querySelectorAll("select") ?? [])].find((s) => s.querySelector('option[value="mingguan"]') !== null);
-    expect([...(pola?.options ?? [])].map((o) => o.value)).toEqual(["mingguan", "2x-seminggu", "3x-seminggu", "dua-mingguan", "1x-sebulan"]);
+    expect([...(pola?.options ?? [])].map((o) => o.value)).toEqual([
+      "mingguan",
+      "2x-seminggu",
+      "3x-seminggu",
+      "dua-mingguan",
+      "1x-sebulan",
+    ]);
     expect([...(isi?.querySelectorAll<HTMLInputElement>('input[name="hariKirim"]') ?? [])].map((c) => c.value)).toEqual([
       "Senin",
       "Selasa",
@@ -225,7 +231,11 @@ describe("RiwayatJadwalTetap", () => {
     );
     const entri = [...html.matchAll(/<li[^>]*data-riwayat-jadwal="(\d+)"[^>]*>(.*?)<\/li>/g)].map((m) => [
       m[1],
-      m[2]!.replace(/<[^>]+>/g, " ").replace(/<!-- -->/g, "").replace(/\s+/g, " ").trim(),
+      m[2]!
+        .replace(/<[^>]+>/g, " ")
+        .replace(/<!-- -->/g, "")
+        .replace(/\s+/g, " ")
+        .trim(),
     ]);
     expect(entri.map(([id]) => id)).toEqual(["31", "30"]);
     expect(entri[0]![1]).toContain("Dinonaktifkan 2× seminggu Senin (H), Kamis (H−1)");

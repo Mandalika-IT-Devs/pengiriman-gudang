@@ -142,9 +142,7 @@ export async function tambahSegmenKode(input: unknown): Promise<HasilSimpan> {
       .from(segmenKodeKeluargaAroma)
       .innerJoin(keluargaAroma, eq(keluargaAroma.id, segmenKodeKeluargaAroma.keluargaId))
       .where(eq(segmenKodeKeluargaAroma.segmen, segmen));
-    return gagal(
-      pemilik ? `Segmen kode ${segmen} sudah dipakai keluarga ${pemilik.nama}.` : `Segmen kode ${segmen} sudah dipakai.`,
-    );
+    return gagal(pemilik ? `Segmen kode ${segmen} sudah dipakai keluarga ${pemilik.nama}.` : `Segmen kode ${segmen} sudah dipakai.`);
   }
   return muatUlang();
 }

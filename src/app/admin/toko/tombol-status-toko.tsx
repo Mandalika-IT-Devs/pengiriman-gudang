@@ -8,8 +8,7 @@ import { DialogKonfirmasi } from "@/components/ui/dialog-konfirmasi";
 import { ubahStatusToko } from "./aksi";
 
 // Konsekuensi diambil dari PRD A3 (toko nonaktif tidak ditambahkan ke gudang) dan A6 ▶ Keputusan T58 (tidak masuk draft).
-const AKIBAT_NONAKTIF =
-  "Toko nonaktif tidak bisa ditambahkan ke gudang dan tidak ikut masuk draft, walaupun masih punya jadwal aktif.";
+const AKIBAT_NONAKTIF = "Toko nonaktif tidak bisa ditambahkan ke gudang dan tidak ikut masuk draft, walaupun masih punya jadwal aktif.";
 
 /**
  * Tombol aktifkan/nonaktifkan satu toko (T76; di halaman Toko sejak T111) dengan dialog konfirmasi (DESIGN §11.3,

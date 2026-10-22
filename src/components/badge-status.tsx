@@ -52,11 +52,7 @@ export function labelStatus(status: Status): string {
   return daftarStatus[status].label;
 }
 
-export function BadgeStatus({
-  status,
-  className,
-  ...props
-}: Omit<ComponentProps<"span">, "children"> & { status: Status }) {
+export function BadgeStatus({ status, className, ...props }: Omit<ComponentProps<"span">, "children"> & { status: Status }) {
   const { label, nada, ikon: Ikon } = daftarStatus[status];
   return (
     <Badge variant={nada} data-status={status} className={className} {...props}>

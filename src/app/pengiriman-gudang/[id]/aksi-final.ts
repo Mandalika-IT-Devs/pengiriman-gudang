@@ -13,8 +13,7 @@ import { finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 
 /** Hasil untuk form finalisasi: `idRencana` membuka layar berhasil. */
 export type HasilAksiFinalisasi =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; idRencana: number }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; idRencana: number } | { keadaan: "gagal"; pesan: string };
 
 const skemaGudang = z.object({ idGudang: z.number().int() });
 

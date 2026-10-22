@@ -8,13 +8,16 @@ import type { KeteranganDiLuarJadwal } from "@/server/gudang/pengiriman-di-luar-
 
 /** "Di luar jadwal · Tambahan" atau "Di luar jadwal · Pindahan dari Senin, 19-10-2026". */
 export function labelDiLuarJadwal(k: Pick<KeteranganDiLuarJadwal, "jenis" | "tanggalRutinDipindah">): string {
-  const jenis = k.jenis === "pindah" && k.tanggalRutinDipindah !== null ? `Pindahan dari ${formatTanggal(k.tanggalRutinDipindah)}` : "Tambahan";
+  const jenis =
+    k.jenis === "pindah" && k.tanggalRutinDipindah !== null ? `Pindahan dari ${formatTanggal(k.tanggalRutinDipindah)}` : "Tambahan";
   return `Di luar jadwal · ${jenis}`;
 }
 
 /** "disetujui <nama>, <waktu>", atau "langsung berlaku (Pusat)". */
 export function teksPenyetuju(k: Pick<KeteranganDiLuarJadwal, "penyetuju" | "disetujuiPada">): string {
-  return k.penyetuju === null || k.disetujuiPada === null ? "langsung berlaku (Pusat)" : `disetujui ${k.penyetuju}, ${formatWaktu(k.disetujuiPada)}`;
+  return k.penyetuju === null || k.disetujuiPada === null
+    ? "langsung berlaku (Pusat)"
+    : `disetujui ${k.penyetuju}, ${formatWaktu(k.disetujuiPada)}`;
 }
 
 /** Nilai baris keterangan "Jenis pengiriman" di ekspor: "Rutin", atau "<label> — <alasan> — <penyetuju>". */

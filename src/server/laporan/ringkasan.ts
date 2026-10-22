@@ -391,11 +391,7 @@ export async function muatRingkasan({
           .innerJoin(toko, eq(toko.id, cacheRataRataBulanan.tokoId))
           .leftJoin(produk, eq(produk.kode, cacheRataRataBulanan.kodeProduk))
           .where(
-            and(
-              sesuaiFilter,
-              eq(cacheRataRataBulanan.tokoId, terpilih.tokoId),
-              eq(cacheRataRataBulanan.kodeProduk, terpilih.kodeProduk),
-            ),
+            and(sesuaiFilter, eq(cacheRataRataBulanan.tokoId, terpilih.tokoId), eq(cacheRataRataBulanan.kodeProduk, terpilih.kodeProduk)),
           );
         if (pasanganTerpilih === undefined) return { keadaan: "tidak-ada" };
         const mingguan = await tx

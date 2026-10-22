@@ -112,7 +112,11 @@ function pilihPola(wadah: HTMLElement, pola: string) {
   });
 }
 
-const bxc = { id: 7, nama: "BXC", jadwal: { pola: "dua-mingguan" as const, hariKirim: [{ hari: "Rabu" as const, persiapan: "H-1" as const }] } };
+const bxc = {
+  id: 7,
+  nama: "BXC",
+  jadwal: { pola: "dua-mingguan" as const, hariKirim: [{ hari: "Rabu" as const, persiapan: "H-1" as const }] },
+};
 
 describe("form jadwal tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19)", () => {
   it("form jadwal tetap BXC dua mingguan Rabu (H−1): tanpa isian tanggal jangkar, dengan keterangan pola dua mingguan", () => {

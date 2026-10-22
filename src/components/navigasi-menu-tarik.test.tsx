@@ -180,7 +180,11 @@ describe("tautan Akun saya di menu tarik", () => {
   ] as const)("%s: tautan 'Akun saya' ke /akun di atas Keluar; memilihnya menutup menu", (peran, tampilkanPengirimanGudang) => {
     act(() =>
       akar.render(
-        <Navigasi pengguna={{ nama: "Pengguna Uji", peran }} tampilkanPengirimanGudang={tampilkanPengirimanGudang} tampilkanJadwalToko={false}>
+        <Navigasi
+          pengguna={{ nama: "Pengguna Uji", peran }}
+          tampilkanPengirimanGudang={tampilkanPengirimanGudang}
+          tampilkanJadwalToko={false}
+        >
           <p>isi</p>
         </Navigasi>,
       ),

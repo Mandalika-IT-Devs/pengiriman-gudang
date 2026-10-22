@@ -212,10 +212,7 @@ describe("admin mengunggah tabel alias", () => {
 
   it("CSV berpemisah ; (kolom lain diabaikan, judul kolom dicocokkan setelah normalisasi)", async () => {
     const { baru, baris, diharapkan } = await siapkanLimaBaris();
-    const csv = [
-      "No;nama di  file stok;KODE PRODUK",
-      ...baris.map(([alias, kode], i) => `${i + 1};${alias};${kode}`),
-    ].join("\r\n");
+    const csv = ["No;nama di  file stok;KODE PRODUK", ...baris.map(([alias, kode], i) => `${i + 1};${alias};${kode}`)].join("\r\n");
     const hasil = await kirimFile("alias.csv", csv);
     expect(hasil).toEqual({
       keadaan: "berhasil",
@@ -246,8 +243,11 @@ describe("admin mengunggah tabel alias", () => {
   it("workbook .xlsx (sheet pertama)", async () => {
     const { baru, baris, diharapkan } = await siapkanLimaBaris();
     const workbook = buatWorkbookUji({
-      "Sheet1": [["Nama di file stok", "Kode produk"], ...baris],
-      "Lain": [["Nama di file stok", "Kode produk"], ["TIDAK DIBACA", PW110P.kode]],
+      Sheet1: [["Nama di file stok", "Kode produk"], ...baris],
+      Lain: [
+        ["Nama di file stok", "Kode produk"],
+        ["TIDAK DIBACA", PW110P.kode],
+      ],
     });
     const hasil = await kirimFile("alias.xlsx", workbook);
     expect(hasil).toEqual({

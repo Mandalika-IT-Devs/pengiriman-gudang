@@ -58,8 +58,12 @@ beforeAll(async () => {
     .where(eq(jadwalToko.tokoId, bxc.id));
   tokoMingguan = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: tokoMingguan.id, gudangId: gudang.id });
-  await db.insert(jadwalToko).values({ tokoId: tokoMingguan.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], dibuatOleh: idAdmin });
-  expect(await hitungDraftRencana({ idGudang: gudang.id, tanggalKirim: RABU_28, idPengguna: idAdmin })).toMatchObject({ keadaan: "berhasil" });
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: tokoMingguan.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], dibuatOleh: idAdmin });
+  expect(await hitungDraftRencana({ idGudang: gudang.id, tanggalKirim: RABU_28, idPengguna: idAdmin })).toMatchObject({
+    keadaan: "berhasil",
+  });
 }, 120_000);
 
 afterAll(async () => {
@@ -88,7 +92,8 @@ const bukaToko = async (tokoId = bxc.id, tambahan: Record<string, string> = {}) 
   );
 
 const ringkasan = (html: string, tokoId: number) => new RegExp(`<tr[^>]*data-ringkasan-toko="${tokoId}".*?</tr>`).exec(html)?.[0] ?? "";
-const kepalaToko = (html: string) => /<div[^>]*data-kepala-toko="[^"]*".*?<\/h4>.*?(?=<p class="text-muted-foreground">)/.exec(html)?.[0] ?? "";
+const kepalaToko = (html: string) =>
+  /<div[^>]*data-kepala-toko="[^"]*".*?<\/h4>.*?(?=<p class="text-muted-foreground">)/.exec(html)?.[0] ?? "";
 const bagianPilihan = (html: string) => /<div[^>]*data-dikirim-pekan-ini="\d+".*?data-asal-pilihan[^>]*>.*?<\/p>/.exec(html)?.[0] ?? "";
 const teks = (html: string) => html.replace(/<[^>]+>/g, "");
 const pilihan = (dikirim: boolean) => ({ idGudang: gudang.id, tanggalKirim: RABU_28, tokoId: bxc.id, dikirim });
@@ -128,7 +133,9 @@ describe("draft: kirim terakhir dan pilihan Dikirim pekan ini", () => {
     expect(bagian).toContain("Simpan pilihan");
 
     expect(html).toContain(`data-finalisasi-tidak-dikirim="${bxc.id}"`);
-    expect(teks(html)).toContain("Belum bisa difinalisasi: toko ini Tidak dikirim pekan ini. Ubah pilihan menjadi Dikirim untuk memfinalisasinya.");
+    expect(teks(html)).toContain(
+      "Belum bisa difinalisasi: toko ini Tidak dikirim pekan ini. Ubah pilihan menjadi Dikirim untuk memfinalisasinya.",
+    );
     expect(html).not.toContain(`data-finalisasi-tertahan="${bxc.id}"`);
     expect(html).not.toContain(`data-finalisasi-toko="${bxc.id}"`);
 
@@ -165,12 +172,18 @@ describe("draft: teks cakupan toko dua mingguan", () => {
   it("BXC: Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu) di kepala toko dan rincian baris; toko mingguan tidak berubah", async () => {
     await masukOperator(["finalisasi", "input-stok"]);
     const html = await bukaToko(bxc.id, { rincian: `${bxc.id}|${kodeProduk}` });
-    expect(html).toMatch(new RegExp(`data-draft-toko="${bxc.id}".*?data-teks-cakupan="Cakupan 15 hari: persiapan 1 hari \\+ 14 hari \\(dua minggu\\)"`));
+    expect(html).toMatch(
+      new RegExp(`data-draft-toko="${bxc.id}".*?data-teks-cakupan="Cakupan 15 hari: persiapan 1 hari \\+ 14 hari \\(dua minggu\\)"`),
+    );
     const rincian = new RegExp(`<section[^>]*data-rincian-baris="${bxc.id}\\|${kodeProduk}".*?</section>`).exec(html)?.[0] ?? "";
-    expect(teksTerbaca(rincian)).toContain("Selasa, 27-10-2026 – Selasa, 10-11-2026 · Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)");
+    expect(teksTerbaca(rincian)).toContain(
+      "Selasa, 27-10-2026 – Selasa, 10-11-2026 · Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)",
+    );
 
     expect(await bukaToko(tokoMingguan.id)).toMatch(
-      new RegExp(`data-draft-toko="${tokoMingguan.id}".*?data-teks-cakupan="Cakupan 8 hari: persiapan 1 hari \\+ 7 hari sampai sebelum kiriman berikutnya"`),
+      new RegExp(
+        `data-draft-toko="${tokoMingguan.id}".*?data-teks-cakupan="Cakupan 8 hari: persiapan 1 hari \\+ 7 hari sampai sebelum kiriman berikutnya"`,
+      ),
     );
   });
 });
@@ -191,7 +204,10 @@ describe("server action ubahDikirimPekanIni: hak finalisasi diperiksa di server"
 
   it("isian tidak valid dan toko pola lain ditolak dengan pesan", async () => {
     await masukOperator(["finalisasi"]);
-    expect(await ubahDikirimPekanIni({ ...pilihan(true), tanggalKirim: "2026-02-30" })).toEqual({ keadaan: "gagal", pesan: "Tanggal kirim tidak valid." });
+    expect(await ubahDikirimPekanIni({ ...pilihan(true), tanggalKirim: "2026-02-30" })).toEqual({
+      keadaan: "gagal",
+      pesan: "Tanggal kirim tidak valid.",
+    });
     expect(await ubahDikirimPekanIni({ ...pilihan(true), tokoId: tokoMingguan.id })).toEqual({
       keadaan: "gagal",
       pesan: PESAN_BUKAN_DUA_MINGGUAN_RUTIN,

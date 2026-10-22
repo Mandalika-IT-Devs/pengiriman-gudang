@@ -3,8 +3,7 @@ import nextTypescript from "eslint-config-next/typescript";
 
 // ADR-0008: pembulatan hanya lewat modul angka domain.
 const MODUL_ANGKA = "src/domain/angka.ts";
-const pesanPembulatan =
-  "Pembulatan hanya lewat modul angka domain (src/domain/angka.ts), dengan aritmetika bilangan bulat (ADR-0008).";
+const pesanPembulatan = "Pembulatan hanya lewat modul angka domain (src/domain/angka.ts), dengan aritmetika bilangan bulat (ADR-0008).";
 
 const config = [
   ...nextCoreWebVitals,

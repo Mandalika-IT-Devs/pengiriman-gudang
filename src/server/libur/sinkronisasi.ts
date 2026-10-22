@@ -20,9 +20,7 @@ const skemaRespons = z.object({
   data: z.array(z.object({ date: z.string(), description: z.string() })),
 });
 
-export type HasilSinkronisasi =
-  | { keadaan: "berhasil"; idSnapshot: number; jumlahLibur: number }
-  | { keadaan: "gagal"; pesan: string };
+export type HasilSinkronisasi = { keadaan: "berhasil"; idSnapshot: number; jumlahLibur: number } | { keadaan: "gagal"; pesan: string };
 
 type HasilAmbil = { keadaan: "berhasil"; data: { tanggal: string; keterangan: string }[] } | { keadaan: "gagal"; pesan: string };
 
@@ -73,13 +71,9 @@ export async function sinkronkanLibur(tahun: number, idPengguna: string): Promis
       .values({ tahun, status: "menunggu-persetujuan", sumber: urlSumberLibur(tahun), disinkronkanOleh: idPengguna })
       .returning({ id: snapshotLibur.id });
     if (periksa.entri.length > 0) {
-      await tx
-        .insert(entriLibur)
-        .values(periksa.entri.map((e) => ({ snapshotId: snapshot.id, ...e, jenisUsulan: true })));
+      await tx.insert(entriLibur).values(periksa.entri.map((e) => ({ snapshotId: snapshot.id, ...e, jenisUsulan: true })));
     }
-    await tx
-      .insert(kejadianLibur)
-      .values({ jenis: "sinkronisasi-berhasil", tahun, snapshotId: snapshot.id, pelaku: idPengguna });
+    await tx.insert(kejadianLibur).values({ jenis: "sinkronisasi-berhasil", tahun, snapshotId: snapshot.id, pelaku: idPengguna });
     return { keadaan: "berhasil", idSnapshot: snapshot.id, jumlahLibur: periksa.entri.length };
   });
 }
@@ -135,4 +129,3 @@ export async function muatDataLibur(): Promise<{
     kegagalanTerakhir: kegagalanTerakhir ? { ...kegagalanTerakhir, pesan: kegagalanTerakhir.pesan ?? "" } : null,
   };
 }
-

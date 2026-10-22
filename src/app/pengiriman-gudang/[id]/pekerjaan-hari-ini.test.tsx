@@ -6,7 +6,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 
 import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { draftRencana, hubunganTokoGudang, jadwalToko, pengirimanDiLuarJadwal, periodeSumberGudang, versiRanking } from "@/server/db/schema";
+import {
+  draftRencana,
+  hubunganTokoGudang,
+  jadwalToko,
+  pengirimanDiLuarJadwal,
+  periodeSumberGudang,
+  versiRanking,
+} from "@/server/db/schema";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { buatGudangUji, buatTokoUji, hapusGudangUji, idGudangUji } from "@/server/gudang/uji-bantu";
 import { bacaKunciVersi } from "@/server/laporan/cache";
@@ -231,10 +238,12 @@ describe("T118: susunan halaman", () => {
   it("kepala menampilkan ringkasan periode sumber", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     const kepalaHalaman = (html: string) => html.slice(html.indexOf("<h1"), html.indexOf("data-draft-rencana"));
-    expect(kepalaHalaman(await buka())).toContain("Periode sumber: <span class=\"font-semibold\">");
+    expect(kepalaHalaman(await buka())).toContain('Periode sumber: <span class="font-semibold">');
     await db.delete(draftRencana).where(eq(draftRencana.gudangId, gudangUji.id));
     await db.delete(periodeSumberGudang).where(eq(periodeSumberGudang.gudangId, gudangUji.id));
-    expect(kepalaHalaman(await buka())).toMatch(/data-ringkasan-periode-sumber.*?lucide-triangle-alert.*?Periode sumber belum ditetapkan admin/);
+    expect(kepalaHalaman(await buka())).toMatch(
+      /data-ringkasan-periode-sumber.*?lucide-triangle-alert.*?Periode sumber belum ditetapkan admin/,
+    );
   });
 
   it("operator dengan satu gudang tidak melihat tautan Daftar gudang; dengan dua gudang dan admin melihatnya", async () => {

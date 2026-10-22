@@ -41,9 +41,7 @@ const TOKO: TokoFinalisasi = {
 afterEach(lepasTerpasang);
 
 function bukaDialogFinalisasi(toko: TokoFinalisasi) {
-  const wadah = pasangUntukUji(
-    <FinalisasiToko toko={toko} finalisasi={{ idGudang: 3, tanggalKirim: parseTanggalBisnis("2026-06-08") }} />,
-  );
+  const wadah = pasangUntukUji(<FinalisasiToko toko={toko} finalisasi={{ idGudang: 3, tanggalKirim: parseTanggalBisnis("2026-06-08") }} />);
   const tombol = wadah.querySelector<HTMLButtonElement>('button[type="submit"]');
   if (tombol === null) throw new Error("Tombol finalisasi tidak ada.");
   act(() => tombol.click());

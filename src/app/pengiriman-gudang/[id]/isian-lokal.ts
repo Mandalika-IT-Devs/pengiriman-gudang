@@ -53,9 +53,7 @@ export function uraiIsianLokal(teks: string | null, kodeDraft: ReadonlySet<strin
   try {
     const isi: unknown = JSON.parse(teks);
     if (typeof isi !== "object" || isi === null || Array.isArray(isi)) return {};
-    return Object.fromEntries(
-      Object.entries(isi).filter((e): e is [string, string] => kodeDraft.has(e[0]) && typeof e[1] === "string"),
-    );
+    return Object.fromEntries(Object.entries(isi).filter((e): e is [string, string] => kodeDraft.has(e[0]) && typeof e[1] === "string"));
   } catch {
     return {};
   }

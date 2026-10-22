@@ -139,10 +139,15 @@ describe("FormFinalisasi", () => {
   });
 
   it("gagal: pesan tampil dekat form, layar tidak berpindah", async () => {
-    tiruan.finalisasiRencana.mockResolvedValue({ keadaan: "gagal", pesan: "Draft rencana perlu dihitung ulang sebelum bisa difinalisasi." });
+    tiruan.finalisasiRencana.mockResolvedValue({
+      keadaan: "gagal",
+      pesan: "Draft rencana perlu dihitung ulang sebelum bisa difinalisasi.",
+    });
     const wadah = buka();
     await kirim(wadah);
-    expect(wadah.querySelector('[data-keadaan="gagal"]')?.textContent).toContain("Draft rencana perlu dihitung ulang sebelum bisa difinalisasi.");
+    expect(wadah.querySelector('[data-keadaan="gagal"]')?.textContent).toContain(
+      "Draft rencana perlu dihitung ulang sebelum bisa difinalisasi.",
+    );
     expect(tiruan.buka).not.toHaveBeenCalled();
   });
 

@@ -67,11 +67,7 @@ export function KartuPeriodeSumber({ periode }: { periode: PeriodeSumberPerhitun
           {periode.bulanDipakai.length > 0 ? (
             <ul aria-label="Bulan periode sumber yang dipakai" className="flex flex-wrap gap-2">
               {periode.bulanDipakai.map((kode) => (
-                <li
-                  key={kode}
-                  data-bulan={kode}
-                  className="rounded-full bg-accent px-3 py-1 font-semibold text-accent-foreground"
-                >
+                <li key={kode} data-bulan={kode} className="rounded-full bg-accent px-3 py-1 font-semibold text-accent-foreground">
                   {formatBulanLaporan(kode)}
                 </li>
               ))}

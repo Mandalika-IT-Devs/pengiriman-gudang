@@ -93,11 +93,19 @@ describe("toko dua mingguan di draft setiap pekan (PRD A5 ▶ Revisi 2026-10-19)
   });
 
   it("rencana final BXC Rabu 21-10-2026 menyimpan snapshot jadwal tanpa tanggal jangkar dan L = 14", async () => {
-    expect(await simpanStokToko({ idGudang: gudang.id, tanggalKirim: RABU[0]!, tokoId: bxc.id, stok: [{ kodeProduk, stokAkhir: 4 }] })).toEqual({
+    expect(
+      await simpanStokToko({ idGudang: gudang.id, tanggalKirim: RABU[0]!, tokoId: bxc.id, stok: [{ kodeProduk, stokAkhir: 4 }] }),
+    ).toEqual({
       keadaan: "berhasil",
     });
     const versiDilihat = (await tokoDraft(RABU[0]!))?.versi ?? "";
-    const hasil = await finalisasiRencanaToko({ idGudang: gudang.id, tanggalKirim: RABU[0]!, tokoId: bxc.id, idPengguna: idOperator, versiDilihat });
+    const hasil = await finalisasiRencanaToko({
+      idGudang: gudang.id,
+      tanggalKirim: RABU[0]!,
+      tokoId: bxc.id,
+      idPengguna: idOperator,
+      versiDilihat,
+    });
     if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
     const rencana = await bacaRencanaFinal(gudang.id, hasil.idRencana);
     expect(rencana?.jadwal).toMatchObject({

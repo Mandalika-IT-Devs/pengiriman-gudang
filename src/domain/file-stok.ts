@@ -8,7 +8,9 @@ import { STOK_MAKS } from "./batas-stok";
 import type { SelMentah } from "./ranking";
 
 /** Satu baris isi file stok; `nomor` = nomor baris file (judul kolom = baris 1). Kosong = belum diketahui (`null`). */
-export type BarisFileStok = { nomor: number; nama: string } & ({ valid: true; stokAkhir: number | null } | { valid: false; alasan: string });
+export type BarisFileStok = { nomor: number; nama: string } & (
+  { valid: true; stokAkhir: number | null } | { valid: false; alasan: string }
+);
 
 export type HasilBacaFileStok = { ok: true; baris: BarisFileStok[] } | { ok: false; pesan: string };
 
@@ -115,7 +117,11 @@ export function bacaFileStok(semuaBaris: readonly (readonly SelMentah[])[]): Has
  */
 export function kelompokkanBarisStok(
   baris: readonly BarisFileStok[],
-  { alias, produk, kodeVarianToko }: { alias: readonly AliasNamaStok[]; produk: readonly ProdukMaster[]; kodeVarianToko: readonly string[] },
+  {
+    alias,
+    produk,
+    kodeVarianToko,
+  }: { alias: readonly AliasNamaStok[]; produk: readonly ProdukMaster[]; kodeVarianToko: readonly string[] },
 ): KelompokBarisStok {
   const varianToko = new Set(kodeVarianToko);
   const dicocokkan = baris.map((b) => ({ baris: b, kode: b.valid ? cocokkanNamaStok(b.nama, { alias, produk }) : null }));
@@ -136,7 +142,11 @@ export function kelompokkanBarisStok(
     }
     const ganda = nomorPerKode.get(kode) ?? [];
     if (ganda.length > 1) {
-      hasil.tidakValid.push({ nomor: b.nomor, nama: b.nama, alasan: `Ganda di file: baris ${sebutBaris(ganda)} mengarah ke produk ${kode}.` });
+      hasil.tidakValid.push({
+        nomor: b.nomor,
+        nama: b.nama,
+        alasan: `Ganda di file: baris ${sebutBaris(ganda)} mengarah ke produk ${kode}.`,
+      });
     } else if (varianToko.has(kode)) {
       hasil.terisi.push({ kodeProduk: kode, stokAkhir: b.stokAkhir });
     } else {

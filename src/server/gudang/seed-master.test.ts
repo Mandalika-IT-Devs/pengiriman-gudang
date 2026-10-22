@@ -9,8 +9,31 @@ import { seedMasterGudangToko } from "./seed-master";
 // PRD A3 (OD-02) dan daftar toko di issue T21.
 const namaGudang = ["Pusat", "Gudang Bali", "Gudang Bandung", "Gudang Cibubur", "Gudang Jabodetabek"];
 const namaToko = [
-  "PMS", "PMJ", "QUEEN", "LWB", "DMB", "MKS", "DPM", "PVJ", "PASKAL", "DELTAMAS", "KUNCIT", "BXC", "SMB",
-  "KOKAS", "PMB", "BSD", "TSM CBB", "SMS", "KARAWACI", "BOTANI", "CCM", "ALSUT", "SENTUL", "MKG", "LMK",
+  "PMS",
+  "PMJ",
+  "QUEEN",
+  "LWB",
+  "DMB",
+  "MKS",
+  "DPM",
+  "PVJ",
+  "PASKAL",
+  "DELTAMAS",
+  "KUNCIT",
+  "BXC",
+  "SMB",
+  "KOKAS",
+  "PMB",
+  "BSD",
+  "TSM CBB",
+  "SMS",
+  "KARAWACI",
+  "BOTANI",
+  "CCM",
+  "ALSUT",
+  "SENTUL",
+  "MKG",
+  "LMK",
 ];
 
 describe("seedMasterGudangToko", () => {

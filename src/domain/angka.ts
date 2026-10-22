@@ -77,11 +77,7 @@ function hitungStokTarget(kebutuhan: number, persenBuffer: number): number {
  * (PRD A6 ▶ Revisi 2026-10-14, ADR-0008). Buffer dikenakan pada seluruh kebutuhan; stok akhir dikurangkan satu kali,
  * setelah buffer.
  */
-export function hitungJumlahKirim(
-  kebutuhan: number,
-  stokAkhir: number,
-  persenBuffer: number,
-): number {
+export function hitungJumlahKirim(kebutuhan: number, stokAkhir: number, persenBuffer: number): number {
   pastikanMasukanJumlahKirim(kebutuhan, stokAkhir, persenBuffer);
   const kekurangan = hitungStokTarget(kebutuhan, persenBuffer) - stokAkhir;
   return kekurangan > 0 ? kekurangan : 0;

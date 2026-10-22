@@ -44,10 +44,7 @@ export default async function HalamanJadwalTokoGudang({ params }: Props) {
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
-      <Link
-        href="/admin/jadwal-toko"
-        className={tautanTombolVariants()}
-      >
+      <Link href="/admin/jadwal-toko" className={tautanTombolVariants()}>
         <ArrowLeft aria-hidden strokeWidth={2} className="size-5" />
         Daftar gudang
       </Link>
@@ -55,10 +52,7 @@ export default async function HalamanJadwalTokoGudang({ params }: Props) {
       <p className="text-muted-foreground">
         Jadwal tetap langsung berlaku setelah disimpan. Setiap toko punya paling banyak satu jadwal tetap aktif.
       </p>
-      <TabelJadwalTetap
-        idGudang={gudang.id}
-        daftarToko={daftarToko.map((t) => ({ ...t, riwayat: riwayat.get(t.id) ?? [] }))}
-      />
+      <TabelJadwalTetap idGudang={gudang.id} daftarToko={daftarToko.map((t) => ({ ...t, riwayat: riwayat.get(t.id) ?? [] }))} />
     </main>
   );
 }

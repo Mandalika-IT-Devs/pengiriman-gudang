@@ -65,11 +65,6 @@ export const tautanTombolVariants = cva(
   },
 );
 
-export function Button({
-  className,
-  variant,
-  size,
-  ...props
-}: ComponentProps<"button"> & VariantProps<typeof buttonVariants>) {
+export function Button({ className, variant, size, ...props }: ComponentProps<"button"> & VariantProps<typeof buttonVariants>) {
   return <button data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
 }

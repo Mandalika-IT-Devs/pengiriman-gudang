@@ -230,10 +230,7 @@ describe("Mulai di sini: admin", () => {
   });
 
   it("impor aktif tanpa impor menunggu ditinjau + ranking berlaku + pemetaan lengkap + tanpa usulan menunggu → semua Selesai", async () => {
-    await db
-      .update(impor)
-      .set({ status: "diarsipkan", diarsipkanPada: new Date() })
-      .where(eq(impor.status, "siap-ditinjau"));
+    await db.update(impor).set({ status: "diarsipkan", diarsipkanPada: new Date() }).where(eq(impor.status, "siap-ditinjau"));
     await db.insert(impor).values({
       namaFile: "penjualan-uji.xlsx",
       ukuranByte: 1,
@@ -352,10 +349,7 @@ describe("Mulai di sini: operator (per gudang, tanggal kirim terdekat)", () => {
       ["isi-stok", true],
       ["finalisasi", true],
     ]);
-    expect(isi.mulaiDiSini?.map((d) => (d.untuk === "gudang" ? d.gudang.nama : d.untuk))).toEqual([
-      "Gudang Cibubur",
-      "Gudang Jabodetabek",
-    ]);
+    expect(isi.mulaiDiSini?.map((d) => (d.untuk === "gudang" ? d.gudang.nama : d.untuk))).toEqual(["Gudang Cibubur", "Gudang Jabodetabek"]);
     expect(daftarGudang(isi, jabodetabek)).toMatchObject({ tanggalKirim: null, langkah: [] });
   });
 });
@@ -394,8 +388,7 @@ describe("Dikirim pekan ini: toko Tidak dikirim pekan ini tidak dihitung belum f
   let duaMingguan: { id: number; versiJadwal: number };
   let operator: PenggunaMasuk;
 
-  const kartuGudang = (isi: IsiBeranda) =>
-    (isi.kartu ?? []).filter((k) => k.gudang?.id === cibubur).map((k) => [k.jenis, k.jumlah]);
+  const kartuGudang = (isi: IsiBeranda) => (isi.kartu ?? []).filter((k) => k.gudang?.id === cibubur).map((k) => [k.jenis, k.jumlah]);
 
   it("toko mingguan final, toko dua mingguan Tidak dikirim dengan baris tertahan → langkah Selesai, tanpa kartu belum final dan tertahan", async () => {
     await db.delete(draftRencana).where(eq(draftRencana.gudangId, cibubur));

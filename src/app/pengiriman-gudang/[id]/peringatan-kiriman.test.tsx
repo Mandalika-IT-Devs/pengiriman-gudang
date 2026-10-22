@@ -56,7 +56,9 @@ beforeAll(async () => {
     .where(eq(jadwalToko.tokoId, tokoA.id));
   tokoB = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: tokoB.id, gudangId: bandung });
-  await db.insert(jadwalToko).values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Selasa", persiapanHari: 2 }], dibuatOleh: idAdmin });
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Selasa", persiapanHari: 2 }], dibuatOleh: idAdmin });
 
   const operator = await kepalaPenggunaUji("viewer");
   await tugaskanOperator({ idPengguna: operator.id, idGudang: bandung, hakTindakan: [...daftarHakTindakan] });
@@ -88,7 +90,9 @@ describe('peringatan "kiriman sebelumnya belum sampai" di draft per toko', () =>
     kepala.cookie = cookieOperator;
     const html = await bukaToko(tokoA.id);
     expect(html).toMatch(
-      new RegExp(`data-draft-toko="${tokoA.id}".*?data-kiriman-sebelumnya-belum-sampai="2026-10-19"[^>]*>.*?<svg[^>]*text-warning.*?${PERINGATAN_A}`),
+      new RegExp(
+        `data-draft-toko="${tokoA.id}".*?data-kiriman-sebelumnya-belum-sampai="2026-10-19"[^>]*>.*?<svg[^>]*text-warning.*?${PERINGATAN_A}`,
+      ),
     );
     // Cakupan Senin–Kamis 19–22 Okt (p = 1, L = 3) × 5 = 20; stok target (PRD A6 ▶ Revisi 2026-10-14): 20 × 120% − 10 = 14.
     expect(html).toMatch(new RegExp(`data-kode-produk="${kodeProduk}".*?data-jumlah-kirim="14"`));

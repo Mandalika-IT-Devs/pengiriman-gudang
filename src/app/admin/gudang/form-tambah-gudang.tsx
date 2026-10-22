@@ -22,7 +22,10 @@ export function FormTambahGudang() {
         className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => tambahGudangBaru({ nama }), () => setNama(""));
+          simpan(
+            () => tambahGudangBaru({ nama }),
+            () => setNama(""),
+          );
         }}
       >
         <CardHeader>

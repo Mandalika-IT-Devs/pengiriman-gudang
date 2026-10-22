@@ -68,11 +68,7 @@ async function pengirimanGudangPada(idGudang: number, tanggalKirim: TanggalBisni
  * versi jadwal, jenis pengiriman, dan peringatan "kiriman sebelumnya belum sampai". Toko nonaktif tidak ikut walaupun
  * masih punya jadwal aktif (PRD A6 ▶ Keputusan 2026-10-10, T58).
  */
-export async function tokoYangMengirim(
-  idGudang: number,
-  tanggalKirim: TanggalBisnis,
-  klien: Klien = db,
-): Promise<TokoKirim[]> {
+export async function tokoYangMengirim(idGudang: number, tanggalKirim: TanggalBisnis, klien: Klien = db): Promise<TokoKirim[]> {
   return (await pengirimanGudangPada(idGudang, tanggalKirim, klien)).map((p) => p.toko);
 }
 
@@ -164,7 +160,11 @@ export async function perubahanKategoriMengenai(
 async function kategoriBerubah(tersimpan: readonly TokoTersimpan[], klien: Klien) {
   const cakupanPerToko = new Map<number, string[]>();
   for (const { tokoId, cakupan, perubahanKategori: idPerubahan } of tersimpan) {
-    if (cakupan !== null && idPerubahan !== null) cakupanPerToko.set(tokoId, cakupan.map((c) => c.tanggal));
+    if (cakupan !== null && idPerubahan !== null)
+      cakupanPerToko.set(
+        tokoId,
+        cakupan.map((c) => c.tanggal),
+      );
   }
   const berlaku = await perubahanKategoriMengenai(klien, cakupanPerToko);
   return new Set(

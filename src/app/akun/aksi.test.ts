@@ -165,7 +165,7 @@ describe("kata sandi tidak ditulis ke log", () => {
     } finally {
       for (const p of pengintai) p.mockRestore();
     }
-    expect(tertulis.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg) ?? String(arg))).join("\n")).not.toContain(
+    expect(tertulis.map((arg) => (typeof arg === "string" ? arg : (JSON.stringify(arg) ?? String(arg)))).join("\n")).not.toContain(
       "Sandi-Log",
     );
   });

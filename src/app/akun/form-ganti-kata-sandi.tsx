@@ -49,7 +49,10 @@ export function FormGantiKataSandi({ bukanAdmin }: { bukanAdmin: boolean }) {
         className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => gantiKataSandi(isian), () => setIsian(isianKosong));
+          simpan(
+            () => gantiKataSandi(isian),
+            () => setIsian(isianKosong),
+          );
         }}
       >
         <CardHeader>

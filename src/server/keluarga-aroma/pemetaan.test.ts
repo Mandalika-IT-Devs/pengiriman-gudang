@@ -16,14 +16,15 @@ function acak() {
 }
 
 async function buatProduk(kode: string) {
-  await db
-    .insert(produk)
-    .values({ kode, nama: `PRODUK ${kode}`, ukuran: "100ML", kategori: "PARFUM WANITA", klasifikasi: "otomatis" });
+  await db.insert(produk).values({ kode, nama: `PRODUK ${kode}`, ukuran: "100ML", kategori: "PARFUM WANITA", klasifikasi: "otomatis" });
   return kode;
 }
 
 async function buatKeluargaDenganSegmen(segmen: string, aktif = true) {
-  const [keluarga] = await db.insert(keluargaAroma).values({ nama: `KELUARGA ${acak()}`, aktif }).returning();
+  const [keluarga] = await db
+    .insert(keluargaAroma)
+    .values({ nama: `KELUARGA ${acak()}`, aktif })
+    .returning();
   await db.insert(segmenKodeKeluargaAroma).values({ keluargaId: keluarga.id, segmen });
   return { id: keluarga.id, nama: keluarga.nama };
 }

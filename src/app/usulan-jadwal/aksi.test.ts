@@ -141,8 +141,16 @@ describe("operator gudang selain Pusat mengusulkan pengiriman di luar jadwal", (
 describe("syarat PRD A5 diperiksa saat diusulkan (masing-masing ditolak dengan pesan)", () => {
   const kasus: [string, (idToko: number) => Record<string, unknown>, RegExp][] = [
     ["tanggal lampau", (id) => tambahan(cibubur, id, { tanggalKirim: "2026-10-14" }), /tanggal kirim Rabu, 14-10-2026 sudah lewat/],
-    ["tanggal yang sudah tanggal kirim rutin", (id) => tambahan(cibubur, id, { tanggalKirim: "2026-10-19" }), /Senin, 19-10-2026 sudah menjadi tanggal kirim toko ini/],
-    ["pindah dari tanggal yang bukan tanggal rutin", (id) => pindah(cibubur, id, { tanggalRutinDipindah: "2026-10-21", tanggalKirim: "2026-10-24" }), /Rabu, 21-10-2026 bukan tanggal kirim rutin/],
+    [
+      "tanggal yang sudah tanggal kirim rutin",
+      (id) => tambahan(cibubur, id, { tanggalKirim: "2026-10-19" }),
+      /Senin, 19-10-2026 sudah menjadi tanggal kirim toko ini/,
+    ],
+    [
+      "pindah dari tanggal yang bukan tanggal rutin",
+      (id) => pindah(cibubur, id, { tanggalRutinDipindah: "2026-10-21", tanggalKirim: "2026-10-24" }),
+      /Rabu, 21-10-2026 bukan tanggal kirim rutin/,
+    ],
     ["alasan kosong", (id) => tambahan(cibubur, id, { alasan: "   " }), /^Isi alasan\.$/],
   ];
   for (const [nama, isian, pesan] of kasus) {
@@ -196,7 +204,15 @@ describe("syarat PRD A5 diperiksa saat diusulkan (masing-masing ditolak dengan p
   it("database menolak dua pengiriman menunggu/berlaku untuk toko + tanggal kirim yang sama", async () => {
     const t = await tokoBotani(cibubur);
     const operator = await buatPenggunaUji("viewer");
-    const baris = { gudangId: cibubur, tokoId: t.id, jenis: "tambahan" as const, tanggalKirim: "2026-10-20", persiapanHari: 1 as const, alasan: "uji", diusulkanOleh: operator.id };
+    const baris = {
+      gudangId: cibubur,
+      tokoId: t.id,
+      jenis: "tambahan" as const,
+      tanggalKirim: "2026-10-20",
+      persiapanHari: 1 as const,
+      alasan: "uji",
+      diusulkanOleh: operator.id,
+    };
     await db.insert(pengirimanDiLuarJadwal).values(baris);
     await expect(db.insert(pengirimanDiLuarJadwal).values(baris)).rejects.toThrow();
     // Status tanpa isian yang sesuai ditolak kendala database.
@@ -228,7 +244,18 @@ describe("gudang Pusat", () => {
     const admin = await buatPenggunaUji("admin");
     const [p] = await db
       .insert(pengirimanDiLuarJadwal)
-      .values({ gudangId: cibubur, tokoId: t.id, jenis: "tambahan", tanggalKirim: "2026-10-20", persiapanHari: 1, alasan: "uji", status: "berlaku", diusulkanOleh: admin.id, diputuskanOleh: admin.id, diputuskanPada: new Date() })
+      .values({
+        gudangId: cibubur,
+        tokoId: t.id,
+        jenis: "tambahan",
+        tanggalKirim: "2026-10-20",
+        persiapanHari: 1,
+        alasan: "uji",
+        status: "berlaku",
+        diusulkanOleh: admin.id,
+        diputuskanOleh: admin.id,
+        diputuskanPada: new Date(),
+      })
       .returning();
     await masukOperator(cibubur);
 

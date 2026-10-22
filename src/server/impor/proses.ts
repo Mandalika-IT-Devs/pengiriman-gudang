@@ -72,11 +72,7 @@ export async function prosesImpor(idImpor: number): Promise<void> {
     // T102: job bisa diulang pg-boss selagi proses pertama masih berjalan. Baris impor dikunci dan statusnya
     // diperiksa ulang, sehingga hanya satu proses yang menulis hasil; proses lain berhenti tanpa mengubah data.
     await db.transaction(async (tx) => {
-      const [terkunci] = await tx
-        .select({ status: impor.status })
-        .from(impor)
-        .where(eq(impor.id, idImpor))
-        .for("update");
+      const [terkunci] = await tx.select({ status: impor.status }).from(impor).where(eq(impor.id, idImpor)).for("update");
       if (terkunci?.status !== "diproses") return;
       await tx.delete(cakupanTanggalImpor).where(eq(cakupanTanggalImpor.imporId, idImpor));
       await tx.delete(selPenjualan).where(eq(selPenjualan.imporId, idImpor));
@@ -95,8 +91,7 @@ export async function prosesImpor(idImpor: number): Promise<void> {
         .where(eq(impor.id, idImpor));
     });
   } catch (galat) {
-    const pesan =
-      galat instanceof GagalProses ? galat.message : "Terjadi kesalahan saat memproses file. Coba unggah ulang.";
+    const pesan = galat instanceof GagalProses ? galat.message : "Terjadi kesalahan saat memproses file. Coba unggah ulang.";
     if (!(galat instanceof GagalProses)) console.error(`[proses-impor] impor ${idImpor}:`, galat);
     await db
       .update(impor)

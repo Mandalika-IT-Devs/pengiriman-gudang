@@ -64,9 +64,7 @@ type Kebutuhan =
     };
 
 type StatusKirim =
-  | { status: "manual" }
-  | { status: "siap"; persenBuffer: number; jumlahKirim: number }
-  | { status: "tertahan"; masalah: MasalahKirim[] };
+  { status: "manual" } | { status: "siap"; persenBuffer: number; jumlahKirim: number } | { status: "tertahan"; masalah: MasalahKirim[] };
 
 type HasilKebutuhanKirim = {
   tanggalKirim: TanggalBisnis;
@@ -96,7 +94,10 @@ export function cakupanPengiriman({
   panjangCakupan,
   toko,
   daftarPerubahan,
-}: Pick<MasukanKebutuhanKirim, "tanggalKirim" | "persiapanHari" | "panjangCakupan" | "toko" | "daftarPerubahan">): KategoriTanggalCakupan[] {
+}: Pick<
+  MasukanKebutuhanKirim,
+  "tanggalKirim" | "persiapanHari" | "panjangCakupan" | "toko" | "daftarPerubahan"
+>): KategoriTanggalCakupan[] {
   const awal = geserHari(tanggalKirim, -persiapanHari);
   const cakupan: KategoriTanggalCakupan[] = [];
   for (let i = 0; i < panjangCakupan + persiapanHari; i++) {

@@ -52,14 +52,21 @@ const hitung = async (tanggal: TanggalBisnis) =>
   expect(await hitungDraftRencana({ idGudang: gudang.id, tanggalKirim: tanggal, idPengguna: idOperator })).toMatchObject({
     keadaan: "berhasil",
   });
-const tokoDraft = async (tanggal: TanggalBisnis, tokoId: number) => (await bacaDraftRencana(gudang.id, tanggal))?.toko.find((x) => x.id === tokoId);
+const tokoDraft = async (tanggal: TanggalBisnis, tokoId: number) =>
+  (await bacaDraftRencana(gudang.id, tanggal))?.toko.find((x) => x.id === tokoId);
 const pilih = (tanggal: TanggalBisnis, dikirim: boolean, tokoId = bxc.id) =>
   simpanPilihanDikirimPekanIni({ idGudang: gudang.id, tanggalKirim: tanggal, tokoId, dikirim, idPengguna: idOperator });
 
 async function finalisasiBxc(tanggal: TanggalBisnis) {
   const toko = await tokoDraft(tanggal, bxc.id);
   if (toko === undefined) throw new Error("BXC tidak ada di draft.");
-  return finalisasiRencanaToko({ idGudang: gudang.id, tanggalKirim: tanggal, tokoId: bxc.id, idPengguna: idOperator, versiDilihat: toko.versi });
+  return finalisasiRencanaToko({
+    idGudang: gudang.id,
+    tanggalKirim: tanggal,
+    tokoId: bxc.id,
+    idPengguna: idOperator,
+    versiDilihat: toko.versi,
+  });
 }
 
 beforeAll(async () => {
@@ -73,7 +80,9 @@ beforeAll(async () => {
     .where(eq(jadwalToko.tokoId, bxc.id));
   tokoMingguan = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: tokoMingguan.id, gudangId: gudang.id });
-  await db.insert(jadwalToko).values({ tokoId: tokoMingguan.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], dibuatOleh: idAdmin });
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: tokoMingguan.id, pola: "mingguan", hariKirim: [{ hari: "Rabu", persiapanHari: 1 }], dibuatOleh: idAdmin });
   await hitung(RABU_28);
 }, 120_000);
 
@@ -99,13 +108,23 @@ describe("nilai awal dari kirim terakhir", () => {
   });
 
   it("draft menampilkan keadaan pilihan toko dua mingguan; toko pola lain tanpa pilihan", async () => {
-    expect((await tokoDraft(RABU_28, bxc.id))?.dikirimPekanIni).toEqual({ dikirim: true, kirimTerakhir: null, dipilih: null, sudahFinal: false });
+    expect((await tokoDraft(RABU_28, bxc.id))?.dikirimPekanIni).toEqual({
+      dikirim: true,
+      kirimTerakhir: null,
+      dipilih: null,
+      sudahFinal: false,
+    });
     expect((await tokoDraft(RABU_28, tokoMingguan.id))?.dikirimPekanIni).toBeNull();
   });
 
   it("rencana final 21-10-2026 dibuat (gudang lain) → nilai awal 28-10 berubah menjadi Tidak dikirim pekan ini (7 hari); 11-11 tetap Dikirim (21 hari)", async () => {
     await rencanaFinalUji({ idGudang: gudangLain.id, idToko: bxc.id, tanggalKirim: RABU_21, idPengguna: idAdmin });
-    expect(await keadaan(RABU_28)).toEqual({ dikirim: false, kirimTerakhir: { tanggal: RABU_21, selisihHari: 7 }, dipilih: null, sudahFinal: false });
+    expect(await keadaan(RABU_28)).toEqual({
+      dikirim: false,
+      kirimTerakhir: { tanggal: RABU_21, selisihHari: 7 },
+      dipilih: null,
+      sudahFinal: false,
+    });
     expect(await keadaan(RABU_11_11)).toMatchObject({ dikirim: true, kirimTerakhir: { tanggal: RABU_21, selisihHari: 21 } });
     expect((await tokoDraft(RABU_28, bxc.id))?.dikirimPekanIni).toMatchObject({ dikirim: false });
   });
@@ -113,7 +132,9 @@ describe("nilai awal dari kirim terakhir", () => {
 
 describe("toko Tidak dikirim pekan ini", () => {
   it("tidak bisa difinalisasi (diperiksa di server), walaupun semua barisnya siap", async () => {
-    expect(await simpanStokToko({ idGudang: gudang.id, tanggalKirim: RABU_28, tokoId: bxc.id, stok: [{ kodeProduk, stokAkhir: 4 }] })).toEqual({
+    expect(
+      await simpanStokToko({ idGudang: gudang.id, tanggalKirim: RABU_28, tokoId: bxc.id, stok: [{ kodeProduk, stokAkhir: 4 }] }),
+    ).toEqual({
       keadaan: "berhasil",
     });
     expect((await tokoDraft(RABU_28, bxc.id))?.jumlahTertahan).toBe(0);
@@ -131,7 +152,12 @@ describe("pilihan operator", () => {
     const sebelum = new Date();
     expect(await pilih(RABU_28, true)).toEqual({ keadaan: "berhasil" });
     const hasil = await keadaan(RABU_28);
-    expect(hasil).toMatchObject({ dikirim: true, kirimTerakhir: { tanggal: RABU_21, selisihHari: 7 }, dipilih: { oleh: "Uji viewer" }, sudahFinal: false });
+    expect(hasil).toMatchObject({
+      dikirim: true,
+      kirimTerakhir: { tanggal: RABU_21, selisihHari: 7 },
+      dipilih: { oleh: "Uji viewer" },
+      sudahFinal: false,
+    });
     expect(hasil?.dipilih?.pada.getTime()).toBeGreaterThanOrEqual(sebelum.getTime() - 1000);
     expect(await tanggalKirimTerdekat(gudang.id, KAMIS_22)).toEqual({ tanggalKirim: RABU_28, jumlahBelumFinal: 2 });
   });

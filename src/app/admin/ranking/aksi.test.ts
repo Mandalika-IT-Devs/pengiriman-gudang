@@ -28,9 +28,7 @@ import { cocokkanUlangRanking, daftarkanRanking, mintaUrlUnggahRanking, publikas
 
 type Sel = string | number | null;
 
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../../../tests/golden/ranking-september-2026.json"), "utf8"),
-) as {
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../../tests/golden/ranking-september-2026.json"), "utf8")) as {
   sheet: string;
   header: string[];
   barisKosongDiabaikan: number[];
@@ -71,7 +69,12 @@ async function pastikanAliasGolden() {
     .select({ alias: aliasKeluargaAroma.alias, id: keluargaAroma.id, nama: keluargaAroma.nama })
     .from(aliasKeluargaAroma)
     .innerJoin(keluargaAroma, eq(keluargaAroma.id, aliasKeluargaAroma.keluargaId))
-    .where(inArray(aliasKeluargaAroma.alias, golden.baris.map((b) => b.variant)));
+    .where(
+      inArray(
+        aliasKeluargaAroma.alias,
+        golden.baris.map((b) => b.variant),
+      ),
+    );
   return new Map(baris.map((b) => [b.alias, { id: b.id, nama: b.nama }]));
 }
 
@@ -91,7 +94,10 @@ async function unggahDanDaftarkan(isi: Uint8Array, { tahunRanking = 2026, bulanR
 }
 
 async function statusVersi(...id: number[]) {
-  const baris = await db.select({ id: versiRanking.id, status: versiRanking.status }).from(versiRanking).where(inArray(versiRanking.id, id));
+  const baris = await db
+    .select({ id: versiRanking.id, status: versiRanking.status })
+    .from(versiRanking)
+    .where(inArray(versiRanking.id, id));
   return Object.fromEntries(baris.map((b) => [b.id, b.status]));
 }
 
@@ -109,7 +115,12 @@ describe("unggah → tinjau → publikasi (PRD A6 ▶ OD-05)", () => {
     });
     expect(versi.versi).toBeGreaterThanOrEqual(1);
     const baris = await db
-      .select({ rank: barisRanking.rank, variant: barisRanking.variant, qtySales: barisRanking.qtySales, keluargaAromaId: barisRanking.keluargaAromaId })
+      .select({
+        rank: barisRanking.rank,
+        variant: barisRanking.variant,
+        qtySales: barisRanking.qtySales,
+        keluargaAromaId: barisRanking.keluargaAromaId,
+      })
       .from(barisRanking)
       .where(eq(barisRanking.versiId, idVersi))
       .orderBy(asc(barisRanking.rank));
@@ -206,7 +217,12 @@ describe("unggah → tinjau → publikasi (PRD A6 ▶ OD-05)", () => {
     const idVersi = await unggahDanDaftarkan(workbookGolden({ 4: nama }));
 
     const tinjau = await muatTinjauRanking(idVersi);
-    expect(tinjau!.baris[3]).toEqual({ rank: 4, variant: nama, qtySales: golden.baris[3].qtySales, keluarga: { id: nonaktif.id, nama, aktif: false } });
+    expect(tinjau!.baris[3]).toEqual({
+      rank: 4,
+      variant: nama,
+      qtySales: golden.baris[3].qtySales,
+      keluarga: { id: nonaktif.id, nama, aktif: false },
+    });
     expect(tinjau!.baris.filter((b) => b.keluarga?.aktif === false).map((b) => b.rank)).toEqual([4]);
     expect(tinjau!.alasanTidakBisaDipublikasikan).toBeNull();
 
@@ -229,7 +245,13 @@ describe("unggah → tinjau → publikasi (PRD A6 ▶ OD-05)", () => {
 
     const tinjau = await muatTinjauRanking(idVersi);
     expect(tinjau!.keluargaGanda).toEqual([
-      { keluarga: { id: keluarga.id, nama, aktif: true }, baris: [{ rank: 2, variant: `GANDA A ${k}` }, { rank: 5, variant: `GANDA B ${k}` }] },
+      {
+        keluarga: { id: keluarga.id, nama, aktif: true },
+        baris: [
+          { rank: 2, variant: `GANDA A ${k}` },
+          { rank: 5, variant: `GANDA B ${k}` },
+        ],
+      },
     ]);
     expect(tinjau!.alasanTidakBisaDipublikasikan).toBe(pesan);
 
@@ -293,9 +315,9 @@ describe("non-admin ditolak di server", () => {
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
 
     await expect(mintaUrlUnggahRanking()).rejects.toBeInstanceOf(AksesDitolakError);
-    await expect(
-      daftarkanRanking({ kunci, namaFile: "x.xlsx", tahunRanking: 2026, bulanRanking: 9 }),
-    ).rejects.toBeInstanceOf(AksesDitolakError);
+    await expect(daftarkanRanking({ kunci, namaFile: "x.xlsx", tahunRanking: 2026, bulanRanking: 9 })).rejects.toBeInstanceOf(
+      AksesDitolakError,
+    );
     await expect(cocokkanUlangRanking({ idVersi })).rejects.toBeInstanceOf(AksesDitolakError);
     await expect(publikasikanRanking({ idVersi })).rejects.toBeInstanceOf(AksesDitolakError);
 

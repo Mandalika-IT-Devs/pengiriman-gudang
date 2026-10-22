@@ -36,8 +36,7 @@ const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../tests
 
 const TANGGAL_KIRIM = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
   nama: "15ML GLITTER - GORGEOUS",
@@ -80,7 +79,13 @@ const hapusPerubahanUji = async () => {
 };
 
 async function ubahKategori(tanggal: string, idToko: number | null) {
-  const hasil = await buatPerubahanKategori({ tanggal: parseTanggalBisnis(tanggal), idToko, kategoriBaru: "Minggu", alasan: ALASAN_UJI, idPengguna: idAdmin });
+  const hasil = await buatPerubahanKategori({
+    tanggal: parseTanggalBisnis(tanggal),
+    idToko,
+    kategoriBaru: "Minggu",
+    alasan: ALASAN_UJI,
+    idPengguna: idAdmin,
+  });
   expect(hasil).toEqual({ keadaan: "berhasil" });
 }
 
@@ -96,7 +101,11 @@ beforeAll(async () => {
   await db.delete(draftRencana).where(eq(draftRencana.gudangId, bandung));
   [tokoA, tokoB, tokoBaru] = [await buatTokoUji(), await buatTokoUji(), await buatTokoUji()];
   await db.insert(hubunganTokoGudang).values([tokoA, tokoB, tokoBaru].map((t) => ({ tokoId: t.id, gudangId: bandung })));
-  const jadwalSenin = { pola: "mingguan" as const, hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }], dibuatOleh: idAdmin };
+  const jadwalSenin = {
+    pola: "mingguan" as const,
+    hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }],
+    dibuatOleh: idAdmin,
+  };
   await db.insert(jadwalToko).values([
     { ...jadwalSenin, tokoId: tokoA.id },
     { ...jadwalSenin, tokoId: tokoB.id },
@@ -116,7 +125,12 @@ beforeAll(async () => {
     tahun: tahunB,
     namaToko: tokoB.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kode.tokoB, SEMUA_HARI_JUNI.map(() => 2))],
+    produk: [
+      produkUji(
+        kode.tokoB,
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
   });
   // Toko tanpa jadwal di luar periode sumber: produknya tidak ada di draft.
   await aktifkanImporJuniUji({
@@ -124,7 +138,12 @@ beforeAll(async () => {
     tahun: await tahunUjiBebas(),
     namaToko: tokoBaru.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kode.luarDraft, SEMUA_HARI_JUNI.map(() => 0))],
+    produk: [
+      produkUji(
+        kode.luarDraft,
+        SEMUA_HARI_JUNI.map(() => 0),
+      ),
+    ],
   });
   await hitungUlangCacheLaporan();
   await tetapkanPeriode(periode());
@@ -168,7 +187,12 @@ describe("draft perlu dihitung ulang saat dasar perhitungan berubah", () => {
       tahun: await tahunUjiBebas(),
       namaToko: tokoBaru.nama,
       hari: SEMUA_HARI_JUNI,
-      produk: [produkUji(kodeProdukUji("GOR"), SEMUA_HARI_JUNI.map(() => 1))],
+      produk: [
+        produkUji(
+          kodeProdukUji("GOR"),
+          SEMUA_HARI_JUNI.map(() => 1),
+        ),
+      ],
     });
     expect(await perlu()).toEqual(["impor-aktif"]);
 
@@ -221,7 +245,12 @@ describe("draft perlu dihitung ulang saat dasar perhitungan berubah", () => {
 
       await hitung();
       expect(
-        await batalkanPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-10"), idToko: tokoA.id, alasan: ALASAN_UJI, idPengguna: idAdmin }),
+        await batalkanPerubahanKategori({
+          tanggal: parseTanggalBisnis("2026-06-10"),
+          idToko: tokoA.id,
+          alasan: ALASAN_UJI,
+          idPengguna: idAdmin,
+        }),
       ).toEqual({ keadaan: "berhasil" });
       expect(await perlu()).toEqual(["kategori-efektif"]);
     });
@@ -241,7 +270,9 @@ describe("draft perlu dihitung ulang saat dasar perhitungan berubah", () => {
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoB.id), eq(jadwalToko.status, "aktif")))
       .returning();
-    await db.insert(jadwalToko).values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
     expect(await perlu()).toEqual(["jadwal"]);
 
     await hitung();
@@ -263,11 +294,15 @@ describe("draft perlu dihitung ulang saat dasar perhitungan berubah", () => {
   });
 
   it("pemetaan keluarga aroma varian di draft berubah → ditandai; pemetaan produk di luar draft tidak", async () => {
-    const [luar] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.luarDraft, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [luar] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.luarDraft, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(luar.status).toBe("berhasil");
     expect(await perlu()).toEqual([]);
 
-    const [kedua] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.kedua, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [kedua] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.kedua, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(kedua.status).toBe("berhasil");
     expect(await perlu()).toEqual(["pemetaan"]);
   });
@@ -306,7 +341,14 @@ describe("hitung ulang draft", () => {
         ],
       }),
     ).toEqual({ keadaan: "berhasil" });
-    expect(await simpanStokToko({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, tokoId: tokoB.id, stok: [{ kodeProduk: kode.tokoB, stokAkhir: 7 }] })).toEqual({
+    expect(
+      await simpanStokToko({
+        idGudang: bandung,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoB.id,
+        stok: [{ kodeProduk: kode.tokoB, stokAkhir: 7 }],
+      }),
+    ).toEqual({
       keadaan: "berhasil",
     });
 
@@ -323,7 +365,9 @@ describe("hitung ulang draft", () => {
       .update(jadwalToko)
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoB.id), eq(jadwalToko.status, "aktif")));
-    await db.insert(jadwalToko).values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Selasa", persiapanHari: 0 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Selasa", persiapanHari: 0 }], dibuatOleh: idAdmin });
     expect(await perlu()).toEqual(["impor-aktif", "jadwal"]);
 
     expect(await hitung()).toMatchObject({ keadaan: "berhasil" });
@@ -367,7 +411,9 @@ describe("hitung ulang draft", () => {
       .update(jadwalToko)
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoB.id), eq(jadwalToko.status, "aktif")));
-    await db.insert(jadwalToko).values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 2 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 2 }], dibuatOleh: idAdmin });
 
     expect(await hitung()).toMatchObject({ keadaan: "berhasil" });
     const draft = await bacaDraftRencana(bandung, TANGGAL_KIRIM);

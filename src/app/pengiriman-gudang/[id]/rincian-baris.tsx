@@ -45,7 +45,6 @@ export const labelSumberKategori = {
   toko: "Perubahan kategori khusus toko ini",
 } as const satisfies Record<SumberKategoriDraft, string>;
 
-
 /**
  * Penelusuran Ringkasan (T37) untuk satu Rata-rata Ringkasan toko–varian pada bulan periode sumber draft. Ringkasan
  * disaring ke toko dan produk ini sehingga barisnya selalu tampil; penelusurannya terbuka di panel samping (T108).
@@ -196,7 +195,7 @@ function Kebutuhan({ baris }: { baris: BarisRincian }) {
         <>
           <ul aria-label="Kebutuhan per kategori" className="flex flex-col gap-1 tabular-nums">
             {perKategori.map((r) => (
-          <li key={r.kategori}>
+              <li key={r.kategori}>
                 {r.kategori}: {formatAngka(r.jumlahHari)} hari × rata-rata {formatAngka(r.rataRata)} = {formatAngka(r.subtotal)}
               </li>
             ))}

@@ -83,8 +83,8 @@ export function FormPeriodeSumber({
         <CardHeader>
           <CardTitle level={2}>Periode sumber penjualan</CardTitle>
           <CardDescription>
-            Bulan laporan yang menjadi dasar rata-rata pengiriman setiap gudang. Semua operator gudang memakai periode
-            ini dan melihatnya hanya-baca. Terpisah dari pilihan bulan di Ringkasan.
+            Bulan laporan yang menjadi dasar rata-rata pengiriman setiap gudang. Semua operator gudang memakai periode ini dan melihatnya
+            hanya-baca. Terpisah dari pilihan bulan di Ringkasan.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">

@@ -25,7 +25,11 @@ async function tahunBelumAdaDiRanking() {
   for (;;) {
     const tahun = acak(3000, 9000);
     if (sudahDikembalikan.has(tahun)) continue;
-    const ada = await db.select({ id: versiRanking.id }).from(versiRanking).where(like(versiRanking.bulanRanking, `${tahun}-%`)).limit(1);
+    const ada = await db
+      .select({ id: versiRanking.id })
+      .from(versiRanking)
+      .where(like(versiRanking.bulanRanking, `${tahun}-%`))
+      .limit(1);
     if (ada.length === 0) return tahun;
   }
 }

@@ -44,9 +44,7 @@ function pasang(pengguna: Partial<DataPengguna> = {}) {
 }
 
 function tombol(akar: ParentNode, nama: string): HTMLButtonElement {
-  const hasil = [...akar.querySelectorAll("button")].find(
-    (b) => b.textContent?.trim() === nama || b.getAttribute("aria-label") === nama,
-  );
+  const hasil = [...akar.querySelectorAll("button")].find((b) => b.textContent?.trim() === nama || b.getAttribute("aria-label") === nama);
   if (hasil === undefined) throw new Error(`Tombol "${nama}" tidak ada.`);
   return hasil;
 }

@@ -137,8 +137,8 @@ function DataProdukBerubah({ perubahan }: { perubahan: DataTinjauImpor["perubaha
     <section className="flex flex-col gap-4">
       <h2 className="text-xl font-semibold">Data produk berubah</h2>
       <p className="text-muted-foreground">
-        Kode produk yang nama, ukuran, atau kategorinya berbeda dari master produk. Saat impor ini diaktifkan, master
-        produk diperbarui mengikuti impor ini dan klasifikasinya dihitung ulang.
+        Kode produk yang nama, ukuran, atau kategorinya berbeda dari master produk. Saat impor ini diaktifkan, master produk diperbarui
+        mengikuti impor ini dan klasifikasinya dihitung ulang.
       </p>
       <Table aria-label="Data produk berubah" panjang>
         <TableHeader>
@@ -212,9 +212,7 @@ function ProdukBaru({ data }: { data: DataTinjauImpor }) {
                 <TableCell className="whitespace-normal">{p.nama}</TableCell>
                 <TableCell>{p.ukuran}</TableCell>
                 <TableCell>{p.kategori}</TableCell>
-                <TableCell>
-                  {teksKlasifikasi(p.klasifikasi)}
-                </TableCell>
+                <TableCell>{teksKlasifikasi(p.klasifikasi)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -241,10 +239,7 @@ export default async function HalamanTinjauImpor({ params }: { params: Promise<{
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
-      <Link
-        href="/admin/impor"
-        className={tautanTombolVariants()}
-      >
+      <Link href="/admin/impor" className={tautanTombolVariants()}>
         <ArrowLeft aria-hidden strokeWidth={2} className="size-5" />
         Daftar impor
       </Link>
@@ -285,8 +280,8 @@ export default async function HalamanTinjauImpor({ params }: { params: Promise<{
       {sedangBerjalan(data.status) ? (
         <Card>
           <p role="status" className="font-semibold">
-            File sedang dibaca dan divalidasi di server. Anda boleh menutup tab ini; prosesnya tetap berjalan, dan
-            statusnya bisa dilihat lagi di daftar impor.
+            File sedang dibaca dan divalidasi di server. Anda boleh menutup tab ini; prosesnya tetap berjalan, dan statusnya bisa dilihat
+            lagi di daftar impor.
           </p>
           <MuatUlangOtomatis />
         </Card>

@@ -9,7 +9,15 @@ import type { KategoriDasar, NamaHari } from "@/domain/kalender";
 import { AksesDitolakError } from "@/server/auth/kewenangan";
 import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { barisDraftRencana, draftRencana, hubunganTokoGudang, jadwalToko, periodeSumberGudang, produk, versiRanking } from "@/server/db/schema";
+import {
+  barisDraftRencana,
+  draftRencana,
+  hubunganTokoGudang,
+  jadwalToko,
+  periodeSumberGudang,
+  produk,
+  versiRanking,
+} from "@/server/db/schema";
 import { daftarHakTindakan, type HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
@@ -52,8 +60,7 @@ const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../../te
 };
 const TANGGAL_KIRIM = golden.kasusCakupan.tanggalKirim;
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
   nama: "15ML GLITTER - GORGEOUS",
@@ -86,9 +93,7 @@ beforeAll(async () => {
   [tokoContoh, tokoTanpaMinggu, tokoTanpaVarian] = [await buatTokoUji(), await buatTokoUji(), await buatTokoUji()];
   [tokoNonaktif, tokoNonaktifTanpaJadwal] = [await buatTokoUji({ aktif: false }), await buatTokoUji({ aktif: false })];
   const semuaToko = [tokoContoh, tokoTanpaMinggu, tokoTanpaVarian, tokoNonaktif];
-  await db
-    .insert(hubunganTokoGudang)
-    .values([...semuaToko, tokoNonaktifTanpaJadwal].map((t) => ({ tokoId: t.id, gudangId: cibubur })));
+  await db.insert(hubunganTokoGudang).values([...semuaToko, tokoNonaktifTanpaJadwal].map((t) => ({ tokoId: t.id, gudangId: cibubur })));
   await db.insert(jadwalToko).values(
     semuaToko.map((t) => ({
       tokoId: t.id,
@@ -121,7 +126,12 @@ beforeAll(async () => {
     tahun: tahunTanpaMinggu,
     namaToko: tokoTanpaMinggu.nama,
     hari: hariTanpaMinggu,
-    produk: [produkUji(kode.tanpaMinggu, hariTanpaMinggu.map(() => 3))],
+    produk: [
+      produkUji(
+        kode.tanpaMinggu,
+        hariTanpaMinggu.map(() => 3),
+      ),
+    ],
   });
   await hitungUlangCacheLaporan();
 
@@ -250,11 +260,17 @@ describe("draft rencana di halaman Pengiriman Gudang", () => {
     const htmlTanpaMinggu = await bukaToko(tokoTanpaMinggu.id);
     expect(html).toContain('data-status="draft"');
     expect(html).toContain("Tanggal kirim Senin, 08-06-2026");
-    expect(html).toContain("Dihitung oleh <span class=\"font-semibold text-foreground\">Uji viewer</span>");
+    expect(html).toContain('Dihitung oleh <span class="font-semibold text-foreground">Uji viewer</span>');
     expect(html).toMatch(
-      new RegExp(`data-draft-toko="${tokoContoh.id}".*?data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari \\+ 7 hari sampai sebelum kiriman berikutnya"`),
+      new RegExp(
+        `data-draft-toko="${tokoContoh.id}".*?data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari \\+ 7 hari sampai sebelum kiriman berikutnya"`,
+      ),
     );
-    expect(html).toMatch(new RegExp(`data-kode-produk="${kode.contoh}".*?Otomatis.*?data-kebutuhan="${golden.kasusCakupan.kebutuhan}">${golden.kasusCakupan.kebutuhan}<`));
+    expect(html).toMatch(
+      new RegExp(
+        `data-kode-produk="${kode.contoh}".*?Otomatis.*?data-kebutuhan="${golden.kasusCakupan.kebutuhan}">${golden.kasusCakupan.kebutuhan}<`,
+      ),
+    );
     expect(html).toMatch(new RegExp(`data-kode-produk="${kode.manual}".*?data-status="manual".*?Manual`));
     expect(htmlTanpaMinggu).toMatch(
       new RegExp(
@@ -266,7 +282,9 @@ describe("draft rencana di halaman Pengiriman Gudang", () => {
     // jadi masalah produk otomatis hanya soal stok dan jumlah kirim tampil "—".
     const baris = (k: string) =>
       new RegExp(`<tr[^>]*data-kode-produk="${k}".*?</tr>`).exec(k === kode.tanpaMinggu ? htmlTanpaMinggu : html)?.[0] ?? "";
-    expect(baris(kode.contoh)).toMatch(/data-jumlah-kirim="kosong"[^>]*>—<.*?data-masalah="stok-belum-diisi".*?lucide-circle-dashed.*?Stok belum diisi/);
+    expect(baris(kode.contoh)).toMatch(
+      /data-jumlah-kirim="kosong"[^>]*>—<.*?data-masalah="stok-belum-diisi".*?lucide-circle-dashed.*?Stok belum diisi/,
+    );
     expect(baris(kode.belumDipetakan)).toMatch(
       /data-jumlah-kirim="kosong"[^>]*>—<.*?data-masalah="belum-dipetakan".*?lucide-triangle-alert.*?Belum dipetakan.*?data-masalah="stok-belum-diisi"/,
     );
@@ -277,12 +295,16 @@ describe("draft rencana di halaman Pengiriman Gudang", () => {
       /data-masalah="kebutuhan-tidak-tersedia".*?Kebutuhan tidak tersedia.*?data-masalah="stok-belum-diisi".*?Stok belum diisi/,
     );
     // Ringkasan masalah per toko: jumlah baris tertahan (produk manual tidak tertahan).
-    expect(html).toMatch(new RegExp(`data-draft-toko="${tokoContoh.id}".*?data-jumlah-tertahan="3"[^>]*>.*?lucide-triangle-alert.*?3 baris tertahan<`));
+    expect(html).toMatch(
+      new RegExp(`data-draft-toko="${tokoContoh.id}".*?data-jumlah-tertahan="3"[^>]*>.*?lucide-triangle-alert.*?3 baris tertahan<`),
+    );
     // Toko yang mengirim tanpa varian di periode sumber tetap tampil, dengan masalah sebagai ganti ringkasan baris
     // tertahan (PRD A7 ▶ Keputusan 2026-10-11, T62; ikon + teks, DESIGN §7).
     const tanpaVarian =
       new RegExp(`<section[^>]*data-draft-toko="${tokoTanpaVarian.id}".*?</section>`).exec(await bukaToko(tokoTanpaVarian.id))?.[0] ?? "";
-    expect(tanpaVarian).toMatch(/data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari \+ 7 hari sampai sebelum kiriman berikutnya".*?data-tanpa-varian[^>]*>.*?lucide-triangle-alert.*?Tidak ada varian dari periode sumber untuk toko ini</);
+    expect(tanpaVarian).toMatch(
+      /data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari \+ 7 hari sampai sebelum kiriman berikutnya".*?data-tanpa-varian[^>]*>.*?lucide-triangle-alert.*?Tidak ada varian dari periode sumber untuk toko ini</,
+    );
     expect(tanpaVarian).not.toContain("data-jumlah-tertahan");
     // Toko nonaktif tidak ikut masuk draft walaupun masih punya jadwal aktif (PRD A6 ▶ T58).
     expect(html).not.toContain(`data-ringkasan-toko="${tokoNonaktif.id}"`);
@@ -292,7 +314,10 @@ describe("draft rencana di halaman Pengiriman Gudang", () => {
   });
 
   it("peringatan untuk setiap toko nonaktif yang masih punya jadwal aktif: ikon + teks (PRD A6 ▶ T58, DESIGN §7)", async () => {
-    for (const masuk of [() => masukOperator(cibubur, ["hitung-kebutuhan"]), async () => (kepala.cookie = (await kepalaPenggunaUji("admin")).cookie)]) {
+    for (const masuk of [
+      () => masukOperator(cibubur, ["hitung-kebutuhan"]),
+      async () => (kepala.cookie = (await kepalaPenggunaUji("admin")).cookie),
+    ]) {
       await masuk();
       const html = await buka(cibubur);
       expect(html).toMatch(
@@ -355,11 +380,15 @@ describe("ringkasan per toko; rincian dibuka per toko (T73)", () => {
     // Toko contoh: 4 varian, 3 tertahan (produk manual tidak), belum final, terkena perubahan jadwal.
     const contoh = ringkasan(html, tokoContoh.id);
     expect(contoh).toMatch(
-      new RegExp(`${tokoContoh.nama}.*?data-jumlah-baris="4"[^>]*>4<.*?data-jumlah-tertahan="3"[^>]*>.*?lucide-triangle-alert.*?3 baris tertahan<`),
+      new RegExp(
+        `${tokoContoh.nama}.*?data-jumlah-baris="4"[^>]*>4<.*?data-jumlah-tertahan="3"[^>]*>.*?lucide-triangle-alert.*?3 baris tertahan<`,
+      ),
     );
     expect(contoh).toMatch(/data-status="draft".*?Draft/);
     // T121 (DESIGN §11.6): label tautan "Buka toko", bukan "Buka" saja.
-    expect(contoh).toMatch(new RegExp(`<a[^>]*data-tautan-buka-toko="${tokoContoh.id}"[^>]*>Buka toko<span class="sr-only"> ${tokoContoh.nama}</span></a>`));
+    expect(contoh).toMatch(
+      new RegExp(`<a[^>]*data-tautan-buka-toko="${tokoContoh.id}"[^>]*>Buka toko<span class="sr-only"> ${tokoContoh.nama}</span></a>`),
+    );
     expect(contoh).not.toContain('data-status="final"');
     expect(contoh).toMatch(/data-status="perluDihitungUlang".*?Perlu dihitung ulang/);
     const tanpaMinggu = ringkasan(html, tokoTanpaMinggu.id);
@@ -367,7 +396,9 @@ describe("ringkasan per toko; rincian dibuka per toko (T73)", () => {
     expect(tanpaMinggu).not.toContain('data-status="perluDihitungUlang"');
     // Toko tanpa varian: nol varian dengan masalahnya (ikon + teks), tanpa ringkasan baris tertahan.
     const tanpaVarian = ringkasan(html, tokoTanpaVarian.id);
-    expect(tanpaVarian).toMatch(/data-jumlah-baris="0"[^>]*>0<.*?data-tanpa-varian[^>]*>.*?lucide-triangle-alert.*?Tidak ada varian dari periode sumber untuk toko ini</);
+    expect(tanpaVarian).toMatch(
+      /data-jumlah-baris="0"[^>]*>0<.*?data-tanpa-varian[^>]*>.*?lucide-triangle-alert.*?Tidak ada varian dari periode sumber untuk toko ini</,
+    );
     expect(tanpaVarian).not.toContain("data-jumlah-tertahan");
     expect(html).not.toContain(`data-ringkasan-toko="${tokoNonaktif.id}"`);
 
@@ -386,7 +417,9 @@ describe("ringkasan per toko; rincian dibuka per toko (T73)", () => {
     const html = await bukaToko(tokoTanpaMinggu.id);
     expect([...html.matchAll(/data-draft-toko="(\d+)"/g)].map((m) => m[1])).toEqual([String(tokoTanpaMinggu.id)]);
     expect([...html.matchAll(/<tr[^>]*data-kode-produk="([^"]+)"/g)].map((m) => m[1])).toEqual([kode.tanpaMinggu]);
-    expect([...html.matchAll(/<form[^>]*aria-label="(Stok akhir [^"]+)"/g)].map((m) => m[1])).toEqual([`Stok akhir ${tokoTanpaMinggu.nama}`]);
+    expect([...html.matchAll(/<form[^>]*aria-label="(Stok akhir [^"]+)"/g)].map((m) => m[1])).toEqual([
+      `Stok akhir ${tokoTanpaMinggu.nama}`,
+    ]);
     expect([...html.matchAll(/<input[^>]*aria-label="Stok akhir ([^"]+)"/g)].map((m) => m[1])).toEqual([kode.tanpaMinggu]);
     expect([...html.matchAll(/data-finalisasi-tertahan="(\d+)"/g)].map((m) => m[1])).toEqual([String(tokoTanpaMinggu.id)]);
 
@@ -451,7 +484,7 @@ describe("input stok di draft rencana (T59)", () => {
     expect(await stokContoh()).toBeNull();
   });
 
-  it("stok kosong tampil \"—\" belum diketahui; operator berhak mengisi stok → simpan → jumlah kirim tampil", async () => {
+  it('stok kosong tampil "—" belum diketahui; operator berhak mengisi stok → simpan → jumlah kirim tampil', async () => {
     // Pengguna tanpa hak input-stok melihat "—" dengan ikon belum diketahui (DESIGN §7), tanpa isian stok. Baris ringkas
     // (T117; DESIGN §11.4): tanpa badge bertumpuk; status "Stok belum diisi" cukup di kolom Masalah.
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
@@ -505,14 +538,20 @@ describe("input stok di draft rencana (T59)", () => {
 describe("rincian perhitungan per baris draft (T60)", () => {
   const nilaiRincian = (tokoId: number, kodeProduk: string) => `${tokoId}|${kodeProduk}`;
   const bagianRincian = (html: string, tokoId: number, kodeProduk: string) =>
-    new RegExp(`<section[^>]*data-rincian-baris="${nilaiRincian(tokoId, kodeProduk).replace("|", "\\|")}".*?</section>`).exec(html)?.[0] ?? "";
+    new RegExp(`<section[^>]*data-rincian-baris="${nilaiRincian(tokoId, kodeProduk).replace("|", "\\|")}".*?</section>`).exec(html)?.[0] ??
+    "";
   const hrefDari = (teks: string) => (/href="([^"]*)"/.exec(teks)?.[1] ?? "").replaceAll("&amp;", "&");
 
   it("contoh PRD A6: rincian menampilkan cakupan, kategori efektif, rata-rata, 4×4, 1×4, 2×10, 2×8 = 56, buffer, dan jumlah kirim 48", async () => {
     const [contoh] = golden.kasusJumlahKirim;
     await masukOperator(cibubur, ["input-stok"]);
     await expect(
-      simpanStok({ idGudang: cibubur, tanggalKirim: TANGGAL_KIRIM, tokoId: tokoContoh.id, stok: [{ kodeProduk: kode.contoh, stokAkhir: contoh.stokAkhir }] }),
+      simpanStok({
+        idGudang: cibubur,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoContoh.id,
+        stok: [{ kodeProduk: kode.contoh, stokAkhir: contoh.stokAkhir }],
+      }),
     ).resolves.toEqual({ keadaan: "berhasil" });
 
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
@@ -590,14 +629,17 @@ describe("rincian perhitungan per baris draft (T60)", () => {
   it("tautan rata-rata membuka penelusuran Ringkasan dengan angka yang sama", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     const html = await bukaToko(tokoContoh.id, { rincian: nilaiRincian(tokoContoh.id, kode.contoh) });
-    const tautanRataRata = /<a[^>]*data-tautan-ringkasan="Sabtu"[^>]*>.*?<\/a>/.exec(bagianRincian(html, tokoContoh.id, kode.contoh))?.[0] ?? "";
+    const tautanRataRata =
+      /<a[^>]*data-tautan-ringkasan="Sabtu"[^>]*>.*?<\/a>/.exec(bagianRincian(html, tokoContoh.id, kode.contoh))?.[0] ?? "";
     const url = new URL(hrefDari(tautanRataRata), "http://lokal");
     const parameter: Record<string, string[]> = {};
     for (const [k, v] of url.searchParams) parameter[k] = [...(parameter[k] ?? []), v];
 
     const ringkasan = renderToStaticMarkup(await HalamanRingkasan({ searchParams: Promise.resolve(parameter) }));
     expect(ringkasan).toMatch(
-      new RegExp(`data-rincian="${tokoContoh.id}\\|${kode.contoh}\\|Sabtu".*?data-tahap="ringkasan"[^>]*data-nilai="${golden.rataRata.Sabtu}"`),
+      new RegExp(
+        `data-rincian="${tokoContoh.id}\\|${kode.contoh}\\|Sabtu".*?data-tahap="ringkasan"[^>]*data-nilai="${golden.rataRata.Sabtu}"`,
+      ),
     );
   });
 
@@ -606,8 +648,12 @@ describe("rincian perhitungan per baris draft (T60)", () => {
     const html = await bukaToko(tokoTanpaMinggu.id, { rincian: nilaiRincian(tokoTanpaMinggu.id, kode.tanpaMinggu) });
     const rincian = bagianRincian(html, tokoTanpaMinggu.id, kode.tanpaMinggu);
 
-    expect(rincian).toMatch(/data-tanggal-cakupan="2026-06-07"[^>]*>.*?Minggu, 07-06-2026.*?Minggu.*?data-status="tidakTersedia".*?Tidak tersedia/);
-    expect(rincian).toMatch(/data-kebutuhan-rincian="tidak-tersedia".*?Tanpa rata-rata:.*?Minggu, 07-06-2026 · kategori Minggu.*?Minggu, 14-06-2026 · kategori Minggu/);
+    expect(rincian).toMatch(
+      /data-tanggal-cakupan="2026-06-07"[^>]*>.*?Minggu, 07-06-2026.*?Minggu.*?data-status="tidakTersedia".*?Tidak tersedia/,
+    );
+    expect(rincian).toMatch(
+      /data-kebutuhan-rincian="tidak-tersedia".*?Tanpa rata-rata:.*?Minggu, 07-06-2026 · kategori Minggu.*?Minggu, 14-06-2026 · kategori Minggu/,
+    );
     expect(rincian).not.toContain('data-tautan-ringkasan="Minggu"');
     expect(rincian).toContain('data-tautan-ringkasan="Sabtu"');
     // Kebutuhan tidak tersedia: jumlah kirim "—" dengan masalah yang menahan finalisasi.
@@ -628,7 +674,7 @@ describe("rincian perhitungan per baris draft (T60)", () => {
 describe("draft perlu dihitung ulang (T61)", () => {
   const penanda = (html: string) => /<div[^>]*data-perlu-dihitung-ulang.*?<\/ul>/.exec(html)?.[0] ?? "";
 
-  it("penanda \"Perlu dihitung ulang\" (ikon + teks warning) beserta yang berubah; tampil juga untuk admin, tanpa tombol", async () => {
+  it('penanda "Perlu dihitung ulang" (ikon + teks warning) beserta yang berubah; tampil juga untuk admin, tanpa tombol', async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     const html = await buka(cibubur, TANGGAL_KIRIM);
     expect(penanda(html)).toMatch(/data-status="perluDihitungUlang".*?lucide-triangle-alert.*?Perlu dihitung ulang/);

@@ -1,0 +1,34 @@
+# Cakupan format ada di skrip `format` dan `format:check` (package.json). Berkas di bawah ini tidak diformat Prettier.
+
+# Berkas terlindungi (sama dengan .github/protected-paths.txt)
+docs/PRD.md
+docs/OPEN-DECISIONS.md
+docs/UAT.md
+docs/DESIGN.md
+docs/adr/
+docs/agents/
+GLOSSARY.md
+AGENTS.md
+CLAUDE.md
+CODING_STANDARDS.md
+src/domain/AGENTS.md
+tests/golden/
+.github/
+.claude/
+
+# Markdown, JSON, dan YAML
+*.md
+*.json
+*.jsonc
+*.yml
+*.yaml
+
+# Migrasi, berkas deploy, data lokal, hasil build, dependency, dan hasil test
+drizzle/
+deploy/
+data-lokal/
+.next/
+node_modules/
+test-results/
+playwright-report/
+.claude/worktrees/

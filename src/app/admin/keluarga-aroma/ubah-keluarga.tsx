@@ -130,12 +130,7 @@ function BagianEntri({
                 destruktif
                 konfirmasi={() => simpan(() => hapus(e.id))}
                 pemicu={
-                  <Button
-                    type="button"
-                    variant="destructiveOutline"
-                    disabled={menunggu}
-                    aria-label={`Hapus ${jenis} ${e.teks}`}
-                  >
+                  <Button type="button" variant="destructiveOutline" disabled={menunggu} aria-label={`Hapus ${jenis} ${e.teks}`}>
                     Hapus
                   </Button>
                 }
@@ -148,7 +143,10 @@ function BagianEntri({
         className="flex flex-wrap items-end gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => tambah(teks), () => setTeks(""));
+          simpan(
+            () => tambah(teks),
+            () => setTeks(""),
+          );
         }}
       >
         <label className="flex min-w-48 flex-1 flex-col gap-2 font-semibold" htmlFor={`${id}-baru`}>

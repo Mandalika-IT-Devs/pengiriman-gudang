@@ -9,17 +9,12 @@ import { describe, expect, it } from "vitest";
 
 function berkasTsx(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true, recursive: true })
-    .filter(
-      (e) =>
-        e.isFile() && e.name.endsWith(".tsx") && !e.name.endsWith(".test.tsx"),
-    )
+    .filter((e) => e.isFile() && e.name.endsWith(".tsx") && !e.name.endsWith(".test.tsx"))
     .map((e) => join(e.parentPath, e.name));
 }
 
 function pemakaianIkon(sumber: string): { nama: string; tag: string }[] {
-  const impor = sumber.match(
-    /import\s*\{([^}]*)\}\s*from\s*"lucide-react"/,
-  )?.[1];
+  const impor = sumber.match(/import\s*\{([^}]*)\}\s*from\s*"lucide-react"/)?.[1];
   if (!impor) return [];
   const nama = impor
     .split(",")
@@ -49,9 +44,7 @@ const semuaPemakaian = berkasTsx(akar).flatMap((berkas) =>
 
 describe("ikon lucide (DESIGN §6)", () => {
   it("penjaga menemukan ikon untuk diperiksa", () => {
-    expect(semuaPemakaian.map((p) => p.nama)).toEqual(
-      expect.arrayContaining(["ChevronDownIcon", "CheckIcon", "Menu", "X"]),
-    );
+    expect(semuaPemakaian.map((p) => p.nama)).toEqual(expect.arrayContaining(["ChevronDownIcon", "CheckIcon", "Menu", "X"]));
   });
 
   it("berkas zona suasana yang terdaftar ada dan memakai ikon", () => {
@@ -60,13 +53,7 @@ describe("ikon lucide (DESIGN §6)", () => {
     }
   });
 
-  it.each(
-    semuaPemakaian.map((p) => [
-      `${p.berkas} <${p.nama}>`,
-      p.tag,
-      berkasZonaSuasana.has(p.berkas) ? "7" : "5",
-    ]),
-  )(
+  it.each(semuaPemakaian.map((p) => [`${p.berkas} <${p.nama}>`, p.tag, berkasZonaSuasana.has(p.berkas) ? "7" : "5"]))(
     "%s berukuran sesuai zona, stroke 2",
     (_, tag, ukuran) => {
       expect(tag).toMatch(new RegExp(`className="[^"]*\\bsize-${ukuran}\\b`));

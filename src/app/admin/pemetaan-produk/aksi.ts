@@ -8,8 +8,7 @@ import { terapkanPemetaan, type HasilPemetaanProduk } from "@/server/keluarga-ar
 
 /** Hasil konfirmasi pemetaan: hasil per produk (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
 export type HasilKonfirmasiPemetaan =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilPemetaanProduk[] }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilPemetaanProduk[] } | { keadaan: "gagal"; pesan: string };
 
 const PATH_HALAMAN = "/admin/pemetaan-produk";
 

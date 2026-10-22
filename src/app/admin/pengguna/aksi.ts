@@ -48,9 +48,7 @@ const skemaAturUlangKataSandi = z
 
 /** Hasil "Tampilkan" kata sandi (T137). Kata sandi hanya dikirim di sini, saat diminta. */
 export type HasilTampilkanKataSandi =
-  | { keadaan: "tersedia"; sandi: string }
-  | { keadaan: "belumTersedia" }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "tersedia"; sandi: string } | { keadaan: "belumTersedia" } | { keadaan: "gagal"; pesan: string };
 
 function gagal(pesan: string): HasilSimpan {
   return { keadaan: "gagal", pesan };

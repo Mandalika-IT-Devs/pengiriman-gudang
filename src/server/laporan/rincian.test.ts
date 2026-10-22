@@ -47,7 +47,12 @@ function sumberTanggal(hasil: Awaited<ReturnType<typeof rincian>>) {
   if (hasil?.keadaan !== "siap") return null;
   return hasil.bulanan.flatMap((b) =>
     b.mingguan.flatMap((m) =>
-      m.sumber.map((s) => ({ tanggal: s.tanggal, kategoriEfektif: s.kategoriEfektif, sumberKategori: s.sumberKategori, teramati: s.pengamatan !== null })),
+      m.sumber.map((s) => ({
+        tanggal: s.tanggal,
+        kategoriEfektif: s.kategoriEfektif,
+        sumberKategori: s.sumberKategori,
+        teramati: s.pengamatan !== null,
+      })),
     ),
   );
 }

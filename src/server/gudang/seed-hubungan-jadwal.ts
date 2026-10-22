@@ -22,11 +22,51 @@ const mingguan = (hari: MasukanJadwal["hariKirim"][number]["hari"], persiapan: M
  * mingguan tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19).
  */
 const JADWAL_AWAL: readonly BarisJadwalAwal[] = [
-  { gudang: "Gudang Cibubur", toko: "SMB", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }] },
-  { gudang: "Gudang Cibubur", toko: "BOTANI", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: "H" }, { hari: "Kamis", persiapan: H1 }] },
-  { gudang: "Gudang Cibubur", toko: "MKG", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
-  { gudang: "Gudang Cibubur", toko: "KOKAS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
-  { gudang: "Gudang Cibubur", toko: "SMS", pola: "2x-seminggu", hariKirim: [{ hari: "Selasa", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
+  {
+    gudang: "Gudang Cibubur",
+    toko: "SMB",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Senin", persiapan: "H" },
+      { hari: "Kamis", persiapan: H1 },
+    ],
+  },
+  {
+    gudang: "Gudang Cibubur",
+    toko: "BOTANI",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Senin", persiapan: "H" },
+      { hari: "Kamis", persiapan: H1 },
+    ],
+  },
+  {
+    gudang: "Gudang Cibubur",
+    toko: "MKG",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Selasa", persiapan: H1 },
+      { hari: "Jumat", persiapan: H1 },
+    ],
+  },
+  {
+    gudang: "Gudang Cibubur",
+    toko: "KOKAS",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Selasa", persiapan: H1 },
+      { hari: "Jumat", persiapan: H1 },
+    ],
+  },
+  {
+    gudang: "Gudang Cibubur",
+    toko: "SMS",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Selasa", persiapan: H1 },
+      { hari: "Jumat", persiapan: H1 },
+    ],
+  },
   { gudang: "Gudang Cibubur", toko: "ALSUT", ...mingguan("Selasa", H1) },
   { gudang: "Gudang Cibubur", toko: "BXC", pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: H1 }] },
   { gudang: "Gudang Cibubur", toko: "KARAWACI", ...mingguan("Rabu", H1) },
@@ -39,16 +79,32 @@ const JADWAL_AWAL: readonly BarisJadwalAwal[] = [
   { gudang: "Gudang Cibubur", toko: "SENTUL", ...mingguan("Sabtu", H1) },
   { gudang: "Gudang Cibubur", toko: "LMK", ...mingguan("Sabtu", H1) },
   { gudang: "Gudang Bali", toko: "DMB", ...mingguan("Senin", H1) },
-  { gudang: "Gudang Bali", toko: "LWB", pola: "3x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Rabu", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
-  { gudang: "Gudang Bandung", toko: "PASKAL", pola: "2x-seminggu", hariKirim: [{ hari: "Senin", persiapan: H1 }, { hari: "Jumat", persiapan: H1 }] },
+  {
+    gudang: "Gudang Bali",
+    toko: "LWB",
+    pola: "3x-seminggu",
+    hariKirim: [
+      { hari: "Senin", persiapan: H1 },
+      { hari: "Rabu", persiapan: H1 },
+      { hari: "Jumat", persiapan: H1 },
+    ],
+  },
+  {
+    gudang: "Gudang Bandung",
+    toko: "PASKAL",
+    pola: "2x-seminggu",
+    hariKirim: [
+      { hari: "Senin", persiapan: H1 },
+      { hari: "Jumat", persiapan: H1 },
+    ],
+  },
   { gudang: "Gudang Bandung", toko: "PVJ", ...mingguan("Selasa", H1) },
 ];
 
 export const PESAN_TANPA_ADMIN = "Jalankan pnpm db:seed-admin dulu.";
 
 type HasilSeedHubunganJadwal =
-  | { keadaan: "berhasil"; hubunganDibuat: number; jadwalDibuat: number }
-  | { keadaan: "gagal"; pesan: typeof PESAN_TANPA_ADMIN };
+  { keadaan: "berhasil"; hubunganDibuat: number; jadwalDibuat: number } | { keadaan: "gagal"; pesan: typeof PESAN_TANPA_ADMIN };
 
 /** Admin aktif (peran admin, tidak dinonaktifkan) yang paling awal dibuat, atau `null`. */
 export async function adminPertama(tx: Tx) {
@@ -62,7 +118,10 @@ export async function adminPertama(tx: Tx) {
 }
 
 async function idMenurutNama(tx: Tx, tabel: typeof gudang | typeof toko, nama: readonly string[], jenis: string) {
-  const baris = await tx.select({ id: tabel.id, nama: tabel.nama }).from(tabel).where(inArray(tabel.nama, [...nama]));
+  const baris = await tx
+    .select({ id: tabel.id, nama: tabel.nama })
+    .from(tabel)
+    .where(inArray(tabel.nama, [...nama]));
   const peta = new Map(baris.map((b) => [b.nama, b.id]));
   const hilang = nama.filter((n) => !peta.has(n));
   if (hilang.length > 0) {
@@ -84,7 +143,12 @@ export async function seedHubunganJadwalAwal(): Promise<HasilSeedHubunganJadwal>
     if (idAdmin === null) return { keadaan: "gagal", pesan: PESAN_TANPA_ADMIN };
 
     const idGudang = await idMenurutNama(tx, gudang, [...new Set(JADWAL_AWAL.map((b) => b.gudang))], "Gudang");
-    const idToko = await idMenurutNama(tx, toko, JADWAL_AWAL.map((b) => b.toko), "Toko");
+    const idToko = await idMenurutNama(
+      tx,
+      toko,
+      JADWAL_AWAL.map((b) => b.toko),
+      "Toko",
+    );
 
     let hubunganDibuat = 0;
     let jadwalDibuat = 0;

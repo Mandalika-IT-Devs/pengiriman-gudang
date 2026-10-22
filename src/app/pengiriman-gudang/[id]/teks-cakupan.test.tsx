@@ -5,7 +5,11 @@ import { TeksCakupan, teksCakupan } from "./teks-cakupan";
 
 // T121 (DESIGN §11.6): teks cakupan ditulis lengkap; p = 0 tanpa bagian persiapan.
 
-const teksTerbaca = (html: string) => html.replace(/<button[^>]*>.*?<\/button>/g, "").replace(/<[^>]+>/g, "").replaceAll("&amp;", "&");
+const teksTerbaca = (html: string) =>
+  html
+    .replace(/<button[^>]*>.*?<\/button>/g, "")
+    .replace(/<[^>]+>/g, "")
+    .replaceAll("&amp;", "&");
 
 describe("teks cakupan", () => {
   it("p = 1, L = 7 → Cakupan 8 hari: persiapan 1 hari + 7 hari sampai sebelum kiriman berikutnya", () => {

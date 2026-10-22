@@ -81,7 +81,9 @@ async function imporBlok(namaBlok: string) {
       toko: namaBlok,
       bulan: 6,
       hari: HARI,
-      produk: [{ kode: kodeProdukUji(), nama: "15ML GLITTER - UJI", ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas: [1, 2, 3] }],
+      produk: [
+        { kode: kodeProdukUji(), nama: "15ML GLITTER - UJI", ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas: [1, 2, 3] },
+      ],
     }),
   });
   const idImpor = await imporUji({ isi, tahunImpor: await tahunUjiBebas(), idPengguna: idAdmin });
@@ -244,7 +246,9 @@ describe("ubah nama toko", () => {
     const g = await buatGudangUji();
     gudangDibuat.push(g.id);
     await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: g.id });
-    await db.insert(jadwalToko).values({ tokoId: t.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: t.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
     const { idImpor } = await imporBlok(namaLama);
     const idRencana = await rencanaFinalUji(g.id, g.nama, t.id, namaLama);
     const namaBaru = namaUnik("TOKO GANTI");

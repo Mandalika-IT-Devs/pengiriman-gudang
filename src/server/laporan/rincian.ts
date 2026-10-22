@@ -79,12 +79,7 @@ function bacaNilaiRincian(nilai: string) {
  */
 export async function muatRincian(
   tx: Tx,
-  {
-    versiId,
-    bulanPilihan,
-    sesuaiFilter,
-    nilai,
-  }: { versiId: number; bulanPilihan: string[]; sesuaiFilter: SQL | undefined; nilai: string },
+  { versiId, bulanPilihan, sesuaiFilter, nilai }: { versiId: number; bulanPilihan: string[]; sesuaiFilter: SQL | undefined; nilai: string },
 ): Promise<RincianAngka> {
   const terpilih = bacaNilaiRincian(nilai);
   if (terpilih === null) return { keadaan: "tidak-ada" };
@@ -149,9 +144,10 @@ export async function muatRincian(
   const namaFile = new Map(
     daftarImporId.length === 0
       ? []
-      : (
-          await tx.select({ id: impor.id, namaFile: impor.namaFile }).from(impor).where(inArray(impor.id, daftarImporId))
-        ).map((i) => [i.id, i.namaFile]),
+      : (await tx.select({ id: impor.id, namaFile: impor.namaFile }).from(impor).where(inArray(impor.id, daftarImporId))).map((i) => [
+          i.id,
+          i.namaFile,
+        ]),
   );
   const kunciSel = (imporId: number, tanggal: string) => `${imporId}|${tanggal}`;
   const selTerisi = new Map(

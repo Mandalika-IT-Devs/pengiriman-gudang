@@ -61,7 +61,9 @@ async function imporJuniGoldenAktif() {
       toko: toko.nama,
       bulan: JUNI,
       hari: [...Array.from({ length: 30 }, (_, i) => i + 1), "31/6"],
-      produk: [{ kode, nama: "15ML GLITTER - GORGEOUS", ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas: kuantitasGoldenJuni() }],
+      produk: [
+        { kode, nama: "15ML GLITTER - GORGEOUS", ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas: kuantitasGoldenJuni() },
+      ],
     }),
   });
   const idImpor = await imporUji({ isi, tahunImpor: TAHUN, bulanImpor: JUNI, idPengguna: admin.id });
@@ -205,7 +207,10 @@ describe("revisi kalender", () => {
 
     await hitungUlangCacheLaporan();
     expect(await muatStatusCacheLaporan()).toBe("terbaru");
-    const [versi] = await db.select().from(versiCacheLaporan).where(eq(versiCacheLaporan.id, (await idVersiCacheAktif())!));
+    const [versi] = await db
+      .select()
+      .from(versiCacheLaporan)
+      .where(eq(versiCacheLaporan.id, (await idVersiCacheAktif())!));
     expect(versi.revisiKalender).toBe(revisiBerikutnya);
   });
 
@@ -238,7 +243,11 @@ describe("job gagal", () => {
     expect(await muatStatusCacheLaporan()).toBe("gagal");
     const sesudah = await cachePasangan(toko.id, kode);
     expect(sesudah).toEqual(sebelum);
-    const [gagal] = await db.select().from(versiCacheLaporan).orderBy(sql`${versiCacheLaporan.id} desc`).limit(1);
+    const [gagal] = await db
+      .select()
+      .from(versiCacheLaporan)
+      .orderBy(sql`${versiCacheLaporan.id} desc`)
+      .limit(1);
     expect(gagal).toMatchObject({ status: "gagal", pesanGagal: "Hitung uji sengaja gagal." });
 
     // Hitung ulang berikutnya yang berhasil menggantikan cache lama.

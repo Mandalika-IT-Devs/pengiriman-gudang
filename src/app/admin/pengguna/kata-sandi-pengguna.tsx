@@ -31,22 +31,12 @@ function BelumTersedia() {
         <CircleDashed aria-hidden strokeWidth={2} className="size-5 shrink-0 text-muted-foreground" />
         Belum tersedia
       </span>
-      <span className="text-muted-foreground">
-        Tersedia setelah pengguna mengganti kata sandinya atau admin mengatur ulang.
-      </span>
+      <span className="text-muted-foreground">Tersedia setelah pengguna mengganti kata sandinya atau admin mengatur ulang.</span>
     </>
   );
 }
 
-export function KataSandiPengguna({
-  idPengguna,
-  nama,
-  kataSandi,
-}: {
-  idPengguna: string;
-  nama: string;
-  kataSandi: KataSandiTampil;
-}) {
+export function KataSandiPengguna({ idPengguna, nama, kataSandi }: { idPengguna: string; nama: string; kataSandi: KataSandiTampil }) {
   const [sandi, setSandi] = useState<string | null>(null);
   const [ternyataBelumTersedia, setTernyataBelumTersedia] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
@@ -81,14 +71,7 @@ export function KataSandiPengguna({
             <span aria-hidden>••••••••</span>
             <span className="sr-only">Kata sandi tersembunyi</span>
           </span>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            aria-label={`Tampilkan kata sandi ${nama}`}
-            disabled={memuat}
-            onClick={tampilkan}
-          >
+          <Button type="button" size="sm" variant="ghost" aria-label={`Tampilkan kata sandi ${nama}`} disabled={memuat} onClick={tampilkan}>
             <Eye aria-hidden strokeWidth={2} className="size-5" />
             Tampilkan
           </Button>
@@ -98,13 +81,7 @@ export function KataSandiPengguna({
           <span data-kata-sandi="terlihat" className="font-semibold break-all">
             {sandi}
           </span>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            aria-label={`Sembunyikan kata sandi ${nama}`}
-            onClick={() => setSandi(null)}
-          >
+          <Button type="button" size="sm" variant="ghost" aria-label={`Sembunyikan kata sandi ${nama}`} onClick={() => setSandi(null)}>
             <EyeOff aria-hidden strokeWidth={2} className="size-5" />
             Sembunyikan
           </Button>

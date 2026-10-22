@@ -24,11 +24,7 @@ function HasilPerProduk({ hasil }: { hasil: HasilPemetaanProduk[] }) {
   return (
     <section aria-label="Hasil per produk" className="flex flex-col gap-3 px-6 pb-6">
       <p role="status" className="flex items-start gap-2 font-semibold">
-        <IkonRingkasan
-          aria-hidden
-          strokeWidth={2}
-          className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")}
-        />
+        <IkonRingkasan aria-hidden strokeWidth={2} className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")} />
         {jumlahBerhasil} dari {hasil.length} produk dikonfirmasi.
       </p>
       <Table aria-label="Hasil konfirmasi per produk">
@@ -74,9 +70,7 @@ export function DaftarUsulan({
 }) {
   const id = useId();
   const [terpilih, setTerpilih] = useState<ReadonlySet<string>>(new Set());
-  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilKonfirmasiPemetaan>(
-    "status produk di daftar produk",
-  );
+  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilKonfirmasiPemetaan>("status produk di daftar produk");
   const semuaTerpilih = usulan.length > 0 && usulan.every((u) => terpilih.has(u.kode));
 
   function pilih(kode: string, dipilih: boolean) {
@@ -114,9 +108,7 @@ export function DaftarUsulan({
         <CardContent className="flex flex-col gap-4">
           {usulan.length === 0 ? (
             <p className="text-muted-foreground">
-              {adaPencarian
-                ? "Tidak ada usulan yang cocok dengan pencarian ini."
-                : "Tidak ada usulan untuk produk yang belum dipetakan."}
+              {adaPencarian ? "Tidak ada usulan yang cocok dengan pencarian ini." : "Tidak ada usulan untuk produk yang belum dipetakan."}
             </p>
           ) : (
             <Table aria-label="Daftar usulan" panjang>
@@ -182,9 +174,7 @@ export function DaftarUsulan({
             Konfirmasi usulan terpilih
           </Button>
           <span className="text-muted-foreground">{terpilih.size} produk dipilih</span>
-          {tampilan && tampilan.keadaan !== "berhasil" ? (
-            <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} />
-          ) : null}
+          {tampilan && tampilan.keadaan !== "berhasil" ? <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} /> : null}
         </CardFooter>
         {!menunggu && hasil && hasil.keadaan !== "gagal" ? <HasilPerProduk hasil={hasil.hasil} /> : null}
       </form>

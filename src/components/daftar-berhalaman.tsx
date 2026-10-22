@@ -91,7 +91,14 @@ export function KotakCari({
   pertahankan?: Record<string, string>;
 }) {
   return (
-    <form action={action} method="get" role="search" aria-label={label} data-kotak-cari={name} className="flex flex-wrap items-center gap-2">
+    <form
+      action={action}
+      method="get"
+      role="search"
+      aria-label={label}
+      data-kotak-cari={name}
+      className="flex flex-wrap items-center gap-2"
+    >
       {Object.entries(pertahankan)
         .filter(([, v]) => v !== "")
         .map(([k, v]) => (

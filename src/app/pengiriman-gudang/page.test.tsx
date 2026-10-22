@@ -43,7 +43,10 @@ const buka = async () => renderToStaticMarkup(await HalamanDaftarPengirimanGudan
 function kartuGudang(html: string) {
   return [...html.matchAll(/<a [^>]*href="\/pengiriman-gudang\/(\d+)"[^>]*>(.*?)<\/a>/g)].map((m) => ({
     id: Number(m[1]),
-    teks: m[2]!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+    teks: m[2]!
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
   }));
 }
 
@@ -104,10 +107,12 @@ describe("/pengiriman-gudang", () => {
     const tokoKamis = [await buatTokoUji(), await buatTokoUji(), await buatTokoUji()];
     const tokoSenin = await buatTokoUji();
     const tokoFinal = await buatTokoUji();
-    await db.insert(hubunganTokoGudang).values([
-      ...[...tokoKamis, tokoSenin].map((t) => ({ tokoId: t.id, gudangId: berjadwal.id })),
-      { tokoId: tokoFinal.id, gudangId: semuaFinal.id },
-    ]);
+    await db
+      .insert(hubunganTokoGudang)
+      .values([
+        ...[...tokoKamis, tokoSenin].map((t) => ({ tokoId: t.id, gudangId: berjadwal.id })),
+        { tokoId: tokoFinal.id, gudangId: semuaFinal.id },
+      ]);
     await db.insert(jadwalToko).values([
       ...[...tokoKamis, tokoFinal].map((t) => ({
         tokoId: t.id,

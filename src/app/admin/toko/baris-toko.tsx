@@ -48,7 +48,10 @@ export function BarisToko({ toko }: { toko: DataBarisToko }) {
             className="flex min-w-40 flex-col gap-2"
             onSubmit={(event) => {
               event.preventDefault();
-              simpan(() => gantiNamaToko({ idToko: toko.id, nama }), () => setMengubah(false));
+              simpan(
+                () => gantiNamaToko({ idToko: toko.id, nama }),
+                () => setMengubah(false),
+              );
             }}
           >
             <label className="sr-only" htmlFor={`${id}-nama`}>

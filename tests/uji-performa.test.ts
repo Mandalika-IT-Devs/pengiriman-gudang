@@ -10,11 +10,21 @@ import { bacaSheetPenjualan } from "../src/server/impor/sheet-penjualan";
 
 describe("persentil (nearest-rank)", () => {
   it("p95 dari 1..20 adalah sampel ke-19", () => {
-    expect(persentil(Array.from({ length: 20 }, (_, i) => 20 - i), 95)).toBe(19);
+    expect(
+      persentil(
+        Array.from({ length: 20 }, (_, i) => 20 - i),
+        95,
+      ),
+    ).toBe(19);
   });
 
   it("p95 dari 1..100 adalah 95; p50 dari [5, 1, 3] adalah 3", () => {
-    expect(persentil(Array.from({ length: 100 }, (_, i) => i + 1), 95)).toBe(95);
+    expect(
+      persentil(
+        Array.from({ length: 100 }, (_, i) => i + 1),
+        95,
+      ),
+    ).toBe(95);
     expect(persentil([5, 1, 3], 50)).toBe(3);
   });
 

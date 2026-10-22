@@ -51,7 +51,9 @@ async function tokoDi(idGudang: number) {
   const t = await buatTokoUji();
   await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: idGudang });
   const admin = await buatPenggunaUji("admin");
-  await db.insert(jadwalToko).values({ tokoId: t.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 0 }], dibuatOleh: admin.id });
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: t.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 0 }], dibuatOleh: admin.id });
   return t;
 }
 
@@ -68,7 +70,10 @@ const bukaDaftar = async (jenis: keyof typeof rute) => renderToStaticMarkup(awai
 function kartuGudang(html: string, dasar: string) {
   return [...html.matchAll(new RegExp(`<a [^>]*href="${dasar}/(\\d+)"[^>]*>(.*?)</a>`, "g"))].map((m) => ({
     id: Number(m[1]),
-    teks: m[2]!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+    teks: m[2]!
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
   }));
 }
 
@@ -147,21 +152,34 @@ for (const jenis of ["usulan"] as const) {
   });
 }
 
-const barisPengiriman = (html: string, id: number) =>
-  new RegExp(`<tr[^>]*data-pengiriman="${id}".*?</tr>`).exec(html)?.[0] ?? "";
+const barisPengiriman = (html: string, id: number) => new RegExp(`<tr[^>]*data-pengiriman="${id}".*?</tr>`).exec(html)?.[0] ?? "";
 
 describe("/usulan-jadwal/[id]: judul, form, dan daftar Perlu tindakan (T128)", () => {
   it('gudang Pusat: "Atur pengiriman di luar jadwal — Pusat", tombol Simpan; Perlu tindakan hanya berisi yang berlaku dan masih bisa dibatalkan', async () => {
     const t = await tokoDi(pusat);
     const operator = await masukOperator([pusat, ["kelola-usulan-jadwal"]]);
-    const isi = { gudangId: pusat, tokoId: t.id, jenis: "tambahan" as const, persiapanHari: 1 as const, alasan: "promo", diusulkanOleh: operator.id };
+    const isi = {
+      gudangId: pusat,
+      tokoId: t.id,
+      jenis: "tambahan" as const,
+      persiapanHari: 1 as const,
+      alasan: "promo",
+      diusulkanOleh: operator.id,
+    };
     const [bisaBatal, sudahLewat, sudahFinal, dibatalkan] = await db
       .insert(pengirimanDiLuarJadwal)
       .values([
         { ...isi, tanggalKirim: "2099-01-06", status: "berlaku" },
         { ...isi, tanggalKirim: "2000-01-04", status: "berlaku" },
         { ...isi, tanggalKirim: "2099-01-08", status: "berlaku" },
-        { ...isi, tanggalKirim: "2099-01-07", status: "dibatalkan", alasanPembatalan: "batal", dibatalkanOleh: operator.id, dibatalkanPada: new Date() },
+        {
+          ...isi,
+          tanggalKirim: "2099-01-07",
+          status: "dibatalkan",
+          alasanPembatalan: "batal",
+          dibatalkanOleh: operator.id,
+          dibatalkanPada: new Date(),
+        },
       ])
       .returning();
     await rencanaFinalUji({ idGudang: pusat, idToko: t.id, tanggalKirim: "2099-01-08", idPengguna: operator.id });
@@ -193,7 +211,15 @@ describe("/usulan-jadwal/[id]: judul, form, dan daftar Perlu tindakan (T128)", (
         { ...isi, tanggalKirim: "2099-01-06", diusulkanOleh: operator.id },
         { ...isi, tanggalKirim: "2099-01-07", diusulkanOleh: lain.id },
         { ...isi, tanggalKirim: "2099-01-08", diusulkanOleh: operator.id, status: "berlaku" },
-        { ...isi, tanggalKirim: "2099-01-09", diusulkanOleh: operator.id, status: "ditolak", alasanPenolakan: "tidak perlu", diputuskanOleh: lain.id, diputuskanPada: new Date() },
+        {
+          ...isi,
+          tanggalKirim: "2099-01-09",
+          diusulkanOleh: operator.id,
+          status: "ditolak",
+          alasanPenolakan: "tidak perlu",
+          diputuskanOleh: lain.id,
+          diputuskanPada: new Date(),
+        },
         { ...isi, tanggalKirim: "2099-01-10", diusulkanOleh: operator.id, status: "ditarik", ditarikPada: new Date() },
       ])
       .returning();
@@ -270,7 +296,14 @@ describe("T103: judul tab /usulan-jadwal/[id]", () => {
 /** Heading berurutan di HTML: [level, teks]. */
 const daftarHeading = (html: string) =>
   [...html.matchAll(/<h([1-6])\b[^>]*>(.*?)<\/h\1>/g)].map(
-    (m) => [Number(m[1]), m[2]!.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()] as const,
+    (m) =>
+      [
+        Number(m[1]),
+        m[2]!
+          .replace(/<[^>]+>/g, "")
+          .replace(/\s+/g, " ")
+          .trim(),
+      ] as const,
   );
 
 describe("T103: urutan heading halaman jadwal", () => {

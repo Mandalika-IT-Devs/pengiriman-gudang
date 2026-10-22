@@ -18,7 +18,10 @@ const tampilanKeadaan = {
 export function HasilAktifkanSemua({ impor }: { impor: readonly HasilAktifkanSatuImpor[] }) {
   const jumlah = (keadaan: HasilAktifkanSatuImpor["keadaan"]) => impor.filter((h) => h.keadaan === keadaan).length;
   return (
-    <section aria-label="Hasil aktifkan semua per impor" className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-soft">
+    <section
+      aria-label="Hasil aktifkan semua per impor"
+      className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-soft"
+    >
       <p className="font-semibold tabular-nums">
         {`Hasil aktifkan semua: ${jumlah("diaktifkan")} diaktifkan, ${jumlah("dilewati")} dilewati, ${jumlah("gagal")} gagal.`}
       </p>

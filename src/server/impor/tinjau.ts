@@ -65,20 +65,14 @@ async function ringkasanPerToko(idImpor: number) {
 type KlasifikasiProduk = ReturnType<typeof klasifikasiProduk>;
 
 function klasifikasiTersimpan(p: typeof produk.$inferSelect): KlasifikasiProduk {
-  return p.klasifikasi === "manual" && p.alasanManual
-    ? { klasifikasi: "manual", alasan: p.alasanManual }
-    : { klasifikasi: "otomatis" };
+  return p.klasifikasi === "manual" && p.alasanManual ? { klasifikasi: "manual", alasan: p.alasanManual } : { klasifikasi: "otomatis" };
 }
 
 type ProdukBaru = { kode: string; nama: string; ukuran: string; kategori: string; klasifikasi: KlasifikasiProduk };
 
 async function produkBaru(data: typeof impor.$inferSelect): Promise<ProdukBaru[]> {
   if (data.status === "aktif" || data.status === "diarsipkan") {
-    const baris = await db
-      .select()
-      .from(produk)
-      .where(eq(produk.didaftarkanOlehImporId, data.id))
-      .orderBy(asc(produk.kode));
+    const baris = await db.select().from(produk).where(eq(produk.didaftarkanOlehImporId, data.id)).orderBy(asc(produk.kode));
     return baris.map((p) => ({
       kode: p.kode,
       nama: p.nama,
@@ -125,9 +119,7 @@ function samaKlasifikasi(a: KlasifikasiProduk, b: KlasifikasiProduk) {
 async function perubahanProduk(data: typeof impor.$inferSelect): Promise<PerubahanProduk[]> {
   if (data.status === "aktif" || data.status === "diarsipkan" || data.produk.length === 0) return [];
   const kode = [...new Set(data.produk.map((p) => p.kodeProduk))];
-  const master = new Map(
-    (await db.select().from(produk).where(inArray(produk.kode, kode))).map((p) => [p.kode, p]),
-  );
+  const master = new Map((await db.select().from(produk).where(inArray(produk.kode, kode))).map((p) => [p.kode, p]));
   const terlihat = new Set<string>();
   return data.produk.flatMap((p) => {
     const lama = master.get(p.kodeProduk);
@@ -165,12 +157,7 @@ export async function muatTinjauImpor(idImpor: number) {
     .select({ id: impor.id, namaFile: impor.namaFile, namaSheet: impor.namaSheet })
     .from(impor)
     .where(
-      and(
-        eq(impor.tahunImpor, data.tahunImpor),
-        eq(impor.bulanImpor, data.bulanImpor),
-        eq(impor.status, "aktif"),
-        ne(impor.id, data.id),
-      ),
+      and(eq(impor.tahunImpor, data.tahunImpor), eq(impor.bulanImpor, data.bulanImpor), eq(impor.status, "aktif"), ne(impor.id, data.id)),
     );
 
   const jumlahError = data.masalah.filter((m) => m.tingkat === "error").length;

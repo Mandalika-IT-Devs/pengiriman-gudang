@@ -211,7 +211,10 @@ describe("docs/UAT.md", () => {
     const bagianPrd = [...baca("docs/PRD.md").matchAll(/^### ((?:A[1-7]|B[1-9])\.)/gm)].map((c) => c[1]);
     expect(bagianPrd).toHaveLength(16);
     for (const bagian of bagianPrd) {
-      expect(judulBagian.some((judul) => judul.startsWith(`## ${bagian}`)), `bagian ${bagian}`).toBe(true);
+      expect(
+        judulBagian.some((judul) => judul.startsWith(`## ${bagian}`)),
+        `bagian ${bagian}`,
+      ).toBe(true);
     }
   });
 

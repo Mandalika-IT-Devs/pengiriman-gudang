@@ -126,7 +126,5 @@ export async function daftarStatusKataSandi(): Promise<Map<string, StatusKataSan
     .innerJoin(user, eq(user.id, catatanKataSandi.userId))
     .innerJoin(pengisi, eq(pengisi.id, catatanKataSandi.diisiOleh))
     .leftJoin(account, and(eq(account.userId, user.id), eq(account.providerId, "credential")));
-  return new Map(
-    baris.map((b) => [b.idPengguna, { tersedia: salinanTerbaca(b) !== null, diubah: { pada: b.pada, oleh: b.oleh } }]),
-  );
+  return new Map(baris.map((b) => [b.idPengguna, { tersedia: salinanTerbaca(b) !== null, diubah: { pada: b.pada, oleh: b.oleh } }]));
 }

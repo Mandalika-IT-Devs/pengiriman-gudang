@@ -17,7 +17,10 @@ async function imporAktif(
   bulan: number,
   kode: string,
   kuantitas: number[],
-  { kategori = "15ML GLITTER/LEATHER", lain = [] }: { kategori?: string; lain?: { kode: string; kategori: string; kuantitas: number[] }[] } = {},
+  {
+    kategori = "15ML GLITTER/LEATHER",
+    lain = [],
+  }: { kategori?: string; lain?: { kode: string; kategori: string; kuantitas: number[] }[] } = {},
 ) {
   const isi = buatWorkbookUji({
     [namaSheet]: sheetPenjualanUji({

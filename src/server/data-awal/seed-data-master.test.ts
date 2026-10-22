@@ -60,11 +60,7 @@ async function catatKeadaan(): Promise<Keadaan> {
 
 /** Baris yang disentuh seed: produk berkas, keluarga berkas beserta alias dan segmennya, riwayat, alias stok berkas. */
 async function barisSeed() {
-  const keluarga = await db
-    .select()
-    .from(keluargaAroma)
-    .where(inArray(keluargaAroma.nama, NAMA_KELUARGA_BERKAS))
-    .orderBy(keluargaAroma.id);
+  const keluarga = await db.select().from(keluargaAroma).where(inArray(keluargaAroma.nama, NAMA_KELUARGA_BERKAS)).orderBy(keluargaAroma.id);
   const idKeluarga = keluarga.map((k) => k.id);
   return {
     produk: await db.select().from(produk).where(inArray(produk.kode, KODE_BERKAS)).orderBy(produk.kode),
@@ -84,11 +80,7 @@ async function barisSeed() {
       .from(riwayatPemetaanProduk)
       .where(inArray(riwayatPemetaanProduk.kodeProduk, KODE_BERKAS))
       .orderBy(riwayatPemetaanProduk.id),
-    aliasStok: await db
-      .select()
-      .from(aliasNamaStok)
-      .where(inArray(aliasNamaStok.alias, ALIAS_STOK_BERKAS))
-      .orderBy(aliasNamaStok.alias),
+    aliasStok: await db.select().from(aliasNamaStok).where(inArray(aliasNamaStok.alias, ALIAS_STOK_BERKAS)).orderBy(aliasNamaStok.alias),
   };
 }
 
@@ -126,10 +118,7 @@ beforeAll(async () => {
   adminDinonaktifkan = await nonaktifkanAdminLain(idAdmin);
   sebelumSeed = await catatKeadaan();
   // Keadaan awal seperti instalasi baru: produk berkas yang sudah dibuat berkas test lain belum dipetakan.
-  await db
-    .update(produk)
-    .set({ statusKeluargaAroma: "belum-dipetakan", keluargaAromaId: null })
-    .where(inArray(produk.kode, KODE_BERKAS));
+  await db.update(produk).set({ statusKeluargaAroma: "belum-dipetakan", keluargaAromaId: null }).where(inArray(produk.kode, KODE_BERKAS));
 });
 
 afterAll(async () => {
@@ -145,12 +134,8 @@ afterAll(async () => {
   await db
     .delete(produk)
     .where(kodeLama.length ? and(inArray(produk.kode, KODE_BERKAS), notInArray(produk.kode, kodeLama)) : inArray(produk.kode, KODE_BERKAS));
-  await db
-    .delete(segmenKodeKeluargaAroma)
-    .where(s.idSegmen.length ? notInArray(segmenKodeKeluargaAroma.id, s.idSegmen) : undefined);
-  await db
-    .delete(aliasKeluargaAroma)
-    .where(s.idAliasKeluarga.length ? notInArray(aliasKeluargaAroma.id, s.idAliasKeluarga) : undefined);
+  await db.delete(segmenKodeKeluargaAroma).where(s.idSegmen.length ? notInArray(segmenKodeKeluargaAroma.id, s.idSegmen) : undefined);
+  await db.delete(aliasKeluargaAroma).where(s.idAliasKeluarga.length ? notInArray(aliasKeluargaAroma.id, s.idAliasKeluarga) : undefined);
   await db.delete(keluargaAroma).where(s.idKeluarga.length ? notInArray(keluargaAroma.id, s.idKeluarga) : undefined);
 
   await db.update(user).set({ banned: false }).where(eq(user.id, idAdmin));
@@ -188,9 +173,17 @@ describe("seedDataMaster", () => {
     // Alias = nama keluarga; segmen kode GIFT SET BOX: B dan W.
     const namaPerId = new Map(keluarga.map((k) => [k.id, k.nama]));
     for (const nama of NAMA_KELUARGA_BERKAS) {
-      expect(alias.some((a) => a.alias === nama && namaPerId.get(a.keluargaId) === nama), nama).toBe(true);
+      expect(
+        alias.some((a) => a.alias === nama && namaPerId.get(a.keluargaId) === nama),
+        nama,
+      ).toBe(true);
     }
-    expect(segmen.filter((s) => namaPerId.get(s.keluargaId) === "GIFT SET BOX").map((s) => s.segmen).sort()).toEqual(["B", "W"]);
+    expect(
+      segmen
+        .filter((s) => namaPerId.get(s.keluargaId) === "GIFT SET BOX")
+        .map((s) => s.segmen)
+        .sort(),
+    ).toEqual(["B", "W"]);
     const gor = segmen.find((s) => s.segmen === "GOR");
     expect(gor && namaPerId.get(gor.keluargaId)).toBe("GORGEOUS TUBEROSE");
 
@@ -207,7 +200,10 @@ describe("seedDataMaster", () => {
     // Produk yang ditambahkan seed: isi persis berkas, tanpa impor pendaftar.
     const kodeLama = new Set(sebelumSeed.produk.map((p) => p.kode));
     for (const p of berkasProduk.filter((b) => !kodeLama.has(b.kode))) {
-      expect(daftarProduk.find((d) => d.kode === p.kode), p.kode).toMatchObject({ ...p, didaftarkanOlehImporId: null });
+      expect(
+        daftarProduk.find((d) => d.kode === p.kode),
+        p.kode,
+      ).toMatchObject({ ...p, didaftarkanOlehImporId: null });
     }
   });
 
@@ -217,7 +213,10 @@ describe("seedDataMaster", () => {
 
     expect(riwayatSeed).toHaveLength(359);
     for (const p of daftarProduk) {
-      expect(riwayatSeed.find((r) => r.kodeProduk === p.kode), p.kode).toMatchObject({
+      expect(
+        riwayatSeed.find((r) => r.kodeProduk === p.kode),
+        p.kode,
+      ).toMatchObject({
         dariStatus: "belum-dipetakan",
         dariKeluargaId: null,
         keStatus: p.statusKeluargaAroma,

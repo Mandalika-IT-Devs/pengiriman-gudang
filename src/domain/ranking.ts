@@ -32,9 +32,7 @@ export type ErrorRanking = {
 
 type BarisRanking = { baris: number; rank: number; variant: string; qtySales: number };
 
-type HasilBacaRanking =
-  | { ok: true; baris: BarisRanking[]; tujuhBesar: string[] }
-  | { ok: false; error: ErrorRanking[] };
+type HasilBacaRanking = { ok: true; baris: BarisRanking[]; tujuhBesar: string[] } | { ok: false; error: ErrorRanking[] };
 
 const NAMA_SHEET = "RANKING SALES";
 const HEADER = ["RANK", "VARIANT", "QTY SALES"] as const;
@@ -67,8 +65,7 @@ export function bacaRanking(daftarSheet: readonly SheetMentah[]): HasilBacaRanki
 
   const header = sheet.baris[0] ?? [];
   const headerSesuai =
-    HEADER.every((judul, kolom) => header[kolom] === judul) &&
-    header.slice(HEADER.length).every((sel) => selKosong(sel));
+    HEADER.every((judul, kolom) => header[kolom] === judul) && header.slice(HEADER.length).every((sel) => selKosong(sel));
   if (!headerSesuai) {
     return gagal([
       {

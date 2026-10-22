@@ -11,9 +11,7 @@ type KasusJumlahKirim = { kebutuhan: number; stokAkhir: number; persenBuffer: nu
 
 type KasusStatus = { stokAkhir?: number | null; klasifikasi?: "manual" | "otomatis"; status: string; catatan: string };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/jumlah-kirim.json"), "utf8"),
-) as {
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/jumlah-kirim.json"), "utf8")) as {
   rataRata: Record<KategoriDasar, number>;
   kasusCakupan: {
     tanggalKirim: string;
@@ -158,7 +156,14 @@ describe("cakupanPengiriman (golden jumlah-kirim kasusCakupan)", () => {
 
   it("sumber kategori = id perubahan kategori yang dipakai", () => {
     const daftarPerubahan: PerubahanKategori[] = [
-      { id: "7", tanggal: parseTanggalBisnis("2026-06-12"), cakupan: { jenis: "toko", toko: "PMS" }, kategoriBaru: "Sabtu", revisi: 1, status: "aktif" },
+      {
+        id: "7",
+        tanggal: parseTanggalBisnis("2026-06-12"),
+        cakupan: { jenis: "toko", toko: "PMS" },
+        kategoriBaru: "Sabtu",
+        revisi: 1,
+        status: "aktif",
+      },
     ];
     const cakupan = cakupanPengiriman({ ...masukan(), daftarPerubahan });
     expect(cakupan[6]).toEqual({ tanggal: "2026-06-12", kategoriEfektif: "Sabtu", sumberKategori: "7" });

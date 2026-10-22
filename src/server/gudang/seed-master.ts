@@ -9,8 +9,31 @@ const daftarGudang = [NAMA_GUDANG_PUSAT, "Gudang Bali", "Gudang Bandung", "Gudan
 
 // Issue T21: 25 toko, nama sesuai blok toko di sheet penjualan.
 const daftarToko = [
-  "PMS", "PMJ", "QUEEN", "LWB", "DMB", "MKS", "DPM", "PVJ", "PASKAL", "DELTAMAS", "KUNCIT", "BXC", "SMB",
-  "KOKAS", "PMB", "BSD", "TSM CBB", "SMS", "KARAWACI", "BOTANI", "CCM", "ALSUT", "SENTUL", "MKG", "LMK",
+  "PMS",
+  "PMJ",
+  "QUEEN",
+  "LWB",
+  "DMB",
+  "MKS",
+  "DPM",
+  "PVJ",
+  "PASKAL",
+  "DELTAMAS",
+  "KUNCIT",
+  "BXC",
+  "SMB",
+  "KOKAS",
+  "PMB",
+  "BSD",
+  "TSM CBB",
+  "SMS",
+  "KARAWACI",
+  "BOTANI",
+  "CCM",
+  "ALSUT",
+  "SENTUL",
+  "MKG",
+  "LMK",
 ];
 
 /**

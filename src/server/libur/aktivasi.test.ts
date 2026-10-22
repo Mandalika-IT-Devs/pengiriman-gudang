@@ -186,7 +186,11 @@ describe("muatTinjauSnapshotLibur: perbedaan terhadap snapshot aktif", () => {
       persetujuanPertama: null,
       riwayat: [],
     });
-    expect(tinjau?.entri).toEqual([tahunBaru(tahun), { tanggal: `${tahun}-03-23`, keterangan: "Cuti Bersama Idul Fitri", jenis: "libur nasional" }, natal(tahun)]);
+    expect(tinjau?.entri).toEqual([
+      tahunBaru(tahun),
+      { tanggal: `${tahun}-03-23`, keterangan: "Cuti Bersama Idul Fitri", jenis: "libur nasional" },
+      natal(tahun),
+    ]);
     expect(tinjau?.perubahan?.map((p) => [p.perubahan, p.tanggal])).toEqual([
       ["dihapus", `${tahun}-03-20`],
       ["berubah", `${tahun}-03-23`],

@@ -21,7 +21,12 @@ export function TombolCocokkanUlang({ idVersi }: { idVersi: number }) {
         variant="outline"
         disabled={menunggu}
         className="active:scale-95"
-        onClick={() => simpan(() => cocokkanUlangRanking({ idVersi }), () => router.refresh())}
+        onClick={() =>
+          simpan(
+            () => cocokkanUlangRanking({ idVersi }),
+            () => router.refresh(),
+          )
+        }
       >
         Cocokkan ulang
       </Button>
@@ -56,8 +61,7 @@ export function TombolPublikasikan({
   const router = useRouter();
   const { tampilan, hasil, menunggu, simpan } = usePenyimpanan<HasilTindakanRanking>("status ranking di halaman ini");
   const sudahBerhasil = hasil !== null && hasil.keadaan !== "gagal";
-  const keterangan =
-    alasanTidakBisa ?? (rankingBerlakuLain ? `Ranking berlaku saat ini (${rankingBerlakuLain}) akan diarsipkan.` : null);
+  const keterangan = alasanTidakBisa ?? (rankingBerlakuLain ? `Ranking berlaku saat ini (${rankingBerlakuLain}) akan diarsipkan.` : null);
 
   return (
     <div className="flex flex-col gap-3">
@@ -67,18 +71,19 @@ export function TombolPublikasikan({
           disabled={alasanTidakBisa !== null || menunggu || sudahBerhasil}
           aria-describedby={keterangan ? `${id}-keterangan` : undefined}
           className="active:scale-95"
-          onClick={() => simpan(() => publikasikanRanking({ idVersi }), () => router.refresh())}
+          onClick={() =>
+            simpan(
+              () => publikasikanRanking({ idVersi }),
+              () => router.refresh(),
+            )
+          }
         >
           Publikasikan
         </Button>
         {tampilan && tampilan.keadaan !== "belumDisimpan" ? (
           <PesanStatusSimpan
             keadaan={tampilan.keadaan}
-            pesan={
-              tampilan.keadaan === "berhasil"
-                ? "Ranking ini sekarang berlaku untuk semua gudang."
-                : tampilan.pesan
-            }
+            pesan={tampilan.keadaan === "berhasil" ? "Ranking ini sekarang berlaku untuk semua gudang." : tampilan.pesan}
           />
         ) : null}
       </div>

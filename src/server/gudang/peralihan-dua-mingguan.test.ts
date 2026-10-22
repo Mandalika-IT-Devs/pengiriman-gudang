@@ -18,7 +18,9 @@ import { buatTokoUji, idGudangUji, rencanaFinalUji } from "./uji-bantu";
 
 /** Pernyataan UPDATE `pengiriman_di_luar_jadwal` di migrasi 0030. */
 function pernyataanPembatalan() {
-  const pernyataan = pernyataanMigrasi("0030_dua_mingguan_tanpa_jangkar.sql").filter((p) => p.startsWith('UPDATE "pengiriman_di_luar_jadwal"'));
+  const pernyataan = pernyataanMigrasi("0030_dua_mingguan_tanpa_jangkar.sql").filter((p) =>
+    p.startsWith('UPDATE "pengiriman_di_luar_jadwal"'),
+  );
   expect(pernyataan).toHaveLength(1);
   return pernyataan[0];
 }
@@ -35,7 +37,13 @@ describe("migrasi peralihan pola dua mingguan", () => {
     await db.insert(hubunganTokoGudang).values([duaMingguan, mingguan, bekasDuaMingguan].map((t) => ({ tokoId: t.id, gudangId: cibubur })));
     // Jadwal dua mingguan lama masih menyimpan tanggal jangkar; hari kirimnya = hari ini.
     await db.insert(jadwalToko).values([
-      { tokoId: duaMingguan.id, pola: "dua-mingguan", hariKirim: [{ hari: hariKirim, persiapanHari: 1 }], tanggalJangkar: hari(-7), dibuatOleh: admin.id },
+      {
+        tokoId: duaMingguan.id,
+        pola: "dua-mingguan",
+        hariKirim: [{ hari: hariKirim, persiapanHari: 1 }],
+        tanggalJangkar: hari(-7),
+        dibuatOleh: admin.id,
+      },
       { tokoId: mingguan.id, pola: "mingguan", hariKirim: [{ hari: namaHari(hari(1)), persiapanHari: 0 }], dibuatOleh: admin.id },
       // Jadwal dua mingguan yang sudah nonaktif tidak dihitung; jadwal aktifnya mingguan di hari lain.
       {
@@ -81,7 +89,15 @@ describe("migrasi peralihan pola dua mingguan", () => {
 
     await db.execute(sql.raw(pernyataanPembatalan()));
 
-    const sesudah = await db.select().from(pengirimanDiLuarJadwal).where(inArray(pengirimanDiLuarJadwal.id, daftar.map((p) => p.id)));
+    const sesudah = await db
+      .select()
+      .from(pengirimanDiLuarJadwal)
+      .where(
+        inArray(
+          pengirimanDiLuarJadwal.id,
+          daftar.map((p) => p.id),
+        ),
+      );
     const baca = (id: number) => sesudah.find((p) => p.id === id);
     for (const { id } of [menungguHariIni, pindahPekanDepan]) {
       expect(baca(id)).toMatchObject({

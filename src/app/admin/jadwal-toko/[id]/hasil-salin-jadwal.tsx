@@ -26,24 +26,14 @@ function BadgeHasilSalin({ status }: { status: HasilSalinToko["status"] }) {
 }
 
 /** Hasil per toko setelah salin jadwal (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
-export function HasilSalinJadwal({
-  hasil,
-  namaToko,
-}: {
-  hasil: HasilSalinToko[];
-  namaToko: ReadonlyMap<number, string>;
-}) {
+export function HasilSalinJadwal({ hasil, namaToko }: { hasil: HasilSalinToko[]; namaToko: ReadonlyMap<number, string> }) {
   const jumlahBerhasil = hasil.filter((h) => h.status === "berhasil").length;
   const semua = jumlahBerhasil === hasil.length;
   const IkonRingkasan = semua ? CircleCheck : TriangleAlert;
   return (
     <section aria-label="Hasil per toko" className="flex flex-col gap-3">
       <p role="status" className="flex items-start gap-2 font-semibold">
-        <IkonRingkasan
-          aria-hidden
-          strokeWidth={2}
-          className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")}
-        />
+        <IkonRingkasan aria-hidden strokeWidth={2} className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")} />
         {jumlahBerhasil} dari {hasil.length} toko berhasil.
       </p>
       <Table aria-label="Hasil salin jadwal">
@@ -61,9 +51,7 @@ export function HasilSalinJadwal({
               <TableCell>
                 <BadgeHasilSalin status={h.status} />
               </TableCell>
-              <TableCell className="whitespace-normal">
-                {h.status === "berhasil" ? KETERANGAN_BERHASIL : h.pesan}
-              </TableCell>
+              <TableCell className="whitespace-normal">{h.status === "berhasil" ? KETERANGAN_BERHASIL : h.pesan}</TableCell>
             </TableRow>
           ))}
         </TableBody>

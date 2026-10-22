@@ -9,7 +9,17 @@ import { formatWaktu } from "@/app/admin/impor/format";
 import { parseTanggalBisnis, type KategoriDasar, type NamaHari, type TanggalBisnis } from "@/domain/kalender";
 import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { draftRencana, hubunganTokoGudang, impor, jadwalToko, perubahanKategori, produk, rencanaFinal, toko, user } from "@/server/db/schema";
+import {
+  draftRencana,
+  hubunganTokoGudang,
+  impor,
+  jadwalToko,
+  perubahanKategori,
+  produk,
+  rencanaFinal,
+  toko,
+  user,
+} from "@/server/db/schema";
 import { bacaDraftRencana, hitungDraftRencana } from "@/server/gudang/draft-rencana";
 import { daftarHakTindakan, type HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
@@ -65,8 +75,7 @@ const TANGGAL_1 = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 /** Senin berikutnya: tanggal kirim kedua untuk filter. */
 const TANGGAL_2 = parseTanggalBisnis("2026-06-15");
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
   nama: "15ML GLITTER - GORGEOUS",
@@ -96,7 +105,14 @@ async function stok(tanggalKirim: TanggalBisnis, tokoId: number, kodeProduk: str
 
 async function finalisasi(tanggalKirim: TanggalBisnis, tokoId: number, alasanFinalisasiUlang?: string) {
   const versi = (await bacaDraftRencana(cibubur, tanggalKirim))?.toko.find((t) => t.id === tokoId)?.versi ?? "";
-  const hasil = await finalisasiRencanaToko({ idGudang: cibubur, tanggalKirim, tokoId, idPengguna: idOperator, versiDilihat: versi, alasanFinalisasiUlang });
+  const hasil = await finalisasiRencanaToko({
+    idGudang: cibubur,
+    tanggalKirim,
+    tokoId,
+    idPengguna: idOperator,
+    versiDilihat: versi,
+    alasanFinalisasiUlang,
+  });
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
   return hasil.idRencana;
 }
@@ -132,7 +148,18 @@ beforeAll(async () => {
     hari: SEMUA_HARI_JUNI,
     produk: [produkUji(kode.contoh, sesuaiContoh), produkUji(kode.manual, sesuaiContoh)],
   });
-  await aktifkanImporJuniUji({ idAdmin, tahun: tahunB, namaToko: tokoB.nama, hari: SEMUA_HARI_JUNI, produk: [produkUji(kode.tokoB, SEMUA_HARI_JUNI.map(() => 2))] });
+  await aktifkanImporJuniUji({
+    idAdmin,
+    tahun: tahunB,
+    namaToko: tokoB.nama,
+    hari: SEMUA_HARI_JUNI,
+    produk: [
+      produkUji(
+        kode.tokoB,
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
+  });
   await hitungUlangCacheLaporan();
   const periode = await tetapkanPeriodeSumber({ idGudang: cibubur, bulan: [`${tahunA}-06`, `${tahunB}-06`].sort(), idPengguna: idAdmin });
   if (periode.keadaan !== "berhasil") throw new Error(periode.pesan);
@@ -187,7 +214,8 @@ const bukaRincian = async (idRencana: number | string, filter: Record<string, st
 /** Id rencana final di daftar, urut tampil. */
 const idDiDaftar = (html: string) => [...html.matchAll(/<tr[^>]*data-rencana-final="(\d+)"/g)].map((m) => Number(m[1]));
 const barisDaftar = (html: string, id: number) => new RegExp(`<tr[^>]*data-rencana-final="${id}".*?</tr>`).exec(html)?.[0] ?? "";
-const barisVarian = (html: string, kodeProduk: string) => new RegExp(`<tr[^>]*data-kode-produk="${kodeProduk}".*?</tr>`).exec(html)?.[0] ?? "";
+const barisVarian = (html: string, kodeProduk: string) =>
+  new RegExp(`<tr[^>]*data-kode-produk="${kodeProduk}".*?</tr>`).exec(html)?.[0] ?? "";
 const bagianDasar = (html: string, nama: string) => new RegExp(`<section[^>]*data-dasar="${nama}".*?</section>`).exec(html)?.[0] ?? "";
 
 const waktuFinal = async (id: number) => {
@@ -250,9 +278,14 @@ describe("daftar rencana final", () => {
     expect(idDiDaftar(await bukaDaftar({ dari: "2026-06-09", sampai: "2026-06-14" }))).toEqual([]);
     expect(idDiDaftar(await bukaDaftar({ dari: "", sampai: "" }))).toHaveLength(4);
     expect(idDiDaftar(await bukaDaftar({ toko: String(tokoB.id) }))).toEqual([rencana.b1]);
-    expect(idDiDaftar(await bukaDaftar({ dari: TANGGAL_1, sampai: TANGGAL_1, toko: String(tokoA.id) }))).toEqual([rencana.a1v2, rencana.a1v1]);
+    expect(idDiDaftar(await bukaDaftar({ dari: TANGGAL_1, sampai: TANGGAL_1, toko: String(tokoA.id) }))).toEqual([
+      rencana.a1v2,
+      rencana.a1v1,
+    ]);
     expect(idDiDaftar(await bukaDaftar({ dari: TANGGAL_2, toko: String(tokoB.id) }))).toEqual([]);
-    expect(await bukaDaftar({ dari: TANGGAL_2, toko: String(tokoB.id) })).toContain("Tidak ada rencana final yang cocok dengan filter ini.");
+    expect(await bukaDaftar({ dari: TANGGAL_2, toko: String(tokoB.id) })).toContain(
+      "Tidak ada rencana final yang cocok dengan filter ini.",
+    );
     expect(idDiDaftar(await bukaDaftar({ dari: "2026-02-30", sampai: "bukan-tanggal", toko: "bukan-angka" }))).toHaveLength(4);
     expect(idDiDaftar(await bukaDaftar({ toko: "semua" }))).toHaveLength(4);
   });
@@ -263,7 +296,9 @@ describe("daftar rencana final", () => {
     expect(semua).toEqual([rencana.a2, rencana.a1v2, rencana.a1v1]);
     const bali = await idGudangUji("Gudang Bali");
     expect(idDiDaftar(await bukaDaftar({ gudang: String(bali) }))).toEqual([]);
-    const takDikenal = renderToStaticMarkup(await HalamanRiwayat({ searchParams: Promise.resolve({ gudang: "999999999", toko: String(tokoA.id) }) }));
+    const takDikenal = renderToStaticMarkup(
+      await HalamanRiwayat({ searchParams: Promise.resolve({ gudang: "999999999", toko: String(tokoA.id) }) }),
+    );
     expect(idDiDaftar(takDikenal)).toEqual(semua);
   });
 
@@ -371,7 +406,11 @@ describe("rincian rencana final", () => {
   });
 
   it("rencana final dengan rumus lama (sebelum PRD A6 ▶ Revisi 2026-10-14) tetap menampilkan jumlah kirim dan rincian rumus lama", async () => {
-    expect(CONTOH_RUMUS_LAMA).toMatchObject({ kebutuhan: CONTOH.kebutuhan, stokAkhir: CONTOH.stokAkhir, persenBuffer: CONTOH.persenBuffer });
+    expect(CONTOH_RUMUS_LAMA).toMatchObject({
+      kebutuhan: CONTOH.kebutuhan,
+      stokAkhir: CONTOH.stokAkhir,
+      persenBuffer: CONTOH.persenBuffer,
+    });
     // Rencana final dari sebelum migrasi 0028: snapshot versi 1 toko A dengan jumlah kirim rumus lama.
     const idLama = await salinRencanaFinalRumusLama({
       idRencana: rencana.a1v1,
@@ -434,30 +473,51 @@ describe("rincian rencana final", () => {
       tahun: tahunA,
       namaToko: tokoA.nama,
       hari: SEMUA_HARI_JUNI,
-      produk: [produkUji(kode.contoh, sesuaiContoh.map((q) => q * 2)), produkUji(kode.manual, sesuaiContoh)],
+      produk: [
+        produkUji(
+          kode.contoh,
+          sesuaiContoh.map((q) => q * 2),
+        ),
+        produkUji(kode.manual, sesuaiContoh),
+      ],
     });
     expect(
-      await buatPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-10"), idToko: null, kategoriBaru: "Minggu", alasan: ALASAN_UJI, idPengguna: idAdmin }),
+      await buatPerubahanKategori({
+        tanggal: parseTanggalBisnis("2026-06-10"),
+        idToko: null,
+        kategoriBaru: "Minggu",
+        alasan: ALASAN_UJI,
+        idPengguna: idAdmin,
+      }),
     ).toEqual({ keadaan: "berhasil" });
     await hitungUlangCacheLaporan();
     await db
       .update(jadwalToko)
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoA.id), eq(jadwalToko.status, "aktif")));
-    await db.insert(jadwalToko).values({ tokoId: tokoA.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoA.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
     await publikasikanRankingUji({ keluarga: [keluargaLain], idPengguna: idAdmin, bulanRanking: "2026-10" });
-    const [pemetaan] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [pemetaan] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(pemetaan.status).toBe("berhasil");
     await hitung(TANGGAL_1);
     await stok(TANGGAL_1, tokoA.id, kode.contoh, 5);
-    const barisDraft = (await bacaDraftRencana(cibubur, TANGGAL_1))?.toko.find((t) => t.id === tokoA.id)?.baris.find((b) => b.kodeProduk === kode.contoh);
+    const barisDraft = (await bacaDraftRencana(cibubur, TANGGAL_1))?.toko
+      .find((t) => t.id === tokoA.id)
+      ?.baris.find((b) => b.kodeProduk === kode.contoh);
     expect(barisDraft?.kebutuhan).not.toBe(CONTOH.kebutuhan);
 
     // Nama toko, produk, dan pemfinalisasi diubah di master.
     const [{ nama: namaPemfinalisasi }] = await db.select({ nama: user.name }).from(user).where(eq(user.id, idOperator));
     const [{ nama: namaProduk }] = await db.select({ nama: produk.nama }).from(produk).where(eq(produk.kode, kode.contoh));
     try {
-      await db.update(toko).set({ nama: `${tokoA.nama} BARU` }).where(eq(toko.id, tokoA.id));
+      await db
+        .update(toko)
+        .set({ nama: `${tokoA.nama} BARU` })
+        .where(eq(toko.id, tokoA.id));
       await db.update(user).set({ name: "Nama baru operator" }).where(eq(user.id, idOperator));
       await db.update(produk).set({ nama: "NAMA PRODUK BARU" }).where(eq(produk.kode, kode.contoh));
 
@@ -495,7 +555,8 @@ describe("tautan ke riwayat dan rincian", () => {
   });
 
   it("alamat lama dialihkan: riwayat gudang → /riwayat?gudang=<id>; rincian → /riwayat/rencana-final/<id> (panel tetap)", async () => {
-    const tujuan = (promise: Promise<unknown>) => expect(promise).rejects.toMatchObject({ digest: expect.stringMatching(/^NEXT_REDIRECT;/) });
+    const tujuan = (promise: Promise<unknown>) =>
+      expect(promise).rejects.toMatchObject({ digest: expect.stringMatching(/^NEXT_REDIRECT;/) });
     const lokasi = async (promise: Promise<unknown>) => {
       try {
         await promise;
@@ -505,11 +566,16 @@ describe("tautan ke riwayat dan rincian", () => {
       return null;
     };
     await tujuan(AlihkanRiwayatRencanaFinal({ params: Promise.resolve({ id: String(cibubur) }) }));
-    expect(await lokasi(AlihkanRiwayatRencanaFinal({ params: Promise.resolve({ id: String(cibubur) }) }))).toBe(`/riwayat?gudang=${cibubur}`);
+    expect(await lokasi(AlihkanRiwayatRencanaFinal({ params: Promise.resolve({ id: String(cibubur) }) }))).toBe(
+      `/riwayat?gudang=${cibubur}`,
+    );
     expect(await lokasi(AlihkanRiwayatRencanaFinal({ params: Promise.resolve({ id: "bukan-angka" }) }))).toBe("/riwayat");
     expect(
       await lokasi(
-        AlihkanRincianRencanaFinal({ params: Promise.resolve({ id: String(cibubur), idRencana: String(rencana.a1v1) }), searchParams: Promise.resolve({}) }),
+        AlihkanRincianRencanaFinal({
+          params: Promise.resolve({ id: String(cibubur), idRencana: String(rencana.a1v1) }),
+          searchParams: Promise.resolve({}),
+        }),
       ),
     ).toBe(`/riwayat/rencana-final/${rencana.a1v1}`);
     expect(

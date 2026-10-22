@@ -22,9 +22,10 @@ type KasusKalender = {
   baris: string;
 };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/kalender-minggu-laporan.json"), "utf8"),
-) as { format: { contoh: string }; kasus: KasusKalender[] };
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/kalender-minggu-laporan.json"), "utf8")) as {
+  format: { contoh: string };
+  kasus: KasusKalender[];
+};
 
 describe("posisiLaporan (golden kalender-minggu-laporan)", () => {
   it.each(fixture.kasus)("$tanggal ($hari, baris $baris)", (kasus) => {
@@ -49,12 +50,9 @@ describe("formatTanggal", () => {
 });
 
 describe("parseTanggalBisnis", () => {
-  it.each(["2026-06-05", "2024-02-29", "2000-02-29", "2026-12-31", "2026-01-01"])(
-    "menerima %s",
-    (teks) => {
-      expect(parseTanggalBisnis(teks)).toBe(teks);
-    },
-  );
+  it.each(["2026-06-05", "2024-02-29", "2000-02-29", "2026-12-31", "2026-01-01"])("menerima %s", (teks) => {
+    expect(parseTanggalBisnis(teks)).toBe(teks);
+  });
 
   it.each([
     "2026-06-31",

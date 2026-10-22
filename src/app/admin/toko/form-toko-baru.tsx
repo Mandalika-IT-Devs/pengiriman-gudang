@@ -26,7 +26,10 @@ export function FormTokoBaru() {
         className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => tambahTokoBaru({ nama }), () => setNama(""));
+          simpan(
+            () => tambahTokoBaru({ nama }),
+            () => setNama(""),
+          );
         }}
       >
         <CardHeader>

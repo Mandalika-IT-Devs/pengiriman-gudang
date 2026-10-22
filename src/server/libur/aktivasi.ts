@@ -15,8 +15,7 @@ type Klien = typeof db | Tx;
 /** Kunci advisory (dua bilangan) untuk aktivasi libur per tahun; ruangnya terpisah dari kunci satu bilangan impor. */
 const KUNCI_AKTIVASI_LIBUR = 41;
 
-const PESAN_BERUBAH_SETELAH_DITINJAU =
-  "Snapshot berubah setelah ditinjau. Muat ulang halaman dan tinjau ulang sebelum mengaktifkan.";
+const PESAN_BERUBAH_SETELAH_DITINJAU = "Snapshot berubah setelah ditinjau. Muat ulang halaman dan tinjau ulang sebelum mengaktifkan.";
 
 type EntriTinjau = { tanggal: string; keterangan: string; jenis: JenisLibur };
 

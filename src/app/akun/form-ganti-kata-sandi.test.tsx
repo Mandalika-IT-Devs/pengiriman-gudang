@@ -43,8 +43,7 @@ function isian(label: (typeof LABEL)[number]) {
   return elemen;
 }
 
-const tombolMata = (label: (typeof LABEL)[number]) =>
-  wadah.querySelector<HTMLButtonElement>(`button[aria-controls="${isian(label).id}"]`)!;
+const tombolMata = (label: (typeof LABEL)[number]) => wadah.querySelector<HTMLButtonElement>(`button[aria-controls="${isian(label).id}"]`)!;
 
 /** Mengetik seperti pengguna: nilai diset lewat setter bawaan agar React menerima event input. */
 function ketik(elemen: HTMLInputElement, nilai: string) {

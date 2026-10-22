@@ -59,7 +59,9 @@ describe("Table (DESIGN §4, §11.1)", () => {
 
   it("panjang: th menempel di atas berlatar bg-muted", () => {
     const { tabel } = render({ panjang: true });
-    expect(tabel).toEqual(expect.arrayContaining(["[&_thead_th]:sticky", "[&_thead_th]:top-0", "[&_thead_th]:z-20", "[&_thead_th]:bg-muted"]));
+    expect(tabel).toEqual(
+      expect.arrayContaining(["[&_thead_th]:sticky", "[&_thead_th]:top-0", "[&_thead_th]:z-20", "[&_thead_th]:bg-muted"]),
+    );
     expect(tabel.some((k) => k.includes(":left-"))).toBe(false);
   });
 

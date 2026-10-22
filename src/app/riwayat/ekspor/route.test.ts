@@ -101,7 +101,12 @@ async function buatRencana({
   idPengguna: string;
 }) {
   tanggalSementara += 1;
-  const id = await rencanaFinalUji({ idGudang: gudang.id, idToko: toko.id, tanggalKirim: `2098-01-${String(tanggalSementara).padStart(2, "0")}`, idPengguna });
+  const id = await rencanaFinalUji({
+    idGudang: gudang.id,
+    idToko: toko.id,
+    tanggalKirim: `2098-01-${String(tanggalSementara).padStart(2, "0")}`,
+    idPengguna,
+  });
   await db
     .update(rencanaFinal)
     .set({
@@ -185,7 +190,16 @@ beforeAll(async () => {
       dibatalkanPada: waktu(1, 4),
       alasanPembatalan: "mal batal tutup",
     },
-    { ...dasar, gudangId: gudangB.id, tokoId: tokoY.id, jenis: "tambahan", tanggalKirim: "2099-03-05", status: "ditarik", diusulkanPada: waktu(2, 1), ditarikPada: waktu(2, 2) },
+    {
+      ...dasar,
+      gudangId: gudangB.id,
+      tokoId: tokoY.id,
+      jenis: "tambahan",
+      tanggalKirim: "2099-03-05",
+      status: "ditarik",
+      diusulkanPada: waktu(2, 1),
+      ditarikPada: waktu(2, 2),
+    },
     {
       ...dasar,
       gudangId: gudangA.id,
@@ -210,7 +224,15 @@ beforeAll(async () => {
       diputuskanPada: waktu(11, 0),
       alasanPenolakan: "uji",
     })),
-    { ...dasar, gudangId: gudangB.id, tokoId: tokoX.id, jenis: "tambahan", tanggalKirim: "2099-07-01", status: "menunggu", diusulkanPada: waktu(12, 0) },
+    {
+      ...dasar,
+      gudangId: gudangB.id,
+      tokoId: tokoX.id,
+      jenis: "tambahan",
+      tanggalKirim: "2099-07-01",
+      status: "menunggu",
+      diusulkanPada: waktu(12, 0),
+    },
   ]);
 }, 120_000);
 
@@ -228,8 +250,10 @@ async function masukOperator(penugasan: { idGudang: number; hakTindakan: HakTind
   kepala.cookie = operator.cookie;
 }
 
-const ekspor = (parameter: Record<string, string>) => GET(new Request(`http://localhost/riwayat/ekspor?${new URLSearchParams(parameter).toString()}`));
-const buka = async (parameter: Record<string, string>) => renderToStaticMarkup(await HalamanRiwayat({ searchParams: Promise.resolve(parameter) }));
+const ekspor = (parameter: Record<string, string>) =>
+  GET(new Request(`http://localhost/riwayat/ekspor?${new URLSearchParams(parameter).toString()}`));
+const buka = async (parameter: Record<string, string>) =>
+  renderToStaticMarkup(await HalamanRiwayat({ searchParams: Promise.resolve(parameter) }));
 
 type Sel = string | number | null;
 
@@ -255,8 +279,40 @@ describe("ekspor Riwayat, tab Rencana final", () => {
     const isi = await baca(await ekspor({ toko: String(tokoX.id) }), "Riwayat rencana final");
     expect(isi.kolom).toEqual(KOLOM_RENCANA_FINAL);
     expect(isi.data).toEqual([
-      [gudangB.nama, "Senin, 11-05-2099", tokoX.nama, 1, "Ya", "Rutin", "Uji T129", formatWaktu(waktu(3, 3)), kode.p1, `PRODUK ${kode.p1}`, 10, 0, 10, 11, "Otomatis"],
-      [gudangA.nama, "Senin, 04-05-2099", tokoX.nama, 2, "Ya", "Rutin", "Uji T129", formatWaktu(waktu(2, 3)), kode.p1, `PRODUK ${kode.p1}`, 56, 18, 20, 50, "Otomatis"],
+      [
+        gudangB.nama,
+        "Senin, 11-05-2099",
+        tokoX.nama,
+        1,
+        "Ya",
+        "Rutin",
+        "Uji T129",
+        formatWaktu(waktu(3, 3)),
+        kode.p1,
+        `PRODUK ${kode.p1}`,
+        10,
+        0,
+        10,
+        11,
+        "Otomatis",
+      ],
+      [
+        gudangA.nama,
+        "Senin, 04-05-2099",
+        tokoX.nama,
+        2,
+        "Ya",
+        "Rutin",
+        "Uji T129",
+        formatWaktu(waktu(2, 3)),
+        kode.p1,
+        `PRODUK ${kode.p1}`,
+        56,
+        18,
+        20,
+        50,
+        "Otomatis",
+      ],
       [
         gudangA.nama,
         "Senin, 04-05-2099",
@@ -274,12 +330,31 @@ describe("ekspor Riwayat, tab Rencana final", () => {
         48,
         "Otomatis",
       ],
-      [gudangA.nama, "Senin, 04-05-2099", tokoX.nama, 1, "Digantikan oleh versi 2", "Rutin", "Uji T129", formatWaktu(waktu(1, 3)), kode.p2, "—", "—", "—", "—", "—", "Manual"],
+      [
+        gudangA.nama,
+        "Senin, 04-05-2099",
+        tokoX.nama,
+        1,
+        "Digantikan oleh versi 2",
+        "Rutin",
+        "Uji T129",
+        formatWaktu(waktu(1, 3)),
+        kode.p2,
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "Manual",
+      ],
     ]);
   });
 
   it("baris keterangan: jenis riwayat, filter yang diterapkan, waktu ekspor, dan arti tanda tidak tersedia", async () => {
-    const isi = await baca(await ekspor({ toko: String(tokoX.id), dari: "2099-05-01", sampai: "2099-05-31", cari: tokoX.nama }), "Riwayat rencana final");
+    const isi = await baca(
+      await ekspor({ toko: String(tokoX.id), dari: "2099-05-01", sampai: "2099-05-31", cari: tokoX.nama }),
+      "Riwayat rencana final",
+    );
     expect(isi.judul).toBe("Riwayat rencana final");
     expect(isi.keterangan).toMatchObject({
       "Jenis riwayat": "Rencana final",
@@ -334,7 +409,24 @@ describe("ekspor Riwayat, tab Di luar jadwal", () => {
         "—",
         "—",
       ],
-      [gudangB.nama, "Tambahan", tokoY.nama, "Kamis, 05-03-2099", "H−1", "—", "permintaan mendesak", "Ditarik", "Uji viewer", formatWaktu(waktu(2, 1)), "—", "—", "—", "Uji viewer", formatWaktu(waktu(2, 2)), "—"],
+      [
+        gudangB.nama,
+        "Tambahan",
+        tokoY.nama,
+        "Kamis, 05-03-2099",
+        "H−1",
+        "—",
+        "permintaan mendesak",
+        "Ditarik",
+        "Uji viewer",
+        formatWaktu(waktu(2, 1)),
+        "—",
+        "—",
+        "—",
+        "Uji viewer",
+        formatWaktu(waktu(2, 2)),
+        "—",
+      ],
       [
         gudangA.nama,
         "Pindah",
@@ -361,7 +453,10 @@ describe("ekspor Riwayat, tab Di luar jadwal", () => {
     expect([...html.matchAll(/<tr[^>]*data-pengiriman="/g)]).toHaveLength(50);
     const isi = await baca(await ekspor({ tab: "di-luar-jadwal", toko: String(tokoX.id) }), "Riwayat di luar jadwal");
     expect(isi.data).toHaveLength(JUMLAH_DITOLAK_X + 1);
-    const gudangSaja = await baca(await ekspor({ tab: "di-luar-jadwal", toko: String(tokoX.id), gudang: String(gudangA.id) }), "Riwayat di luar jadwal");
+    const gudangSaja = await baca(
+      await ekspor({ tab: "di-luar-jadwal", toko: String(tokoX.id), gudang: String(gudangA.id) }),
+      "Riwayat di luar jadwal",
+    );
     expect(gudangSaja.data).toHaveLength(JUMLAH_DITOLAK_X);
     const cari = await baca(await ekspor({ tab: "di-luar-jadwal", cari: tokoY.nama }), "Riwayat di luar jadwal");
     expect(cari.data.map((b) => b[2])).toEqual([tokoY.nama, tokoY.nama, tokoY.nama]);

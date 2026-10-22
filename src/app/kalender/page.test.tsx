@@ -178,7 +178,9 @@ describe("/kalender: hari ini dan navigasi", () => {
     const hariIni = sel(html, "2026-05-06");
     expect(hariIni.isi).toContain("Hari ini");
     expect(hariIni.tag).toContain("ring-primary");
-    expect(html).toMatch(/<a[^>]*aria-current="date"[^>]*href="\/kalender\?bulan=2026-05&amp;tanggal=2026-05-06"|<a[^>]*href="\/kalender\?bulan=2026-05&amp;tanggal=2026-05-06"[^>]*aria-current="date"/);
+    expect(html).toMatch(
+      /<a[^>]*aria-current="date"[^>]*href="\/kalender\?bulan=2026-05&amp;tanggal=2026-05-06"|<a[^>]*href="\/kalender\?bulan=2026-05&amp;tanggal=2026-05-06"[^>]*aria-current="date"/,
+    );
     expect(detail(html)?.tanggal).toBe("2026-05-06");
   });
 
@@ -191,7 +193,9 @@ describe("/kalender: hari ini dan navigasi", () => {
 
   it("tautan navigasi bulan dan tahun, serta kembali ke bulan ini", async () => {
     const html = await buka({ bulan: "2026-01" });
-    const tautan = Object.fromEntries([...html.matchAll(/<a [^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g)].map((m) => [m[2]!.replace(/<[^>]+>/g, "").trim(), m[1]]));
+    const tautan = Object.fromEntries(
+      [...html.matchAll(/<a [^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/g)].map((m) => [m[2]!.replace(/<[^>]+>/g, "").trim(), m[1]]),
+    );
     expect(tautan).toMatchObject({
       "Tahun sebelumnya": "/kalender?bulan=2025-01",
       "Bulan sebelumnya": "/kalender?bulan=2025-12",
@@ -421,7 +425,13 @@ describe("/kalender: kategori efektif sesuai cakupan toko (T43, PRD B4, B6)", ()
   it("posisi minggu dan bulan laporan tidak berubah oleh kategori efektif (PRD B6: Selasa 30-06-2026 → Jumat tetap Juli Minggu 1)", async () => {
     const idAdmin = (await buatPenggunaUji("admin")).id;
     const tokoC = await buatTokoUji();
-    await buatPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-30"), idToko: tokoC.id, kategoriBaru: "Jumat", alasan: "Contoh B6", idPengguna: idAdmin });
+    await buatPerubahanKategori({
+      tanggal: parseTanggalBisnis("2026-06-30"),
+      idToko: tokoC.id,
+      kategoriBaru: "Jumat",
+      alasan: "Contoh B6",
+      idPengguna: idAdmin,
+    });
 
     const html = await tampilan("2026-06-30", tokoC);
     expect(sel(html, "2026-06-30").tag).toContain('data-kategori-efektif="Jumat"');
@@ -482,7 +492,13 @@ describe("/kalender: riwayat perubahan kategori yang dibatalkan (T71, PRD B4 ▶
     tokoB = await buatTokoUji();
     // Senin: toko A diubah, direvisi, lalu dibatalkan; seluruh toko dibatalkan lalu dibuat lagi (aktif).
     await buatPerubahanKategori({ tanggal: senin, idToko: tokoA.id, kategoriBaru: "Sabtu", alasan: "Promo A", idPengguna: pembuat });
-    await revisiPerubahanKategori({ tanggal: senin, idToko: tokoA.id, kategoriBaru: "Minggu", alasan: "Promo A diperpanjang", idPengguna: pembuat });
+    await revisiPerubahanKategori({
+      tanggal: senin,
+      idToko: tokoA.id,
+      kategoriBaru: "Minggu",
+      alasan: "Promo A diperpanjang",
+      idPengguna: pembuat,
+    });
     await batalkanPerubahanKategori({ tanggal: senin, idToko: tokoA.id, alasan: "Promo A dibatalkan pusat", idPengguna: pembatal });
     await buatPerubahanKategori({ tanggal: senin, idToko: null, kategoriBaru: "Jumat", alasan: "Event lama", idPengguna: pembuat });
     await batalkanPerubahanKategori({ tanggal: senin, idToko: null, alasan: "Event lama ditunda", idPengguna: pembatal });

@@ -10,7 +10,18 @@ import { formatWaktu } from "@/app/admin/impor/format";
 import { parseTanggalBisnis, type KategoriDasar, type NamaHari } from "@/domain/kalender";
 import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { draftRencana, gudang, hubunganTokoGudang, impor, jadwalToko, produk, rencanaFinal, toko, user, type ImporRencanaFinal } from "@/server/db/schema";
+import {
+  draftRencana,
+  gudang,
+  hubunganTokoGudang,
+  impor,
+  jadwalToko,
+  produk,
+  rencanaFinal,
+  toko,
+  user,
+  type ImporRencanaFinal,
+} from "@/server/db/schema";
 import { bacaDraftRencana, hitungDraftRencana } from "@/server/gudang/draft-rencana";
 import { daftarHakTindakan, type HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
@@ -55,10 +66,15 @@ const [CONTOH] = golden.kasusJumlahKirim;
 
 const TANGGAL = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const NAMA_PRODUK = "15ML GLITTER - GORGEOUS";
-const produkUji = (kode: string, kuantitas: number[]) => ({ kode, nama: NAMA_PRODUK, ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas });
+const produkUji = (kode: string, kuantitas: number[]) => ({
+  kode,
+  nama: NAMA_PRODUK,
+  ukuran: "15ML",
+  kategori: "15ML GLITTER/LEATHER",
+  kuantitas,
+});
 const JENIS_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 let cibubur: number;
@@ -104,10 +120,21 @@ beforeAll(async () => {
 
   const dihitung = await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: TANGGAL, idPengguna: idOperator });
   if (dihitung.keadaan !== "berhasil") throw new Error(dihitung.pesan);
-  const stok = await simpanStokToko({ idGudang: cibubur, tanggalKirim: TANGGAL, tokoId: tokoA.id, stok: [{ kodeProduk: kode.contoh, stokAkhir: CONTOH.stokAkhir }] });
+  const stok = await simpanStokToko({
+    idGudang: cibubur,
+    tanggalKirim: TANGGAL,
+    tokoId: tokoA.id,
+    stok: [{ kodeProduk: kode.contoh, stokAkhir: CONTOH.stokAkhir }],
+  });
   if (stok.keadaan !== "berhasil") throw new Error(stok.pesan);
   const versi = (await bacaDraftRencana(cibubur, TANGGAL))?.toko.find((t) => t.id === tokoA.id)?.versi ?? "";
-  const hasil = await finalisasiRencanaToko({ idGudang: cibubur, tanggalKirim: TANGGAL, tokoId: tokoA.id, idPengguna: idOperator, versiDilihat: versi });
+  const hasil = await finalisasiRencanaToko({
+    idGudang: cibubur,
+    tanggalKirim: TANGGAL,
+    tokoId: tokoA.id,
+    idPengguna: idOperator,
+    versiDilihat: versi,
+  });
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
   idRencana = hasil.idRencana;
 }, 180_000);
@@ -183,7 +210,10 @@ describe("GET ekspor rencana final: kewenangan (diperiksa di server)", () => {
   });
 
   it("operator gudang itu tanpa hak ekspor ditolak (403), walaupun punya semua hak lain", async () => {
-    await masukOperator(cibubur, daftarHakTindakan.filter((h) => h !== "ekspor"));
+    await masukOperator(
+      cibubur,
+      daftarHakTindakan.filter((h) => h !== "ekspor"),
+    );
     expect(await ditolak(await ekspor(), 403)).toContain("hak ekspor");
   });
 
@@ -271,13 +301,26 @@ describe("GET ekspor rencana final: isi berkas dari snapshot", () => {
     const rencana = await bacaRencanaFinal(cibubur, idRencana);
     if (!rencana) throw new Error("rencana final tidak ditemukan");
     const [contohImpor] = rencana.sumber.impor;
-    const tigaImpor = [7, 8, 9].map((bulanImpor, i) => ({ ...contohImpor, id: contohImpor.id + i, bulanImpor, namaFile: `penjualan-${bulanImpor}.xlsx` }));
+    const tigaImpor = [7, 8, 9].map((bulanImpor, i) => ({
+      ...contohImpor,
+      id: contohImpor.id + i,
+      bulanImpor,
+      namaFile: `penjualan-${bulanImpor}.xlsx`,
+    }));
     const harapan = bacaBerkas(new Uint8Array(buatBerkasEkspor(rencana)));
     const variasi: ImporRencanaFinal[][] = [[], tigaImpor];
     for (const daftarImpor of variasi) {
       const berkas = bacaBerkas(new Uint8Array(buatBerkasEkspor({ ...rencana, sumber: { ...rencana.sumber, impor: daftarImpor } })));
       expect(berkas.semua).toEqual(harapan.semua);
-      expect(berkas.kepalaBerkas.map((b) => b[0])).toEqual(["Rencana final", "Gudang", "Tanggal kirim", "Toko", "Jenis pengiriman", "Waktu finalisasi", null]);
+      expect(berkas.kepalaBerkas.map((b) => b[0])).toEqual([
+        "Rencana final",
+        "Gudang",
+        "Tanggal kirim",
+        "Toko",
+        "Jenis pengiriman",
+        "Waktu finalisasi",
+        null,
+      ]);
     }
   });
 
@@ -291,7 +334,10 @@ describe("GET ekspor rencana final: isi berkas dari snapshot", () => {
     const labelLayar = (kodeProduk: string) => {
       const tr = new RegExp(`<tr[^>]*data-kode-produk="${kodeProduk}".*?</tr>`).exec(rincian)?.[0] ?? "";
       const sel = [...tr.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map((m) => m[1]);
-      return (sel[2] ?? "").replace(/<span class="sr-only">.*?<\/span>/g, "").replace(/<[^>]+>/g, "").trim();
+      return (sel[2] ?? "")
+        .replace(/<span class="sr-only">.*?<\/span>/g, "")
+        .replace(/<[^>]+>/g, "")
+        .trim();
     };
     expect(baris).toHaveLength(2);
     for (const b of baris) {
@@ -299,7 +345,10 @@ describe("GET ekspor rencana final: isi berkas dari snapshot", () => {
       expect(label).not.toBe("");
       expect(b.Status).toBe(label);
     }
-    expect(Object.fromEntries(baris.map((b) => [b["Kode produk"], b.Status]))).toEqual({ [kode.contoh]: "Otomatis", [kode.manual]: "Manual" });
+    expect(Object.fromEntries(baris.map((b) => [b["Kode produk"], b.Status]))).toEqual({
+      [kode.contoh]: "Otomatis",
+      [kode.manual]: "Manual",
+    });
   });
 
   it("isi berkas sama dengan snapshot walau data sumber sudah berubah", async () => {
@@ -313,23 +362,39 @@ describe("GET ekspor rencana final: isi berkas dari snapshot", () => {
       tahun,
       namaToko: tokoA.nama,
       hari: SEMUA_HARI_JUNI,
-      produk: [produkUji(kode.contoh, sesuaiContoh.map((q) => q * 2)), produkUji(kode.manual, sesuaiContoh)],
+      produk: [
+        produkUji(
+          kode.contoh,
+          sesuaiContoh.map((q) => q * 2),
+        ),
+        produkUji(kode.manual, sesuaiContoh),
+      ],
     });
     await hitungUlangCacheLaporan();
     await publikasikanRankingUji({ keluarga: [keluargaLain], idPengguna: idAdmin, bulanRanking: "2026-10" });
-    const [pemetaan] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [pemetaan] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(pemetaan.status).toBe("berhasil");
     const dihitung = await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: TANGGAL, idPengguna: idOperator });
     if (dihitung.keadaan !== "berhasil") throw new Error(dihitung.pesan);
     await simpanStokToko({ idGudang: cibubur, tanggalKirim: TANGGAL, tokoId: tokoA.id, stok: [{ kodeProduk: kode.contoh, stokAkhir: 5 }] });
-    const barisDraft = (await bacaDraftRencana(cibubur, TANGGAL))?.toko.find((t) => t.id === tokoA.id)?.baris.find((b) => b.kodeProduk === kode.contoh);
+    const barisDraft = (await bacaDraftRencana(cibubur, TANGGAL))?.toko
+      .find((t) => t.id === tokoA.id)
+      ?.baris.find((b) => b.kodeProduk === kode.contoh);
     expect(barisDraft?.kebutuhan).not.toBe(CONTOH.kebutuhan);
 
     const [{ nama: namaPemfinalisasi }] = await db.select({ nama: user.name }).from(user).where(eq(user.id, idOperator));
     const [{ nama: namaGudang }] = await db.select({ nama: gudang.nama }).from(gudang).where(eq(gudang.id, cibubur));
     try {
-      await db.update(gudang).set({ nama: `${namaGudang} BARU` }).where(eq(gudang.id, cibubur));
-      await db.update(toko).set({ nama: `${tokoA.nama} BARU` }).where(eq(toko.id, tokoA.id));
+      await db
+        .update(gudang)
+        .set({ nama: `${namaGudang} BARU` })
+        .where(eq(gudang.id, cibubur));
+      await db
+        .update(toko)
+        .set({ nama: `${tokoA.nama} BARU` })
+        .where(eq(toko.id, tokoA.id));
       await db.update(user).set({ name: "Nama baru operator" }).where(eq(user.id, idOperator));
       await db.update(produk).set({ nama: "NAMA PRODUK BARU" }).where(eq(produk.kode, kode.contoh));
 
@@ -372,11 +437,16 @@ describe("tombol ekspor di rincian dan riwayat rencana final (zona kerja; halama
     const baris = new RegExp(`<tr[^>]*data-rencana-final="${idRencana}".*?</tr>`).exec(daftar)?.[0] ?? "";
     expect(baris).toMatch(tombol());
     // Konteks untuk pembaca layar: tiap baris riwayat punya tombol sendiri.
-    expect(baris).toMatch(new RegExp(`Ekspor \\(\\.xlsx\\)<span class="sr-only"> rencana final ${tokoA.nama} Senin, 08-06-2026 versi 1</span>`));
+    expect(baris).toMatch(
+      new RegExp(`Ekspor \\(\\.xlsx\\)<span class="sr-only"> rencana final ${tokoA.nama} Senin, 08-06-2026 versi 1</span>`),
+    );
   });
 
   it("tanpa hak ekspor (operator lain atau admin tanpa penugasan) tombol tidak tampil", async () => {
-    await masukOperator(cibubur, daftarHakTindakan.filter((h) => h !== "ekspor"));
+    await masukOperator(
+      cibubur,
+      daftarHakTindakan.filter((h) => h !== "ekspor"),
+    );
     expect(await bukaRincian()).not.toContain("data-ekspor-url");
     expect(await bukaDaftar()).not.toContain("data-ekspor-url");
 

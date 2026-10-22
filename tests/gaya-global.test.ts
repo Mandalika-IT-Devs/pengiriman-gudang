@@ -41,11 +41,7 @@ describe("gaya global", () => {
   it("tidak ada nilai hex di komponen dan halaman", () => {
     const pelanggaran = berkasKomponen(join(akar, "src"))
       .filter((path) => !path.includes(`${join("src", "domain")}`))
-      .flatMap((path) =>
-        [...readFileSync(path, "utf8").matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map(
-          (m) => `${relative(akar, path)}: ${m[0]}`,
-        ),
-      );
+      .flatMap((path) => [...readFileSync(path, "utf8").matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => `${relative(akar, path)}: ${m[0]}`));
     expect(pelanggaran).toEqual([]);
   });
 
@@ -54,9 +50,7 @@ describe("gaya global", () => {
       /\b(?:text|bg|border|ring|ring-offset|fill|stroke|from|via|to|outline|decoration|shadow|accent|caret|divide|placeholder)-(?:white|black|(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3})\b/g;
     const pelanggaran = berkasKomponen(join(akar, "src"))
       .filter((path) => !path.includes(`${join("src", "domain")}`))
-      .flatMap((path) =>
-        [...readFileSync(path, "utf8").matchAll(paletBawaan)].map((m) => `${relative(akar, path)}: ${m[0]}`),
-      );
+      .flatMap((path) => [...readFileSync(path, "utf8").matchAll(paletBawaan)].map((m) => `${relative(akar, path)}: ${m[0]}`));
     expect(pelanggaran).toEqual([]);
   });
 });

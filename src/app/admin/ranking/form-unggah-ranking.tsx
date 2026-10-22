@@ -72,8 +72,8 @@ export function FormUnggahRanking() {
         <CardHeader>
           <CardTitle level={2}>Unggah file ranking</CardTitle>
           <CardDescription>
-            File Excel dengan sheet RANKING SALES dan kolom RANK, VARIANT, QTY SALES. Bulan ranking diisi dari nama file
-            bila bisa ditebak; periksa dan ubah bila perlu.
+            File Excel dengan sheet RANKING SALES dan kolom RANK, VARIANT, QTY SALES. Bulan ranking diisi dari nama file bila bisa ditebak;
+            periksa dan ubah bila perlu.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">

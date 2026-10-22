@@ -62,11 +62,9 @@ describe("bacaTabel: pemisah CSV dikenali dari baris pertama", () => {
   });
 
   it("CSV tab", () => {
-    const isi = [
-      "Nama di file stok\tKode produk",
-      "GORGEOUS TUBEROSE - 110ML M PARFUM\tPW110P-GOR",
-      "NO1 - 10ML ATOMIZER\tA10M-NO1",
-    ].join("\n");
+    const isi = ["Nama di file stok\tKode produk", "GORGEOUS TUBEROSE - 110ML M PARFUM\tPW110P-GOR", "NO1 - 10ML ATOMIZER\tA10M-NO1"].join(
+      "\n",
+    );
     expect(bacaTabel("alias.csv", utf8(isi))).toEqual({
       ok: true,
       baris: [
@@ -122,9 +120,27 @@ describe("bacaTabel: pemisah CSV dikenali dari baris pertama", () => {
   });
 
   it("jumlah pemisah seri → titik koma, lalu koma, lalu tab; pemisah terpilih dipakai untuk semua baris", () => {
-    expect(bacaTabel("a.csv", utf8("A;B,C\nD;E,F"))).toEqual({ ok: true, baris: [["A", "B,C"], ["D", "E,F"]] });
-    expect(bacaTabel("a.csv", utf8("A,B\tC\nD,E\tF"))).toEqual({ ok: true, baris: [["A", "B\tC"], ["D", "E\tF"]] });
-    expect(bacaTabel("a.csv", utf8("A\tB;C\nD\tE;F"))).toEqual({ ok: true, baris: [["A\tB", "C"], ["D\tE", "F"]] });
+    expect(bacaTabel("a.csv", utf8("A;B,C\nD;E,F"))).toEqual({
+      ok: true,
+      baris: [
+        ["A", "B,C"],
+        ["D", "E,F"],
+      ],
+    });
+    expect(bacaTabel("a.csv", utf8("A,B\tC\nD,E\tF"))).toEqual({
+      ok: true,
+      baris: [
+        ["A", "B\tC"],
+        ["D", "E\tF"],
+      ],
+    });
+    expect(bacaTabel("a.csv", utf8("A\tB;C\nD\tE;F"))).toEqual({
+      ok: true,
+      baris: [
+        ["A\tB", "C"],
+        ["D\tE", "F"],
+      ],
+    });
     expect(bacaTabel("a.csv", utf8("A;B,C\tD"))).toEqual({ ok: true, baris: [["A", "B,C\tD"]] });
   });
 

@@ -36,7 +36,7 @@ function kelasBadge(html: string): string[] {
 }
 
 describe("BadgeStatus (DESIGN §7)", () => {
-  it("mencakup semua status badge di tabel §7 (baris \"Belum disimpan (form)\" ditangani PesanStatusSimpan)", () => {
+  it('mencakup semua status badge di tabel §7 (baris "Belum disimpan (form)" ditangani PesanStatusSimpan)', () => {
     expect([...semuaStatus].sort()).toEqual(Object.keys(harapan).sort());
   });
 

@@ -2,20 +2,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import {
-  cocokkanKeluargaAroma,
-  normalisasiAlias,
-  normalisasiSegmenKode,
-  segmenKodeProduk,
-  usulkanKeluargaAroma,
-} from "./keluarga-aroma";
+import { cocokkanKeluargaAroma, normalisasiAlias, normalisasiSegmenKode, segmenKodeProduk, usulkanKeluargaAroma } from "./keluarga-aroma";
 
 // ADR-0006, PRD A6 (▶ Keputusan OD-05): baris ranking dicocokkan ke keluarga aroma lewat alias,
 // persis setelah normalisasi (huruf besar, spasi dirapikan). Tanpa pencocokan mirip (PRD C3).
 
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/ranking-september-2026.json"), "utf8"),
-) as { baris: { baris: number; variant: string }[] };
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/ranking-september-2026.json"), "utf8")) as {
+  baris: { baris: number; variant: string }[];
+};
 
 const daftarAlias = [
   { alias: "GORGEOUS TUBEROSE", keluarga: { id: 1, nama: "Gorgeous Tuberose" } },

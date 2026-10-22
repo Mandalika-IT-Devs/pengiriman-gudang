@@ -119,9 +119,7 @@ test("operator mengganti kata sandi di Akun saya: perangkat ini tetap masuk, per
   await expect(baris).toContainText(SANDI_BARU);
 });
 
-test("layar ponsel: nama dan peran di menu tarik membuka Akun saya; akun admin tanpa keterangan admin dapat melihat", async ({
-  page,
-}) => {
+test("layar ponsel: nama dan peran di menu tarik membuka Akun saya; akun admin tanpa keterangan admin dapat melihat", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await masuk(page, EMAIL_ADMIN_E2E, SANDI_ADMIN_E2E);
   await expect(page).not.toHaveURL(/\/masuk/);

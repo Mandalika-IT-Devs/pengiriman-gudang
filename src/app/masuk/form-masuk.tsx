@@ -16,15 +16,7 @@ export function FormMasuk() {
     <form action={aksi} className="flex flex-col gap-4">
       <label className="flex flex-col gap-2 font-semibold" htmlFor={`${id}-email`}>
         Email
-        <Input
-          key={hasil?.email}
-          id={`${id}-email`}
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          defaultValue={hasil?.email}
-        />
+        <Input key={hasil?.email} id={`${id}-email`} name="email" type="email" required autoComplete="email" defaultValue={hasil?.email} />
       </label>
       <label className="flex flex-col gap-2 font-semibold" htmlFor={`${id}-sandi`}>
         Kata sandi

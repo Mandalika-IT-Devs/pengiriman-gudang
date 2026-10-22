@@ -33,11 +33,16 @@ function pernyataanPenutupan() {
 }
 
 describe("migrasi usulan jadwal lama", () => {
-  it("usulan lama menunggu → ditolak dengan alasan \"Alur usulan jadwal tetap dihapus (keputusan pemilik 2026-10-13)\"; usulan lain tidak berubah", async () => {
+  it('usulan lama menunggu → ditolak dengan alasan "Alur usulan jadwal tetap dihapus (keputusan pemilik 2026-10-13)"; usulan lain tidak berubah', async () => {
     const operator = await buatPenggunaUji("viewer");
     const admin = await buatPenggunaUji("admin");
     const [a, b] = [await buatTokoUji(), await buatTokoUji()];
-    const isi = { jenis: "buat" as const, pola: "mingguan" as const, hariKirim: [{ hari: "Senin" as const, persiapanHari: 0 as const }], diusulkanOleh: operator.id };
+    const isi = {
+      jenis: "buat" as const,
+      pola: "mingguan" as const,
+      hariKirim: [{ hari: "Senin" as const, persiapanHari: 0 as const }],
+      diusulkanOleh: operator.id,
+    };
     const [menunggu, disetujui] = await db
       .insert(usulanJadwal)
       .values([
@@ -48,7 +53,10 @@ describe("migrasi usulan jadwal lama", () => {
 
     await db.execute(sql.raw(pernyataanPenutupan()));
 
-    const sesudah = await db.select().from(usulanJadwal).where(inArray(usulanJadwal.id, [menunggu.id, disetujui.id]));
+    const sesudah = await db
+      .select()
+      .from(usulanJadwal)
+      .where(inArray(usulanJadwal.id, [menunggu.id, disetujui.id]));
     const ditutup = sesudah.find((u) => u.id === menunggu.id);
     expect(ditutup).toMatchObject({
       status: "ditolak",

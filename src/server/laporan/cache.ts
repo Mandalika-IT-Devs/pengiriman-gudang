@@ -79,12 +79,7 @@ export async function bacaPerubahanKategori(klien: Klien = db, tanggal?: Tanggal
       revisi: perubahanKategori.revisi,
     })
     .from(perubahanKategori)
-    .where(
-      and(
-        eq(perubahanKategori.status, "aktif"),
-        tanggal === undefined ? undefined : eq(perubahanKategori.tanggal, tanggal),
-      ),
-    )
+    .where(and(eq(perubahanKategori.status, "aktif"), tanggal === undefined ? undefined : eq(perubahanKategori.tanggal, tanggal)))
     .orderBy(asc(perubahanKategori.id));
   return daftar.map((p) => ({
     id: String(p.id),
@@ -196,8 +191,7 @@ async function bacaPasangan(idImpor: number[]): Promise<Map<number, DataPasangan
     .from(selPenjualan)
     .where(inArray(selPenjualan.imporId, idImpor));
 
-  const kunciSel = (imporId: number, tokoId: number, kode: string, tanggal: string) =>
-    `${imporId}|${tokoId}|${kode}|${tanggal}`;
+  const kunciSel = (imporId: number, tokoId: number, kode: string, tanggal: string) => `${imporId}|${tokoId}|${kode}|${tanggal}`;
   const selPerKunci = new Map(sel.map((s) => [kunciSel(s.imporId, s.tokoId, s.kodeProduk, s.tanggal), s]));
   const imporPerId = new Map(daftarImpor.map((i) => [i.id, i]));
   const tanggalBisnis = new Map<string, TanggalBisnis>();
@@ -232,11 +226,7 @@ async function bacaPasangan(idImpor: number[]): Promise<Map<number, DataPasangan
   return new Map([...pasanganPerToko].map(([tokoId, perProduk]) => [tokoId, [...perProduk.values()]]));
 }
 
-function hitungPasangan(
-  versiId: number,
-  pasangan: DataPasangan,
-  kategoriPadaTanggal: (tanggal: TanggalBisnis) => KategoriDasar,
-) {
+function hitungPasangan(versiId: number, pasangan: DataPasangan, kategoriPadaTanggal: (tanggal: TanggalBisnis) => KategoriDasar) {
   const daftarBulan = [...new Set(pasangan.pengamatan.map((p) => posisiLaporan(p.tanggal).bulanLaporan))].sort();
   const mingguan: BarisNilaiMingguan[] = [];
   const bulanan: BarisRataRataBulanan[] = [];

@@ -8,17 +8,7 @@ const formatDuaDesimal = new Intl.NumberFormat("id-ID", { maximumFractionDigits:
  * `hasil` adalah nilai hasil hitung (dari cache), bukan dihitung di sini. Hasil bagi hanya penjelas: dipotong ke
  * dua desimal dan diberi `≈` bila tidak tepat. Keterangan pembulatan hanya muncul bila pembagian tidak bulat.
  */
-export function formatPembagian({
-  jumlah,
-  pembagi,
-  satuan,
-  hasil,
-}: {
-  jumlah: number;
-  pembagi: number;
-  satuan: string;
-  hasil: number;
-}) {
+export function formatPembagian({ jumlah, pembagi, satuan, hasil }: { jumlah: number; pembagi: number; satuan: string; hasil: number }) {
   const perseratus = bagiBulatBawah(jumlah * 100, pembagi);
   const tanda = perseratus * pembagi === jumlah * 100 ? "=" : "≈";
   const dasar = `Σ ${formatAngka(jumlah)} ÷ ${formatAngka(pembagi)} ${satuan} ${tanda} ${formatDuaDesimal.format(perseratus / 100)}`;

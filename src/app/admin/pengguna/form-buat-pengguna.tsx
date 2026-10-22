@@ -30,7 +30,10 @@ export function FormBuatPengguna() {
         className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => buatPengguna(isian), () => setIsian(isianKosong));
+          simpan(
+            () => buatPengguna(isian),
+            () => setIsian(isianKosong),
+          );
         }}
       >
         <CardHeader>

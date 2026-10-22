@@ -116,18 +116,11 @@ jalankan(
   "pnpm",
   ["db:seed-master"],
 );
-jalankan(
-  "Menyiapkan periode sumber Juni–Agustus 2026 dan akun operator Cibubur, Bali, Bandung untuk UAT...",
-  "pnpm",
-  ["db:seed-uat"],
-);
+jalankan("Menyiapkan periode sumber Juni–Agustus 2026 dan akun operator Cibubur, Bali, Bandung untuk UAT...", "pnpm", ["db:seed-uat"]);
 jalankan("Menyiapkan aplikasi (next build, beberapa menit)...", "pnpm", ["build"]);
 
 catat("Menyalakan aplikasi dan worker...");
-const daftarProses = [
-  jalankanTerus("aplikasi", ["start", "--port", String(portAplikasi)]),
-  jalankanTerus("worker", ["worker"]),
-];
+const daftarProses = [jalankanTerus("aplikasi", ["start", "--port", String(portAplikasi)]), jalankanTerus("worker", ["worker"])];
 
 let berhenti = false;
 function hentikanSemua(kode: number) {

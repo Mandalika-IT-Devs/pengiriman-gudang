@@ -109,9 +109,7 @@ export function BagianJadwal({
                 </TableCell>
                 <TableCell>{t.jadwal ? <BadgeStatus status="aktif" /> : <BadgeTanpaJadwal />}</TableCell>
                 <TableCell>{t.jadwal ? labelPola[t.jadwal.pola] : "—"}</TableCell>
-                <TableCell className="whitespace-normal">
-                  {t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}
-                </TableCell>
+                <TableCell className="whitespace-normal">{t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}</TableCell>
                 <TableCell className="whitespace-normal text-muted-foreground">
                   {t.jadwal ? (
                     <>

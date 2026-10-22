@@ -40,9 +40,21 @@ export function buatBerkasEkspor({ bulanPilihan, filterAktif, baris }: SemuaBari
   const kepala: Sel[][] = [
     ["Ringkasan penjualan"],
     ["Periode", `${bulanPilihan.map(labelBulan).join(", ")} (${bulanPilihan.length} bulan)`],
-    ["Filter toko", isiFilter(filterAktif.toko.map((t) => t.nama), "Semua toko")],
+    [
+      "Filter toko",
+      isiFilter(
+        filterAktif.toko.map((t) => t.nama),
+        "Semua toko",
+      ),
+    ],
     ["Filter kategori produk", isiFilter(filterAktif.kategoriProduk, "Semua kategori produk")],
-    ["Filter produk", isiFilter(filterAktif.produk.map((p) => p.kode), "Semua produk")],
+    [
+      "Filter produk",
+      isiFilter(
+        filterAktif.produk.map((p) => p.kode),
+        "Semua produk",
+      ),
+    ],
     ["Jumlah baris", baris.length],
     [
       "Keterangan",

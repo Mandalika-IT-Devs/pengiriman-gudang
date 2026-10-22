@@ -62,7 +62,12 @@ describe("/admin/impor", () => {
   it("admin melihat form unggah dan daftar impor beserta statusnya", async () => {
     const admin = await buatPenggunaUji("admin");
     const tahun = await tahunUjiBebas();
-    const id = await imporUji({ isi: buatWorkbookUji({ "JUNI (S)": [["BUKAN"]] }), tahunImpor: tahun, idPengguna: admin.id, proses: false });
+    const id = await imporUji({
+      isi: buatWorkbookUji({ "JUNI (S)": [["BUKAN"]] }),
+      tahunImpor: tahun,
+      idPengguna: admin.id,
+      proses: false,
+    });
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
 
     const html = renderToStaticMarkup(await HalamanImpor());

@@ -35,15 +35,16 @@ async function buatProduk(kode: string, nama = `PRODUK ${TAG} ${kode}`) {
 }
 
 async function buatKeluargaDenganSegmen(segmen: string) {
-  const [keluarga] = await db.insert(keluargaAroma).values({ nama: `KELUARGA ${acak()}` }).returning();
+  const [keluarga] = await db
+    .insert(keluargaAroma)
+    .values({ nama: `KELUARGA ${acak()}` })
+    .returning();
   await db.insert(segmenKodeKeluargaAroma).values({ keluargaId: keluarga.id, segmen });
   return keluarga;
 }
 
 async function render(parameter: Record<string, string> = {}) {
-  return renderToStaticMarkup(
-    await HalamanPemetaanProduk({ searchParams: Promise.resolve({ cari: TAG, cariUsulan: TAG, ...parameter }) }),
-  );
+  return renderToStaticMarkup(await HalamanPemetaanProduk({ searchParams: Promise.resolve({ cari: TAG, cariUsulan: TAG, ...parameter }) }));
 }
 
 /** Kode produk di baris daftar produk, urut tampil. */
@@ -132,9 +133,7 @@ describe("/admin/pemetaan-produk", () => {
     const htmlBelum = await render({ status: "belum-dipetakan" });
     expect(barisDengan(htmlBelum, belum).length).toBeGreaterThan(0);
     // Produk terpetakan hanya muncul di riwayat, bukan di daftar produk berfilter belum dipetakan.
-    expect(barisDengan(htmlBelum, terpetakan).every((b) => b.includes("Belum dipetakan") && b.includes("Uji admin"))).toBe(
-      true,
-    );
+    expect(barisDengan(htmlBelum, terpetakan).every((b) => b.includes("Belum dipetakan") && b.includes("Uji admin"))).toBe(true);
 
     const riwayat = barisDengan(htmlTerpetakan, terpetakan).find((b) => b.includes("Uji admin"));
     expect(riwayat).toContain("Belum dipetakan");
@@ -165,9 +164,11 @@ describe("/admin/pemetaan-produk", () => {
     /** 60 produk dengan awalan sama, urut kode: 01..60. */
     async function buatEnamPuluhProduk(awalan: string) {
       const kode = Array.from({ length: 60 }, (_, i) => `${awalan}-${String(i + 1).padStart(2, "0")}`);
-      await db.insert(produk).values(
-        kode.map((k) => ({ kode: k, nama: `PRODUK ${k}`, ukuran: "100ML", kategori: "PARFUM WANITA", klasifikasi: "otomatis" as const })),
-      );
+      await db
+        .insert(produk)
+        .values(
+          kode.map((k) => ({ kode: k, nama: `PRODUK ${k}`, ukuran: "100ML", kategori: "PARFUM WANITA", klasifikasi: "otomatis" as const })),
+        );
       return kode;
     }
 

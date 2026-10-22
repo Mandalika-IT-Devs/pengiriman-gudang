@@ -45,7 +45,10 @@ function pasang() {
 
 beforeEach(() => {
   tiruan.cabutPenugasanOperator.mockReset();
-  vi.stubGlobal("confirm", vi.fn(() => true));
+  vi.stubGlobal(
+    "confirm",
+    vi.fn(() => true),
+  );
 });
 
 afterEach(() => {

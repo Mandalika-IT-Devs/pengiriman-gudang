@@ -14,7 +14,14 @@ import { tugaskanOperator } from "../../src/server/gudang/penugasan";
 import { tetapkanPeriodeSumber } from "../../src/server/gudang/periode-sumber";
 import { buatTokoUji, idGudangUji } from "../../src/server/gudang/uji-bantu";
 import { aktifkanImpor } from "../../src/server/impor/impor";
-import { buatWorkbookUji, imporUji, kodeProdukUji, sheetPenjualanUji, tahunUjiBebas, type ProdukUji } from "../../src/server/impor/uji-bantu";
+import {
+  buatWorkbookUji,
+  imporUji,
+  kodeProdukUji,
+  sheetPenjualanUji,
+  tahunUjiBebas,
+  type ProdukUji,
+} from "../../src/server/impor/uji-bantu";
 import { hitungUlangCacheLaporan } from "../../src/server/laporan/cache";
 import { kuantitasJuniMenurutHari } from "../../src/server/laporan/uji-bantu";
 import { buatKeluargaUji, publikasikanRankingUji } from "../../src/server/ranking/uji-bantu";
@@ -34,8 +41,7 @@ const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../golden/juml
 };
 const TANGGAL_KIRIM = golden.kasusCakupan.tanggalKirim;
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 
 /** Produk uji dengan penjualan sesuai contoh PRD A6 (rata-rata per kategori hari dari golden). */
 function produkContoh(tahun: number, kode: string, nama: string, ukuran: string, kategori: string): ProdukUji {
@@ -269,7 +275,12 @@ test("Draft rencana: tabel varian panjang menggulir di wadahnya; header dan kolo
   const tabel = page.getByRole("table", { name: `Varian ${toko.nama}` });
   await expect(tabel.locator("tr[data-kode-produk]")).toHaveCount(JUMLAH_VARIAN);
   const wadah = tabel.locator("xpath=..");
-  const ukuran = await wadah.evaluate((el) => ({ tinggi: el.clientHeight, tinggiIsi: el.scrollHeight, lebar: el.clientWidth, lebarIsi: el.scrollWidth }));
+  const ukuran = await wadah.evaluate((el) => ({
+    tinggi: el.clientHeight,
+    tinggiIsi: el.scrollHeight,
+    lebar: el.clientWidth,
+    lebarIsi: el.scrollWidth,
+  }));
   // Wadah bertinggi terbatas: max(20rem, 100dvh − 10rem) = 640 px pada layar 800 px; baris sisanya digulir di dalamnya.
   expect(ukuran.tinggi).toBeLessThanOrEqual(TINGGI_LAYAR - 160);
   expect(ukuran.tinggiIsi).toBeGreaterThan(ukuran.tinggi);
@@ -340,7 +351,9 @@ test("Draft rencana: rincian baris di panel samping; isian stok dan posisi gulir
   await wadah.scrollIntoViewIfNeeded();
   // Baris ke-21 menurut urutan tampil (draft mengurutkan baris menurut kode produk, bukan urutan pembuatan), agar wadah
   // memang perlu digulir untuk menampilkannya.
-  const kodeDibuka = (await tabel.locator("tr[data-kode-produk]").evaluateAll((daftar) => daftar.map((tr) => tr.getAttribute("data-kode-produk"))))[20]!;
+  const kodeDibuka = (
+    await tabel.locator("tr[data-kode-produk]").evaluateAll((daftar) => daftar.map((tr) => tr.getAttribute("data-kode-produk")))
+  )[20]!;
   const tautan = page.locator(`a[data-tautan-rincian-baris="${toko.id}|${kodeDibuka}"]`);
   const posisi = async () => ({
     wadah: await wadah.evaluate((el) => el.scrollTop),
@@ -445,7 +458,9 @@ test("Draft rencana: kepala dan bar aksi menempel; filter dan cari; isian tersem
   expect(tinggiBaris).toBeLessThanOrEqual(50);
 
   // Isi stok di baris paling bawah tabel (urutan tampil menurut kode produk): bar aksi tetap terlihat dengan "1 isian berubah".
-  const urutan = await tabel.locator("tr[data-kode-produk]").evaluateAll((daftar) => daftar.map((tr) => tr.getAttribute("data-kode-produk")));
+  const urutan = await tabel
+    .locator("tr[data-kode-produk]")
+    .evaluateAll((daftar) => daftar.map((tr) => tr.getAttribute("data-kode-produk")));
   const terakhir = urutan[urutan.length - 1]!;
   const isianTerakhir = form.getByRole("textbox", { name: `Stok akhir ${terakhir}` });
   await isianTerakhir.fill(String(golden.kasusJumlahKirim[0].stokAkhir));

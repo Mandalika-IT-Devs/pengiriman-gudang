@@ -9,9 +9,7 @@ import { aturJadwalTetap } from "./jadwal";
 // gagal tidak membatalkan toko lain. Peran admin diperiksa pemanggil.
 
 /** Hasil satu toko (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
-export type HasilSalinToko =
-  | { idToko: number; status: "berhasil" }
-  | { idToko: number; status: "ditolak" | "belumPasti"; pesan: string };
+export type HasilSalinToko = { idToko: number; status: "berhasil" } | { idToko: number; status: "ditolak" | "belumPasti"; pesan: string };
 
 const PESAN_BELUM_PASTI =
   "Hasil belum pasti karena terjadi gangguan saat menyimpan toko ini. Muat ulang halaman dan periksa jadwal tetap toko ini sebelum mencoba lagi.";

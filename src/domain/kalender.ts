@@ -78,9 +78,7 @@ export function parseTanggalBisnis(teks: string): TanggalBisnis {
 function hariDalamPekan({ tahun, bulan, hari }: BagianTanggal): number {
   const geserBulan = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4] as const;
   const y = bulan < 3 ? tahun - 1 : tahun;
-  return (
-    (y + bagiBulatBawah(y, 4) - bagiBulatBawah(y, 100) + bagiBulatBawah(y, 400) + geserBulan[bulan - 1]! + hari) % 7
-  );
+  return (y + bagiBulatBawah(y, 4) - bagiBulatBawah(y, 100) + bagiBulatBawah(y, 400) + geserBulan[bulan - 1]! + hari) % 7;
 }
 
 function tambahHari(tanggal: BagianTanggal, jumlah: number): BagianTanggal {
@@ -130,8 +128,7 @@ function nomorHari({ tahun, bulan, hari }: BagianTanggal): number {
   const tahunDalamEra = y - era * 400;
   const bulanSejakMaret = (bulan + 9) % 12;
   const hariDalamTahun = bagiBulatBawah(153 * bulanSejakMaret + 2, 5) + hari - 1;
-  const hariDalamEra =
-    tahunDalamEra * 365 + bagiBulatBawah(tahunDalamEra, 4) - bagiBulatBawah(tahunDalamEra, 100) + hariDalamTahun;
+  const hariDalamEra = tahunDalamEra * 365 + bagiBulatBawah(tahunDalamEra, 4) - bagiBulatBawah(tahunDalamEra, 100) + hariDalamTahun;
   return era * 146097 + hariDalamEra;
 }
 

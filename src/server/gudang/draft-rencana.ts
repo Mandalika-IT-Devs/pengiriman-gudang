@@ -146,7 +146,11 @@ export function nilaiBarisDraft(
  * Tanggal cakupan satu toko beserta kategori efektif dan jenis sumbernya (PRD B4): perubahan khusus toko, perubahan
  * seluruh toko, atau kategori dasar.
  */
-function cakupanToko(tokoKirim: TokoKirim, tanggalKirim: TanggalBisnis, daftarPerubahan: readonly PerubahanKategori[]): TanggalCakupanDraft[] {
+function cakupanToko(
+  tokoKirim: TokoKirim,
+  tanggalKirim: TanggalBisnis,
+  daftarPerubahan: readonly PerubahanKategori[],
+): TanggalCakupanDraft[] {
   const jenisPerubahan = new Map(daftarPerubahan.map((p) => [p.id, p.cakupan.jenis]));
   return cakupanPengiriman({ ...tokoKirim, tanggalKirim, toko: String(tokoKirim.tokoId), daftarPerubahan }).map((t) => {
     const sumberKategori: SumberKategoriDraft = t.sumberKategori === "dasar" ? "dasar" : (jenisPerubahan.get(t.sumberKategori) ?? "dasar");
@@ -560,12 +564,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
     .from(draftRencana)
     .innerJoin(user, eq(user.id, draftRencana.dihitungOleh))
     .innerJoin(versiRanking, eq(versiRanking.id, draftRencana.versiRankingId))
-    .where(
-      and(
-        eq(draftRencana.gudangId, idGudang),
-        tanggalKirim === undefined ? undefined : eq(draftRencana.tanggalKirim, tanggalKirim),
-      ),
-    )
+    .where(and(eq(draftRencana.gudangId, idGudang), tanggalKirim === undefined ? undefined : eq(draftRencana.tanggalKirim, tanggalKirim)))
     .orderBy(desc(draftRencana.dihitungPada), desc(draftRencana.id))
     .limit(1);
   if (!draft) return null;
@@ -600,10 +599,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
     .where(eq(tokoDraftRencana.draftId, draft.id))
     .orderBy(asc(toko.nama), asc(tokoDraftRencana.tokoId));
 
-  const stokTidakDipakai = await bacaStokTidakDipakai(
-    draft.stokTidakDipakai,
-    new Set(daftarToko.map((t) => t.id)),
-  );
+  const stokTidakDipakai = await bacaStokTidakDipakai(draft.stokTidakDipakai, new Set(daftarToko.map((t) => t.id)));
   const daftarFinal = await db
     .select({ tokoId: rencanaFinal.tokoId, versi: max(rencanaFinal.versi) })
     .from(rencanaFinal)
@@ -628,7 +624,8 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
     daftarToko,
     perluDihitungUlangToko: (tokoId: number) => hitungUlang.perToko.get(tokoId) ?? [],
     versiFinalToko: (tokoId: number) => versiFinal.get(tokoId) ?? null,
-    diLuarJadwalToko: (t: TokoTersimpan) => (t.pengirimanDiLuarJadwalId === null ? null : (diLuarJadwal.get(t.pengirimanDiLuarJadwalId) ?? null)),
+    diLuarJadwalToko: (t: TokoTersimpan) =>
+      t.pengirimanDiLuarJadwalId === null ? null : (diLuarJadwal.get(t.pengirimanDiLuarJadwalId) ?? null),
     dikirimPekanIniToko: (tokoId: number) => dikirimPekanIni.get(tokoId) ?? null,
   };
 }

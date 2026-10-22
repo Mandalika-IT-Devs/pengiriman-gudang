@@ -233,13 +233,10 @@ function TabelRingkasan({ hasil }: { hasil: Extract<HasilRingkasan, { keadaan: "
           {hasil.baris.map((b) => {
             const pasangan = nilaiPasanganMingguSama(b.tokoId, b.kodeProduk);
             const terpilih =
-              pasangan === mingguSama || (rincian !== undefined && pasangan === nilaiPasanganMingguSama(rincian.tokoId, rincian.kodeProduk));
+              pasangan === mingguSama ||
+              (rincian !== undefined && pasangan === nilaiPasanganMingguSama(rincian.tokoId, rincian.kodeProduk));
             return (
-              <TableRow
-                key={pasangan}
-                data-baris={`${b.namaToko}|${b.kodeProduk}`}
-                data-state={terpilih ? "selected" : undefined}
-              >
+              <TableRow key={pasangan} data-baris={`${b.namaToko}|${b.kodeProduk}`} data-state={terpilih ? "selected" : undefined}>
                 <TableCell className="font-semibold">{b.namaToko}</TableCell>
                 <TableCell className="whitespace-normal">
                   <span className="font-semibold">{b.kodeProduk}</span>
@@ -252,7 +249,9 @@ function TabelRingkasan({ hasil }: { hasil: Extract<HasilRingkasan, { keadaan: "
                     nilai={b.rataRata[kategori]}
                     terpilih={terpilih}
                     tautanRincian={{
-                      href: urlHalaman(hasil.bulanPilihan, filter, hasil.halaman, { rincian: nilaiRincian(b.tokoId, b.kodeProduk, kategori) }),
+                      href: urlHalaman(hasil.bulanPilihan, filter, hasil.halaman, {
+                        rincian: nilaiRincian(b.tokoId, b.kodeProduk, kategori),
+                      }),
                       nilai: nilaiRincian(b.tokoId, b.kodeProduk, kategori),
                       dibuka: rincianTerbuka === nilaiRincian(b.tokoId, b.kodeProduk, kategori),
                       label: `rata-rata ${kategori} ${b.kodeProduk} di ${b.namaToko}`,
@@ -260,11 +259,7 @@ function TabelRingkasan({ hasil }: { hasil: Extract<HasilRingkasan, { keadaan: "
                   />
                 ))}
                 {/* DESIGN §8: total mentah dalam teks sekunder; di baris terpilih accent-foreground (§2). */}
-                <TableCell
-                  angka
-                  className={kelasTeksSekunder(terpilih)}
-                  data-total-mentah={b.totalPenjualanMentah}
-                >
+                <TableCell angka className={kelasTeksSekunder(terpilih)} data-total-mentah={b.totalPenjualanMentah}>
                   {formatAngka(b.totalPenjualanMentah)}
                 </TableCell>
                 <TableCell>
@@ -370,8 +365,7 @@ function PerbandinganMingguSama({ mingguSama, urlTutup }: { mingguSama: MingguSa
       <section className="flex flex-col gap-4" data-minggu-sama={pasangan}>
         <p className="text-muted-foreground">
           {mingguSama.namaProduk ? `${mingguSama.namaProduk}. ` : null}
-          Jumlah nilai mingguan pada minggu laporan yang sama dibagi jumlah bulan pilihan yang punya nilai, lalu dibulatkan ke
-          atas.
+          Jumlah nilai mingguan pada minggu laporan yang sama dibagi jumlah bulan pilihan yang punya nilai, lalu dibulatkan ke atas.
         </p>
         {daftarMinggu.length === 0 ? (
           <p className="text-muted-foreground">Tidak ada nilai mingguan pada bulan pilihan.</p>
@@ -446,11 +440,7 @@ function ItemSumber({ sumber, kelompok }: { sumber: SumberTanggal; kelompok: str
             {`${pengamatan.selSumber} · ${formatTanggal(sumber.tanggal)} · ${formatAngka(pengamatan.qty)}`}
           </span>
           <span className="text-xs text-muted-foreground">
-            {[
-              pengamatan.jenis === "nol-tersirat" ? "Sel kosong (nol tersirat)" : null,
-              `File impor: ${pengamatan.namaFile}`,
-              kategori,
-            ]
+            {[pengamatan.jenis === "nol-tersirat" ? "Sel kosong (nol tersirat)" : null, `File impor: ${pengamatan.namaFile}`, kategori]
               .filter((bagian) => bagian !== null)
               .join(" · ")}
           </span>
@@ -476,9 +466,7 @@ function NilaiMingguanRinci({ bulanLaporan, nilai }: { bulanLaporan: string; nil
       data-kelengkapan={nilai.kelengkapan}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h4 className="font-semibold">
-          {`Minggu laporan ${nilai.mingguLaporan} · nilai mingguan ${formatAngka(nilai.nilaiMingguan)}`}
-        </h4>
+        <h4 className="font-semibold">{`Minggu laporan ${nilai.mingguLaporan} · nilai mingguan ${formatAngka(nilai.nilaiMingguan)}`}</h4>
         {nilai.kelengkapan === "parsial" ? <BadgeStatus status="parsial" /> : null}
       </div>
       <p className="tabular-nums">
@@ -587,8 +575,7 @@ function PeriodeAktif({ bulanPilihan }: { bulanPilihan: string[] }) {
         <span>Belum ada periode yang diterapkan. Pilih bulan lalu tekan Terapkan.</span>
       ) : (
         <span data-periode-aktif={bulanPilihan.join(",")}>
-          <span className="font-semibold">Periode aktif:</span> {bulanPilihan.map(labelBulan).join(", ")} ({bulanPilihan.length}{" "}
-          bulan)
+          <span className="font-semibold">Periode aktif:</span> {bulanPilihan.map(labelBulan).join(", ")} ({bulanPilihan.length} bulan)
         </span>
       )}
     </div>
@@ -637,7 +624,9 @@ function KartuJumlahRingkasan({ jumlah }: { jumlah: Record<KategoriDasar, number
         {KATEGORI.map((kategori) => (
           <li key={kategori}>
             <Card className="h-full gap-2" data-kartu-kategori={kategori} data-jumlah={jumlah[kategori]}>
-              <CardTitle level={2} className="text-base">{kategori}</CardTitle>
+              <CardTitle level={2} className="text-base">
+                {kategori}
+              </CardTitle>
               <span className="font-sans text-4xl font-bold text-foreground tabular-nums">{formatAngka(jumlah[kategori])}</span>
               <CardDescription>Jumlah rata-rata produk/toko · seluruh hasil filter</CardDescription>
             </Card>

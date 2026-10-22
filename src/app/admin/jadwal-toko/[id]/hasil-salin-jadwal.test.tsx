@@ -10,8 +10,7 @@ const namaToko = new Map([
   [4, "Toko Seminyak"],
 ]);
 
-const baris = (html: string, idToko: number) =>
-  new RegExp(`<tr[^>]*data-hasil-salin-toko="${idToko}".*?</tr>`).exec(html)?.[0] ?? "";
+const baris = (html: string, idToko: number) => new RegExp(`<tr[^>]*data-hasil-salin-toko="${idToko}".*?</tr>`).exec(html)?.[0] ?? "";
 
 describe("HasilSalinJadwal", () => {
   it("menampilkan hasil per toko dengan ikon + teks (DESIGN §7) beserta keterangan", () => {

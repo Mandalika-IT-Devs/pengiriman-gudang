@@ -10,13 +10,7 @@ import { cakupanTanggalImpor, impor, produk, selPenjualan } from "@/server/db/sc
 import { buatTokoUji } from "@/server/gudang/uji-bantu";
 import { pastikanBucket } from "@/server/impor/penyimpanan";
 import { prosesImpor } from "@/server/impor/proses";
-import {
-  buatWorkbookUji,
-  kodeProdukUji,
-  sheetPenjualanUji,
-  tahunUjiBebas,
-  type ProdukUji,
-} from "@/server/impor/uji-bantu";
+import { buatWorkbookUji, kodeProdukUji, sheetPenjualanUji, tahunUjiBebas, type ProdukUji } from "@/server/impor/uji-bantu";
 
 const kepala = vi.hoisted(() => ({ cookie: "", muatUlangGagal: false }));
 vi.mock("next/headers", () => ({
@@ -162,15 +156,23 @@ describe("unggah → worker → siap ditinjau → aktif", () => {
     expect(diproses.selesaiDiprosesPada).not.toBeNull();
 
     const sel = await db
-      .select({ kodeProduk: selPenjualan.kodeProduk, tanggal: selPenjualan.tanggal, kuantitas: selPenjualan.kuantitas, alamat: selPenjualan.alamat, tokoId: selPenjualan.tokoId })
+      .select({
+        kodeProduk: selPenjualan.kodeProduk,
+        tanggal: selPenjualan.tanggal,
+        kuantitas: selPenjualan.kuantitas,
+        alamat: selPenjualan.alamat,
+        tokoId: selPenjualan.tokoId,
+      })
       .from(selPenjualan)
       .where(eq(selPenjualan.imporId, idImpor))
       .orderBy(asc(selPenjualan.alamat));
-    expect(sel).toEqual([
-      { kodeProduk: biasa.kode, tanggal: `${tahun}-06-01`, kuantitas: 2, alamat: "F4", tokoId: toko.id },
-      { kodeProduk: tester.kode, tanggal: `${tahun}-06-02`, kuantitas: 1, alamat: "G5", tokoId: toko.id },
-      { kodeProduk: biasa.kode, tanggal: `${tahun}-06-02`, kuantitas: 0, alamat: "G4", tokoId: toko.id },
-    ].sort((a, b) => a.alamat.localeCompare(b.alamat)));
+    expect(sel).toEqual(
+      [
+        { kodeProduk: biasa.kode, tanggal: `${tahun}-06-01`, kuantitas: 2, alamat: "F4", tokoId: toko.id },
+        { kodeProduk: tester.kode, tanggal: `${tahun}-06-02`, kuantitas: 1, alamat: "G5", tokoId: toko.id },
+        { kodeProduk: biasa.kode, tanggal: `${tahun}-06-02`, kuantitas: 0, alamat: "G4", tokoId: toko.id },
+      ].sort((a, b) => a.alamat.localeCompare(b.alamat)),
+    );
 
     const cakupan = await db
       .select({ tokoId: cakupanTanggalImpor.tokoId, tanggal: cakupanTanggalImpor.tanggal, alamatKolom: cakupanTanggalImpor.alamatKolom })
@@ -184,7 +186,12 @@ describe("unggah → worker → siap ditinjau → aktif", () => {
     ]);
 
     // Produk baru belum didaftarkan sebelum aktivasi.
-    expect(await db.select().from(produk).where(inArray(produk.kode, [biasa.kode, tester.kode, kertas.kode]))).toEqual([]);
+    expect(
+      await db
+        .select()
+        .from(produk)
+        .where(inArray(produk.kode, [biasa.kode, tester.kode, kertas.kode])),
+    ).toEqual([]);
 
     await expect(aktifkanImpor({ idImpor })).resolves.toEqual({ keadaan: "berhasil" });
     expect(await statusImpor(idImpor)).toEqual({ [idImpor]: "aktif" });
@@ -206,9 +213,33 @@ describe("unggah → worker → siap ditinjau → aktif", () => {
     const keluargaBelum = { statusKeluargaAroma: "belum-dipetakan", didaftarkanOlehImporId: idImpor };
     expect(terdaftarProduk).toEqual(
       expect.arrayContaining([
-        { kode: biasa.kode, nama: biasa.nama, ukuran: "15ML", kategori: biasa.kategori, klasifikasi: "otomatis", alasanManual: null, ...keluargaBelum },
-        { kode: tester.kode, nama: tester.nama, ukuran: "15ML", kategori: tester.kategori, klasifikasi: "manual", alasanManual: "display-tester", ...keluargaBelum },
-        { kode: kertas.kode, nama: kertas.nama, ukuran: "15ML", kategori: "KTP", klasifikasi: "manual", alasanManual: "kertas-tester", ...keluargaBelum },
+        {
+          kode: biasa.kode,
+          nama: biasa.nama,
+          ukuran: "15ML",
+          kategori: biasa.kategori,
+          klasifikasi: "otomatis",
+          alasanManual: null,
+          ...keluargaBelum,
+        },
+        {
+          kode: tester.kode,
+          nama: tester.nama,
+          ukuran: "15ML",
+          kategori: tester.kategori,
+          klasifikasi: "manual",
+          alasanManual: "display-tester",
+          ...keluargaBelum,
+        },
+        {
+          kode: kertas.kode,
+          nama: kertas.nama,
+          ukuran: "15ML",
+          kategori: "KTP",
+          klasifikasi: "manual",
+          alasanManual: "kertas-tester",
+          ...keluargaBelum,
+        },
       ]),
     );
     expect(terdaftarProduk).toHaveLength(3);
@@ -324,9 +355,7 @@ describe("impor gagal, belum selesai, atau ber-error tidak mengubah impor aktif"
 
     const [baris] = await db.select().from(impor).where(eq(impor.id, error));
     expect(baris.status).toBe("siap-ditinjau");
-    expect(baris.masalah).toEqual([
-      expect.objectContaining({ tingkat: "error", kode: "kuantitas-negatif", lokasi: "JUNI (S)!F4" }),
-    ]);
+    expect(baris.masalah).toEqual([expect.objectContaining({ tingkat: "error", kode: "kuantitas-negatif", lokasi: "JUNI (S)!F4" })]);
     await expect(aktifkanImpor({ idImpor: error })).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Tidak bisa diaktifkan: ada 1 error. Perbaiki di Excel, lalu unggah ulang.",
@@ -378,8 +407,14 @@ describe("validasi pendaftaran impor", () => {
       keadaan: "gagal",
       pesan: "Pilih bulan impor untuk sheet JUNI (S).",
     });
-    await expect(daftarkanImpor({ ...dasar, tahunImpor: 26 })).resolves.toEqual({ keadaan: "gagal", pesan: "Isi tahun impor empat digit." });
-    await expect(daftarkanImpor({ ...dasar, sheet: [{ ...juni, namaSheet: "" }] })).resolves.toEqual({ keadaan: "gagal", pesan: "Pilih sheet." });
+    await expect(daftarkanImpor({ ...dasar, tahunImpor: 26 })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Isi tahun impor empat digit.",
+    });
+    await expect(daftarkanImpor({ ...dasar, sheet: [{ ...juni, namaSheet: "" }] })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Pilih sheet.",
+    });
     await expect(daftarkanImpor({ ...dasar, sheet: [juni, { ...juni, bulanImpor: 7 }] })).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Sheet JUNI (S) dipilih lebih dari sekali.",
@@ -502,7 +537,9 @@ describe("beberapa sheet sekaligus (T85, PRD A1 Keputusan 2026-10-12)", () => {
     ).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Tidak ada sheet yang didaftarkan. Lihat alasan per sheet.",
-      sheet: [{ namaSheet: "MP PUSAT (S)", keadaan: "gagal", pesan: "Sheet MP di luar cakupan saat ini. Pilih sheet penjualan <BULAN> (S)." }],
+      sheet: [
+        { namaSheet: "MP PUSAT (S)", keadaan: "gagal", pesan: "Sheet MP di luar cakupan saat ini. Pilih sheet penjualan <BULAN> (S)." },
+      ],
     });
     expect(await imporDenganKunci(kunci)).toEqual([]);
   });
@@ -533,7 +570,12 @@ describe("beberapa sheet sekaligus (T85, PRD A1 Keputusan 2026-10-12)", () => {
     const kunci = await unggah(workbookJuniJuli(toko.nama));
     kepala.muatUlangGagal = true;
     await expect(
-      daftarkanImpor({ kunci, namaFile: "a.xlsx", tahunImpor: await tahunUjiBebas(), sheet: [{ namaSheet: "JUNI (S)", bulanImpor: JUNI }] }),
+      daftarkanImpor({
+        kunci,
+        namaFile: "a.xlsx",
+        tahunImpor: await tahunUjiBebas(),
+        sheet: [{ namaSheet: "JUNI (S)", bulanImpor: JUNI }],
+      }),
     ).resolves.toMatchObject({ keadaan: "tersimpanGagalMuatUlang", sheet: [{ namaSheet: "JUNI (S)", keadaan: "berhasil" }] });
     expect(await imporDenganKunci(kunci)).toHaveLength(1);
   });
@@ -782,7 +824,10 @@ describe("Aktifkan semua yang siap (T86, PRD A1 Keputusan 2026-10-12)", () => {
     const juni = await imporSiap(await tahunUjiBebas(), JUNI);
     kepala.muatUlangGagal = true;
     const hasil = await aktifkanSemuaUntuk(juni);
-    expect(hasil).toEqual({ keadaan: "tersimpanGagalMuatUlang", impor: [expect.objectContaining({ idImpor: juni, keadaan: "diaktifkan" })] });
+    expect(hasil).toEqual({
+      keadaan: "tersimpanGagalMuatUlang",
+      impor: [expect.objectContaining({ idImpor: juni, keadaan: "diaktifkan" })],
+    });
     expect(await statusImpor(juni)).toEqual({ [juni]: "aktif" });
   });
 

@@ -41,9 +41,7 @@ export function PilihanHakTindakan({
               data-hak={hak}
               data-penugasan={kunci}
               checked={nilai.includes(hak)}
-              onChange={(e) =>
-                onUbah(daftarHakTindakan.filter((h) => (h === hak ? e.target.checked : nilai.includes(h))))
-              }
+              onChange={(e) => onUbah(daftarHakTindakan.filter((h) => (h === hak ? e.target.checked : nilai.includes(h))))}
             />
             {labelHakTindakan[hak]}
           </label>

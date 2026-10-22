@@ -12,7 +12,20 @@ describe("bulanImporDariNamaSheet", () => {
   });
 
   it("semua dua belas bulan, tanpa memedulikan spasi", () => {
-    const nama = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+    const nama = [
+      "JANUARI",
+      "FEBRUARI",
+      "MARET",
+      "APRIL",
+      "MEI",
+      "JUNI",
+      "JULI",
+      "AGUSTUS",
+      "SEPTEMBER",
+      "OKTOBER",
+      "NOVEMBER",
+      "DESEMBER",
+    ];
     expect(nama.map((n) => bulanImporDariNamaSheet(`${n} (S)`))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
     expect(bulanImporDariNamaSheet("  Desember(S) ")).toBe(12);
     expect(bulanImporDariNamaSheet("JU NI ( S )")).toBe(6);

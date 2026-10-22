@@ -148,7 +148,12 @@ function DasarPerhitungan({ rencana }: { rencana: RincianRencanaFinal }) {
           </p>
           <ul aria-label="Tanggal cakupan dan kategori efektif" className="flex flex-col gap-1">
             {kalender.cakupan.map((t) => (
-              <li key={t.tanggal} data-tanggal-cakupan={t.tanggal} data-sumber-kategori={t.sumberKategori} className="flex flex-wrap gap-x-2">
+              <li
+                key={t.tanggal}
+                data-tanggal-cakupan={t.tanggal}
+                data-sumber-kategori={t.sumberKategori}
+                className="flex flex-wrap gap-x-2"
+              >
                 <span className="font-semibold">{formatTanggal(t.tanggal)}</span>
                 <span>{`· ${t.kategoriEfektif}`}</span>
                 <span className="text-muted-foreground">{`· ${labelSumberKategori[t.sumberKategori]}`}</span>
@@ -187,7 +192,9 @@ function TabelBaris({ rencana, terbuka }: { rencana: RincianRencanaFinal; terbuk
           <TableRow key={b.kodeProduk} data-kode-produk={b.kodeProduk}>
             <TableCell className="align-top font-semibold">{b.kodeProduk}</TableCell>
             <TableCell className="align-top">{b.namaProduk ?? "—"}</TableCell>
-            <TableCell className="align-top">{b.status === "manual" ? <BadgeStatus status="manual" /> : labelStatusBarisRencanaFinal.siap}</TableCell>
+            <TableCell className="align-top">
+              {b.status === "manual" ? <BadgeStatus status="manual" /> : labelStatusBarisRencanaFinal.siap}
+            </TableCell>
             <TableCell angka className="align-top" data-kebutuhan={b.kebutuhan ?? "tidak-tersedia"}>
               <SelKebutuhan baris={b} />
             </TableCell>
@@ -311,9 +318,9 @@ export default async function HalamanRincianRencanaFinal({
       </dl>
       {bolehEkspor ? <TombolEkspor url={urlEksporRencanaFinal(rencana.gudang.id, rencana.id)} /> : null}
       <p className="text-muted-foreground">
-        Rincian ini dibaca dari snapshot saat finalisasi dan tidak berubah walaupun data penjualan, kalender, jadwal, atau
-        ranking pusat diperbarui kemudian. Finalisasi hanya menyatakan rencana kebutuhan barang telah disimpan. Ini bukan
-        konfirmasi pengiriman fisik atau penerimaan barang.
+        Rincian ini dibaca dari snapshot saat finalisasi dan tidak berubah walaupun data penjualan, kalender, jadwal, atau ranking pusat
+        diperbarui kemudian. Finalisasi hanya menyatakan rencana kebutuhan barang telah disimpan. Ini bukan konfirmasi pengiriman fisik atau
+        penerimaan barang.
       </p>
       <DasarPerhitungan rencana={rencana} />
       <section aria-labelledby="baris-judul" className="flex flex-col gap-4">

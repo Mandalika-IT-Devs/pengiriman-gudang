@@ -79,7 +79,13 @@ function GrupCentang({
         >
           Pilih semua
         </Button>
-        <Button type="button" size="sm" variant="outline" aria-label={`Kosongkan pilihan ${namaGrup}`} onClick={() => pilihan.setTerpilih(new Set())}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          aria-label={`Kosongkan pilihan ${namaGrup}`}
+          onClick={() => pilihan.setTerpilih(new Set())}
+        >
           Kosongkan
         </Button>
       </div>
@@ -123,7 +129,9 @@ function FilterProduk({
     teks === ""
       ? []
       : opsi.filter(
-          (p) => !terpilih.has(p.kode) && (p.kode.toLocaleLowerCase("id").includes(teks) || (p.nama ?? "").toLocaleLowerCase("id").includes(teks)),
+          (p) =>
+            !terpilih.has(p.kode) &&
+            (p.kode.toLocaleLowerCase("id").includes(teks) || (p.nama ?? "").toLocaleLowerCase("id").includes(teks)),
         );
   const daftarTerpilih = opsi.filter((p) => terpilih.has(p.kode));
 
@@ -167,7 +175,11 @@ function FilterProduk({
           Tidak ada produk yang cocok dengan pencarian.
         </p>
       ) : (
-        <div role="group" aria-label="Hasil pencarian produk" className="flex max-h-64 flex-col overflow-y-auto rounded-2xl border border-border/60">
+        <div
+          role="group"
+          aria-label="Hasil pencarian produk"
+          className="flex max-h-64 flex-col overflow-y-auto rounded-2xl border border-border/60"
+        >
           {hasil.map(chip)}
         </div>
       )}

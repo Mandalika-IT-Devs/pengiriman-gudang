@@ -38,7 +38,15 @@ beforeAll(async () => {
   const [menunggu, berlaku, ditolak, ditarik, dibatalkan] = await db
     .insert(pengirimanDiLuarJadwal)
     .values([
-      { ...dasar, gudangId: gudangA.id, tokoId: tokoX.id, jenis: "tambahan", tanggalKirim: "2099-03-02", status: "menunggu", diusulkanPada: waktu(1) },
+      {
+        ...dasar,
+        gudangId: gudangA.id,
+        tokoId: tokoX.id,
+        jenis: "tambahan",
+        tanggalKirim: "2099-03-02",
+        status: "menunggu",
+        diusulkanPada: waktu(1),
+      },
       {
         ...dasar,
         gudangId: gudangA.id,
@@ -62,7 +70,16 @@ beforeAll(async () => {
         diputuskanPada: waktu(5),
         alasanPenolakan: "stok gudang kurang",
       },
-      { ...dasar, gudangId: gudangB.id, tokoId: tokoY.id, jenis: "tambahan", tanggalKirim: "2099-03-05", status: "ditarik", diusulkanPada: waktu(6), ditarikPada: waktu(7) },
+      {
+        ...dasar,
+        gudangId: gudangB.id,
+        tokoId: tokoY.id,
+        jenis: "tambahan",
+        tanggalKirim: "2099-03-05",
+        status: "ditarik",
+        diusulkanPada: waktu(6),
+        ditarikPada: waktu(7),
+      },
       {
         ...dasar,
         gudangId: gudangB.id,
@@ -155,7 +172,10 @@ describe("Riwayat, tab Di luar jadwal", () => {
     expect(idDiDaftar(await buka({ gudang: String(gudangA.id) }))).toEqual([id.ditolak, id.berlaku, id.menunggu]);
     expect(idDiDaftar(await buka({ gudang: String(gudangB.id) }))).toEqual([id.dibatalkan, id.ditarik]);
     expect(idDiDaftar(await buka({ gudang: String(gudangA.id), toko: String(tokoX.id) }))).toEqual([id.berlaku, id.menunggu]);
-    expect(idDiDaftar(await buka({ toko: String(tokoX.id), dari: "2099-03-03", sampai: "2099-03-10" }))).toEqual([id.dibatalkan, id.berlaku]);
+    expect(idDiDaftar(await buka({ toko: String(tokoX.id), dari: "2099-03-03", sampai: "2099-03-10" }))).toEqual([
+      id.dibatalkan,
+      id.berlaku,
+    ]);
     expect(idDiDaftar(await buka({ gudang: String(gudangA.id), dari: "2099-03-04" }))).toEqual([id.ditolak]);
     expect(idDiDaftar(await buka({ gudang: String(gudangA.id), sampai: "2099-03-02" }))).toEqual([id.menunggu]);
     expect(idDiDaftar(await buka({ toko: String(tokoX.id), dari: "bukan-tanggal", gudang: "999999999" }))).toEqual([

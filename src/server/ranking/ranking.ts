@@ -5,14 +5,7 @@ import { alias } from "drizzle-orm/pg-core";
 
 import { cocokkanKeluargaAroma } from "@/domain/keluarga-aroma";
 import { db } from "@/server/db";
-import {
-  aliasKeluargaAroma,
-  barisRanking,
-  keluargaAroma,
-  user,
-  versiRanking,
-  type StatusVersiRanking,
-} from "@/server/db/schema";
+import { aliasKeluargaAroma, barisRanking, keluargaAroma, user, versiRanking, type StatusVersiRanking } from "@/server/db/schema";
 import type { Tx } from "@/server/impor/antrean";
 import { ambilObjek } from "@/server/impor/penyimpanan";
 

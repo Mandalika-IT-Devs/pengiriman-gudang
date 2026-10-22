@@ -185,10 +185,7 @@ function Langkah({ langkah, nomor }: { langkah: LangkahMulai; nomor: number }) {
       </span>
       <span className="flex flex-wrap items-center gap-3">
         <StatusLangkah selesai={langkah.selesai} />
-        <Link
-          href={langkah.href}
-          className={cn(buttonVariants({ size: "lg", variant: "outline" }), "hover:scale-105 active:scale-95")}
-        >
+        <Link href={langkah.href} className={cn(buttonVariants({ size: "lg", variant: "outline" }), "hover:scale-105 active:scale-95")}>
           {tombol}
         </Link>
       </span>
@@ -203,9 +200,7 @@ function Langkah({ langkah, nomor }: { langkah: LangkahMulai; nomor: number }) {
 function IsiDaftarLangkah({ daftar, berjudul, adaTindakan }: { daftar: DaftarLangkah; berjudul: boolean; adaTindakan: boolean }) {
   const judul =
     daftar.untuk === "gudang"
-      ? [daftar.gudang.nama, daftar.tanggalKirim ? `Tanggal kirim ${formatTanggal(daftar.tanggalKirim)}` : null]
-          .filter(Boolean)
-          .join(" · ")
+      ? [daftar.gudang.nama, daftar.tanggalKirim ? `Tanggal kirim ${formatTanggal(daftar.tanggalKirim)}` : null].filter(Boolean).join(" · ")
       : berjudul
         ? "Admin"
         : null;
@@ -244,7 +239,12 @@ function MulaiDiSini({ daftar, adaTindakan }: { daftar: DaftarLangkah[]; adaTind
         Mulai di sini
       </h2>
       {daftar.map((d) => (
-        <IsiDaftarLangkah key={d.untuk === "gudang" ? `gudang-${d.gudang.id}` : "admin"} daftar={d} berjudul={daftar.length > 1} adaTindakan={adaTindakan} />
+        <IsiDaftarLangkah
+          key={d.untuk === "gudang" ? `gudang-${d.gudang.id}` : "admin"}
+          daftar={d}
+          berjudul={daftar.length > 1}
+          adaTindakan={adaTindakan}
+        />
       ))}
     </section>
   );

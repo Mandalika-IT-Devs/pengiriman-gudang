@@ -30,9 +30,11 @@ export function TombolAktifkan({
   const router = useRouter();
   const { tampilan, hasil, menunggu, simpan } = usePenyimpanan<HasilAktifkanImpor>("status impor di halaman ini");
   const sudahBerhasil = hasil !== null && hasil.keadaan !== "gagal";
-  const keterangan = alasanTidakBisa ?? (imporAktifLain
-    ? `Impor aktif saat ini untuk bulan yang sama (${imporAktifLain.namaSheet}, ${imporAktifLain.namaFile}) akan diarsipkan.`
-    : null);
+  const keterangan =
+    alasanTidakBisa ??
+    (imporAktifLain
+      ? `Impor aktif saat ini untuk bulan yang sama (${imporAktifLain.namaSheet}, ${imporAktifLain.namaFile}) akan diarsipkan.`
+      : null);
 
   return (
     <div className="flex flex-col gap-3">
@@ -42,7 +44,12 @@ export function TombolAktifkan({
           disabled={alasanTidakBisa !== null || menunggu || sudahBerhasil}
           aria-describedby={keterangan ? `${id}-keterangan` : undefined}
           className="active:scale-95"
-          onClick={() => simpan(() => aktifkanImpor({ idImpor }), () => router.refresh())}
+          onClick={() =>
+            simpan(
+              () => aktifkanImpor({ idImpor }),
+              () => router.refresh(),
+            )
+          }
         >
           Aktifkan
         </Button>

@@ -44,7 +44,10 @@ const status = (wadah: HTMLElement) => wadah.querySelector("[data-keadaan]");
 beforeEach(() => {
   tiruan.gantiNamaGudang.mockReset();
   tiruan.ubahStatusGudang.mockReset();
-  vi.stubGlobal("confirm", vi.fn(() => true));
+  vi.stubGlobal(
+    "confirm",
+    vi.fn(() => true),
+  );
 });
 
 afterEach(() => {

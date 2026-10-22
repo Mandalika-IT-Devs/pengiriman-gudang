@@ -15,13 +15,7 @@ import { aturJadwalTetapToko, nonaktifkanJadwalTetapToko } from "../aksi";
  * jadwal yang langsung berlaku, atau menonaktifkannya setelah konfirmasi (DESIGN §11.3). Isian awal = jadwal tetap
  * aktif toko. Peran admin dan aturan jadwal diperiksa lagi di server.
  */
-export function FormJadwalTetap({
-  idGudang,
-  toko,
-}: {
-  idGudang: number;
-  toko: { id: number; nama: string; jadwal: IsianJadwal | null };
-}) {
+export function FormJadwalTetap({ idGudang, toko }: { idGudang: number; toko: { id: number; nama: string; jadwal: IsianJadwal | null } }) {
   const [isian, setIsian] = useState<IsianJadwal>(toko.jadwal ?? ISIAN_KOSONG);
   const { tampilan, menunggu, tandaiBerubah, simpan } = usePenyimpanan("jadwal tetap toko di daftar");
 
@@ -53,7 +47,10 @@ export function FormJadwalTetap({
             labelTindakan="Nonaktifkan"
             destruktif
             konfirmasi={() =>
-              simpan(() => nonaktifkanJadwalTetapToko({ idGudang, idToko: toko.id }), () => setIsian(ISIAN_KOSONG))
+              simpan(
+                () => nonaktifkanJadwalTetapToko({ idGudang, idToko: toko.id }),
+                () => setIsian(ISIAN_KOSONG),
+              )
             }
             pemicu={
               <Button type="button" variant="destructive" disabled={menunggu} className="active:scale-95">

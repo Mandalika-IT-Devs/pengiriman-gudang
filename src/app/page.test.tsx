@@ -248,7 +248,15 @@ async function buatDraftUji({
     const t = await tokoBerjadwal(idGudang, hari, { aktif: tokoAktif });
     const [tokoDraft] = await db
       .insert(tokoDraftRencana)
-      .values({ draftId: draft.id, tokoId: t.id, versiJadwal: t.versiJadwal, persiapanHari: 2, panjangCakupan: 7, cakupan: [], perubahanKategori: [] })
+      .values({
+        draftId: draft.id,
+        tokoId: t.id,
+        versiJadwal: t.versiJadwal,
+        persiapanHari: 2,
+        panjangCakupan: 7,
+        cakupan: [],
+        perubahanKategori: [],
+      })
       .returning({ id: tokoDraftRencana.id });
     // Dua baris per toko: `jumlahTertahan` di antaranya tertahan (stok belum diisi). Semua tanpa master produk, jadi
     // dianggap belum dipetakan, sama seperti yang tercatat saat dihitung.
@@ -308,7 +316,10 @@ function kartu(html: string) {
     hasil[m[2]!] = {
       jumlah: Number(/data-jumlah="(\d+)"/.exec(atribut)?.[1]),
       href: /href="([^"]+)"/.exec(atribut)?.[1] ?? "",
-      teks: m[3]!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+      teks: m[3]!
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
     };
   }
   return hasil;
@@ -332,8 +343,14 @@ function langkahMulai(html: string) {
       jenis: m[1],
       status: /data-status-langkah="([^"]+)"/.exec(isi)?.[1],
       href: /<a [^>]*href="([^"]+)"/.exec(isi)?.[1]?.replaceAll("&amp;", "&"),
-      tombol: /<a [^>]*>(.*?)<\/a>/.exec(isi)?.[1]?.replace(/<[^>]+>/g, "").trim(),
-      teks: isi.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+      tombol: /<a [^>]*>(.*?)<\/a>/
+        .exec(isi)?.[1]
+        ?.replace(/<[^>]+>/g, "")
+        .trim(),
+      teks: isi
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
     };
   });
 }
@@ -467,7 +484,11 @@ describe("/ (beranda)", () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     const sebelum = kartu(await buka());
     expect(sebelum).toEqual({
-      "usulan-jadwal": { jumlah: 2, href: "/admin/jadwal", teks: expect.stringContaining("Usulan pengiriman di luar jadwal menunggu persetujuan") },
+      "usulan-jadwal": {
+        jumlah: 2,
+        href: "/admin/jadwal",
+        teks: expect.stringContaining("Usulan pengiriman di luar jadwal menunggu persetujuan"),
+      },
       "snapshot-libur": { jumlah: 1, href: "/admin/libur", teks: expect.stringContaining("Snapshot libur menunggu ditinjau") },
       "produk-belum-dipetakan": {
         jumlah: 3,
@@ -479,7 +500,11 @@ describe("/ (beranda)", () => {
         href: "/admin/ranking",
         teks: expect.stringContaining("Ranking bulan berjalan belum dipublikasikan"),
       },
-      "impor-gagal-atau-menunggu": { jumlah: 2, href: "/admin/impor", teks: expect.stringContaining("Impor gagal atau menunggu diaktifkan") },
+      "impor-gagal-atau-menunggu": {
+        jumlah: 2,
+        href: "/admin/impor",
+        teks: expect.stringContaining("Impor gagal atau menunggu diaktifkan"),
+      },
     });
     // Urutan kartu sesuai issue T79.
     expect(Object.keys(sebelum)).toEqual([
@@ -535,7 +560,14 @@ describe("/ (beranda)", () => {
     const senin = hariBerikutnya("Senin");
     // Gudang penugasan: satu draft perlu dihitung ulang (tanpa baris tertahan), dan (di bawah) satu draft mutakhir dengan
     // satu toko yang punya 2 baris tertahan dan satu toko tanpa masalah.
-    await buatDraftUji({ idGudang: cibubur, tanggalKirim: rabu, hari: "Rabu", versiRankingId, mutakhir: false, toko: [{ jumlahTertahan: 0 }] });
+    await buatDraftUji({
+      idGudang: cibubur,
+      tanggalKirim: rabu,
+      hari: "Rabu",
+      versiRankingId,
+      mutakhir: false,
+      toko: [{ jumlahTertahan: 0 }],
+    });
     // Draft gudang penugasan yang tanggal kirimnya sudah lewat: perlu dihitung ulang dan punya toko tertahan, tetapi
     // tidak dihitung (DESIGN §9 ▶ Keputusan T79: hanya tanggal kirim hari ini dan sesudahnya).
     await buatDraftUji({

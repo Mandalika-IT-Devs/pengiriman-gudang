@@ -104,13 +104,31 @@ describe("kontras token warna (DESIGN §2)", () => {
   });
 
   it("nilai token sama dengan tabel DESIGN §2", () => {
-    expect(Object.fromEntries(
-      [
-        "background", "foreground", "card", "primary", "primary-foreground", "secondary",
-        "secondary-foreground", "clay", "accent", "accent-foreground", "muted",
-        "muted-foreground", "border", "input", "ring", "destructive", "warning", "info", "success",
-      ].map((nama) => [nama, hex(nama).toUpperCase()]),
-    )).toEqual({
+    expect(
+      Object.fromEntries(
+        [
+          "background",
+          "foreground",
+          "card",
+          "primary",
+          "primary-foreground",
+          "secondary",
+          "secondary-foreground",
+          "clay",
+          "accent",
+          "accent-foreground",
+          "muted",
+          "muted-foreground",
+          "border",
+          "input",
+          "ring",
+          "destructive",
+          "warning",
+          "info",
+          "success",
+        ].map((nama) => [nama, hex(nama).toUpperCase()]),
+      ),
+    ).toEqual({
       background: "#FDFCF8",
       foreground: "#2C2C24",
       card: "#FEFEFA",

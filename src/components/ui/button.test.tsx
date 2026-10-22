@@ -26,7 +26,17 @@ describe("tautanTombolVariants (DESIGN §11.8)", () => {
   it("bawaan: target sentuh 44 px, pil, cincin fokus terlihat, nada primary", () => {
     const k = tautanTombolVariants().split(/\s+/);
     expect(k).toEqual(
-      expect.arrayContaining(["inline-flex", "min-h-11", "rounded-full", "px-4", "font-semibold", "focus-visible:ring-2", "focus-visible:ring-ring", "text-primary", "hover:bg-primary/10"]),
+      expect.arrayContaining([
+        "inline-flex",
+        "min-h-11",
+        "rounded-full",
+        "px-4",
+        "font-semibold",
+        "focus-visible:ring-2",
+        "focus-visible:ring-ring",
+        "text-primary",
+        "hover:bg-primary/10",
+      ]),
     );
   });
 

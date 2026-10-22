@@ -4,7 +4,20 @@ import * as XLSX from "xlsx";
 // untuk 25 toko dan 500 produk (PRD C1 ▶ Keputusan 2026-10-11, T65). Deterministik (PRNG berbenih), tanpa data bisnis asli (CODING_STANDARDS).
 // Kepadatan sel ±9% → ±38 ribu sel bernilai per bulan untuk 500 produk (ADR-0002 memperkirakan ±25 ribu untuk ±360 produk).
 
-const NAMA_SHEET = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+const NAMA_SHEET = [
+  "JANUARI",
+  "FEBRUARI",
+  "MARET",
+  "APRIL",
+  "MEI",
+  "JUNI",
+  "JULI",
+  "AGUSTUS",
+  "SEPTEMBER",
+  "OKTOBER",
+  "NOVEMBER",
+  "DESEMBER",
+];
 
 /** Keluarga aroma sintetis: segmen kode (mis. `A07`) dan nama (mis. `AROMA 07`). */
 type KeluargaSintetis = { segmen: string; nama: string };

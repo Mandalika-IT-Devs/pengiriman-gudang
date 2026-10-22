@@ -130,7 +130,14 @@ async function unggahImpor(isi: Buffer, namaSheet: string, tahun: number, bulan:
   const kunci = kunciObjekBaru();
   const jawaban = await fetch(await buatUrlUnggah(kunci), { method: "PUT", body: new Uint8Array(isi) });
   if (!jawaban.ok) throw new Error(`Unggah gagal: ${jawaban.status}`);
-  const hasil = await daftarkanImpor({ kunci, namaFile: `sintetis-${tahun}-${bulan}.xlsx`, namaSheet, tahunImpor: tahun, bulanImpor: bulan, idPengguna });
+  const hasil = await daftarkanImpor({
+    kunci,
+    namaFile: `sintetis-${tahun}-${bulan}.xlsx`,
+    namaSheet,
+    tahunImpor: tahun,
+    bulanImpor: bulan,
+    idPengguna,
+  });
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
   return hasil.idImpor;
 }
@@ -151,7 +158,10 @@ async function buatData() {
     const isi = workbookSatuSheet(namaSheet, baris);
     const idImpor = await unggahImpor(isi, namaSheet, tahun, bulan, pengguna.id);
     const { ms } = await ukur(() => prosesImpor(idImpor));
-    const [hasil] = await db.select({ status: schema.impor.status, masalah: schema.impor.masalah }).from(schema.impor).where(eq(schema.impor.id, idImpor));
+    const [hasil] = await db
+      .select({ status: schema.impor.status, masalah: schema.impor.masalah })
+      .from(schema.impor)
+      .where(eq(schema.impor.id, idImpor));
     if (hasil.status !== "siap-ditinjau" || hasil.masalah.length > 0) {
       throw new Error(`Impor sintetis ${namaSheet} ${tahun}: status ${hasil.status}, ${hasil.masalah.length} masalah.`);
     }
@@ -221,7 +231,10 @@ async function buatData() {
     const [gudang] = await db.select({ id: schema.gudang.id }).from(schema.gudang).where(eq(schema.gudang.nama, nama));
     const tokoGudang = daftarToko.slice(tokoBerikutnya, tokoBerikutnya + jumlahToko);
     tokoBerikutnya += jumlahToko;
-    const hubungan = await hubungkanTokoKeGudang(gudang.id, tokoGudang.map((t) => t.id));
+    const hubungan = await hubungkanTokoKeGudang(
+      gudang.id,
+      tokoGudang.map((t) => t.id),
+    );
     if (hubungan.keadaan !== "berhasil") throw new Error(`Hubungan toko–gudang gagal: ${JSON.stringify(hubungan)}`);
     const penugasan = await tugaskanOperator({ idPengguna: pengguna.id, idGudang: gudang.id, hakTindakan: [...daftarHakTindakan] });
     if (penugasan.keadaan !== "berhasil") throw new Error(penugasan.pesan);
@@ -254,9 +267,7 @@ async function buatData() {
   }
 
   const [{ jumlahSel }] = await db.select({ jumlahSel: sql<number>`count(*)::int` }).from(schema.selPenjualan);
-  const [{ jumlahCache }] = await db
-    .select({ jumlahCache: sql<number>`count(*)::int` })
-    .from(schema.cacheRataRataBulanan);
+  const [{ jumlahCache }] = await db.select({ jumlahCache: sql<number>`count(*)::int` }).from(schema.cacheRataRataBulanan);
   catat(`total: ${jumlahSel} sel penjualan aktif, ${jumlahCache} baris cache rata-rata bulanan, bulan laporan ${bulanPeriode.join(", ")}`);
   return { pengguna, gudangDiukur, bulanTersedia: bulanPeriode, waktuSheet };
 }
@@ -366,7 +377,9 @@ try {
     for (const t of tampilan) {
       const sampel = await sampelHalaman(t.jalur, cookie, t.penanda, SAMPEL_PENGIRIMAN_PER_GUDANG);
       pengiriman.push({ ...g, tampilan: t.nama, sampel });
-      catat(`Pengiriman Gudang ${g.nama} (${g.jumlahToko} toko, ${g.jumlahBaris} baris draft), ${t.nama}: p50 ${detik(persentil(sampel, 50))}, p95 ${detik(persentil(sampel, 95))}`);
+      catat(
+        `Pengiriman Gudang ${g.nama} (${g.jumlahToko} toko, ${g.jumlahBaris} baris draft), ${t.nama}: p50 ${detik(persentil(sampel, 50))}, p95 ${detik(persentil(sampel, 95))}`,
+      );
     }
   }
 

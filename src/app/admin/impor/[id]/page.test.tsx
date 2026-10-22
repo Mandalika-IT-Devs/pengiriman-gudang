@@ -42,7 +42,9 @@ describe("/admin/impor/[id]", () => {
     const tahun = await tahunUjiBebas();
     const toko = await buatTokoUji();
     const id = await imporUji({
-      isi: buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }) }),
+      isi: buatWorkbookUji({
+        "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }),
+      }),
       tahunImpor: tahun,
       idPengguna: idAdmin,
     });
@@ -52,11 +54,13 @@ describe("/admin/impor/[id]", () => {
     await expect(tampil(id)).rejects.toMatchObject({ digest: expect.stringContaining("404") });
   });
 
-  it("T121: SHA-256 dan ukuran byte hanya di \"Detail teknis\" yang awalnya tertutup; datanya tetap ada di DOM", async () => {
+  it('T121: SHA-256 dan ukuran byte hanya di "Detail teknis" yang awalnya tertutup; datanya tetap ada di DOM', async () => {
     const tahun = await tahunUjiBebas();
     const toko = await buatTokoUji();
     const id = await imporUji({
-      isi: buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }) }),
+      isi: buatWorkbookUji({
+        "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }),
+      }),
       tahunImpor: tahun,
       idPengguna: idAdmin,
     });
@@ -221,7 +225,9 @@ describe("/admin/impor/[id]", () => {
   it("data produk sama dengan master → peringatan data produk berubah tidak muncul", async () => {
     const tahun = await tahunUjiBebas();
     const toko = await buatTokoUji();
-    const isi = buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }) });
+    const isi = buatWorkbookUji({
+      "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }),
+    });
     const lama = await imporUji({ isi, tahunImpor: tahun, idPengguna: idAdmin });
     await aktifkanImpor(lama, idAdmin);
     const baru = await imporUji({ isi, tahunImpor: tahun, idPengguna: idAdmin });
@@ -234,7 +240,9 @@ describe("/admin/impor/[id]", () => {
   it("impor tanpa error bisa diaktifkan dan memberi tahu impor aktif yang akan diarsipkan", async () => {
     const tahun = await tahunUjiBebas();
     const toko = await buatTokoUji();
-    const isi = buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }) });
+    const isi = buatWorkbookUji({
+      "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }),
+    });
     const lama = await imporUji({ isi, tahunImpor: tahun, idPengguna: idAdmin });
     await aktifkanImpor(lama, idAdmin);
     const baru = await imporUji({ isi, tahunImpor: tahun, idPengguna: idAdmin });
@@ -253,7 +261,9 @@ describe("/admin/impor/[id]", () => {
   it("impor yang masih diproses: status terlihat, boleh menutup tab, ringkasan belum tampil", async () => {
     const toko = await buatTokoUji();
     const id = await imporUji({
-      isi: buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }) }),
+      isi: buatWorkbookUji({
+        "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: [produk(kodeProdukUji(), [1])] }),
+      }),
       tahunImpor: await tahunUjiBebas(),
       idPengguna: idAdmin,
       proses: false,
@@ -266,7 +276,11 @@ describe("/admin/impor/[id]", () => {
   });
 
   it("impor gagal menampilkan alasannya", async () => {
-    const id = await imporUji({ isi: new TextEncoder().encode("PK\u0003\u0004rusak"), tahunImpor: await tahunUjiBebas(), idPengguna: idAdmin });
+    const id = await imporUji({
+      isi: new TextEncoder().encode("PK\u0003\u0004rusak"),
+      tahunImpor: await tahunUjiBebas(),
+      idPengguna: idAdmin,
+    });
     const html = await tampil(id);
     expect(html).toContain('data-status-impor="gagal"');
     expect(html).toContain("File tidak bisa dibaca sebagai workbook Excel.");

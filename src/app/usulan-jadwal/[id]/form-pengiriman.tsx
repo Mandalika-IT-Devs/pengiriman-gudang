@@ -162,7 +162,9 @@ export function FormPengiriman({
           <span id={`${id}-persiapan`}>Persiapan</span>
           <Select value={isian.persiapan} onValueChange={(nilai) => ubah({ persiapan: nilai as Persiapan })}>
             <SelectTrigger aria-labelledby={`${id}-persiapan`}>
-              <SelectValue placeholder="Pilih persiapan">{isian.persiapan === "" ? undefined : labelPersiapan[isian.persiapan]}</SelectValue>
+              <SelectValue placeholder="Pilih persiapan">
+                {isian.persiapan === "" ? undefined : labelPersiapan[isian.persiapan]}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {daftarPersiapan.map((p) => (

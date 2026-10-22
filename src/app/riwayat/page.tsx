@@ -37,7 +37,9 @@ function NavigasiTab({ terpilih }: { terpilih: Tab }) {
               aria-current={t.nilai === terpilih.nilai ? "page" : undefined}
               className={cn(
                 "inline-flex min-h-11 items-center rounded-full border border-input px-4 font-semibold transition-colors duration-300 ease-out outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                t.nilai === terpilih.nilai ? "border-primary bg-accent text-accent-foreground" : "bg-card hover:bg-primary/10 hover:text-primary",
+                t.nilai === terpilih.nilai
+                  ? "border-primary bg-accent text-accent-foreground"
+                  : "bg-card hover:bg-primary/10 hover:text-primary",
               )}
             >
               {t.label}

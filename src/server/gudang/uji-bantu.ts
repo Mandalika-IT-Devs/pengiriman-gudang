@@ -59,7 +59,12 @@ export async function hapusGudangUji(...id: number[]) {
   await db.transaction(async (tx) => {
     const rencana = await tx.select({ id: rencanaFinal.id }).from(rencanaFinal).where(inArray(rencanaFinal.gudangId, id));
     if (rencana.length > 0) {
-      await tx.delete(barisRencanaFinal).where(inArray(barisRencanaFinal.rencanaFinalId, rencana.map((r) => r.id)));
+      await tx.delete(barisRencanaFinal).where(
+        inArray(
+          barisRencanaFinal.rencanaFinalId,
+          rencana.map((r) => r.id),
+        ),
+      );
     }
     await tx.delete(rencanaFinal).where(inArray(rencanaFinal.gudangId, id));
     await tx.delete(pilihanDikirimPekanIni).where(inArray(pilihanDikirimPekanIni.gudangId, id));

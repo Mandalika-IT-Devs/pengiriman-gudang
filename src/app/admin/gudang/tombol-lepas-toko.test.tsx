@@ -32,7 +32,10 @@ const tombolLepas = (wadah: HTMLElement) => wadah.querySelector<HTMLButtonElemen
 
 beforeEach(() => {
   tiruan.lepasToko.mockReset();
-  vi.stubGlobal("confirm", vi.fn(() => true));
+  vi.stubGlobal(
+    "confirm",
+    vi.fn(() => true),
+  );
 });
 
 afterEach(() => {
@@ -81,7 +84,10 @@ describe("tombol Lepas toko", () => {
   });
 
   it("penolakan server tampil dekat tombol", async () => {
-    tiruan.lepasToko.mockResolvedValue({ keadaan: "gagal", pesan: "Toko tidak terhubung ke gudang ini. Muat ulang halaman, lalu pilih lagi." });
+    tiruan.lepasToko.mockResolvedValue({
+      keadaan: "gagal",
+      pesan: "Toko tidak terhubung ke gudang ini. Muat ulang halaman, lalu pilih lagi.",
+    });
     const wadah = pasang({ idToko: 7, namaToko: "BOTANI", terhubung });
     bukaDialogKonfirmasi(wadah, "Lepas BOTANI dari Gudang Cibubur");
     await pilihDiDialogKonfirmasi("Lepas");

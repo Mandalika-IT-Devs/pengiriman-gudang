@@ -42,7 +42,10 @@ type HasilSeedUat =
   | { keadaan: "gagal"; pesan: typeof PESAN_TANPA_ADMIN };
 
 async function idGudangMenurutNama(nama: readonly string[]) {
-  const baris = await db.select({ id: gudang.id, nama: gudang.nama }).from(gudang).where(inArray(gudang.nama, [...nama]));
+  const baris = await db
+    .select({ id: gudang.id, nama: gudang.nama })
+    .from(gudang)
+    .where(inArray(gudang.nama, [...nama]));
   const peta = new Map(baris.map((b) => [b.nama, b.id]));
   const hilang = nama.filter((n) => !peta.has(n));
   if (hilang.length > 0) throw new Error(`Gudang belum ada di master: ${hilang.join(", ")}. Jalankan pnpm db:seed-master dulu.`);

@@ -17,9 +17,10 @@ type KasusKategori = {
   catatan: string;
 };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/kategori-efektif.json"), "utf8"),
-) as { perubahan: PerubahanFixture[]; kasus: KasusKategori[] };
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/kategori-efektif.json"), "utf8")) as {
+  perubahan: PerubahanFixture[];
+  kasus: KasusKategori[];
+};
 
 const daftarPerubahan: PerubahanKategori[] = fixture.perubahan.map((perubahan) => ({
   ...perubahan,

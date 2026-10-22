@@ -28,11 +28,7 @@ function JadwalTetap({ usulan }: { usulan: UsulanMenungguPersetujuan }) {
   return (
     <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]" aria-label={`Jadwal tetap ${usulan.toko}`}>
       <dt className="font-semibold">Jadwal tetap</dt>
-      <dd>
-        {j === null
-          ? "Tidak ada jadwal tetap aktif"
-          : `${labelPola[j.pola]}: ${labelHariKirim(j.hariKirim)}`}
-      </dd>
+      <dd>{j === null ? "Tidak ada jadwal tetap aktif" : `${labelPola[j.pola]}: ${labelHariKirim(j.hariKirim)}`}</dd>
       <dt className="font-semibold">Usulan</dt>
       <dd>
         {teksJenis(usulan)} → {teksTanggalKirim(usulan)}

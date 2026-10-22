@@ -42,19 +42,14 @@ type EntriUji = { tanggal: string; keterangan: string; jenis: "libur nasional" |
 
 /** Snapshot buatan test langsung di database, tanpa riwayat kejadian. */
 export async function buatSnapshotUji(tahun: number, idPengguna: string, status: StatusSnapshotLibur, entri: EntriUji[]) {
-  const [snapshot] = await db
-    .insert(snapshotLibur)
-    .values({ tahun, status, sumber: "uji", disinkronkanOleh: idPengguna })
-    .returning();
+  const [snapshot] = await db.insert(snapshotLibur).values({ tahun, status, sumber: "uji", disinkronkanOleh: idPengguna }).returning();
   if (entri.length > 0) await db.insert(entriLibur).values(entri.map((e) => ({ snapshotId: snapshot.id, ...e })));
   return snapshot;
 }
 
 /** Snapshot aktif buatan test dengan satu libur 1 Januari. */
 export async function buatSnapshotAktifUji(tahun: number, idPengguna: string) {
-  return buatSnapshotUji(tahun, idPengguna, "aktif", [
-    { tanggal: `${tahun}-01-01`, keterangan: "Tahun Baru", jenis: "libur nasional" },
-  ]);
+  return buatSnapshotUji(tahun, idPengguna, "aktif", [{ tanggal: `${tahun}-01-01`, keterangan: "Tahun Baru", jenis: "libur nasional" }]);
 }
 
 export async function snapshotTahunUji(tahun: number) {

@@ -8,7 +8,10 @@ export function lompatanHeading(html: string): string[] {
   for (const m of html.matchAll(/<h([1-6])(?=[\s>])[^>]*>([\s\S]*?)<\/h\1>/g)) {
     const level = Number(m[1]);
     if (level > sebelumnya + 1) {
-      const teks = m[2].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+      const teks = m[2]
+        .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
       lompatan.push(`${sebelumnya === 0 ? "awal" : `h${sebelumnya}`} → h${level} "${teks}"`);
     }
     sebelumnya = level;

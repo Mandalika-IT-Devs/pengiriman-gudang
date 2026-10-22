@@ -45,13 +45,7 @@ export async function tanggalKirimTerdekat(idGudang: number, hariIni: TanggalBis
   const sudahFinal = await db
     .selectDistinct({ tokoId: rencanaFinal.tokoId })
     .from(rencanaFinal)
-    .where(
-      and(
-        eq(rencanaFinal.gudangId, idGudang),
-        eq(rencanaFinal.tanggalKirim, tanggalKirim),
-        inArray(rencanaFinal.tokoId, mengirim),
-      ),
-    );
+    .where(and(eq(rencanaFinal.gudangId, idGudang), eq(rencanaFinal.tanggalKirim, tanggalKirim), inArray(rencanaFinal.tokoId, mengirim)));
   const final = new Set(sudahFinal.map((f) => f.tokoId));
   return { tanggalKirim, jumlahBelumFinal: mengirim.filter((id) => !final.has(id) && !tidakDikirim.has(id)).length };
 }
@@ -62,8 +56,6 @@ export async function tanggalKirimTerdekat(idGudang: number, hariIni: TanggalBis
  */
 export async function saranTanggalKirim(idGudang: number, hariIni: TanggalBisnis): Promise<TanggalBisnis[]> {
   const sampai = geserHari(hariIni, JUMLAH_HARI_SARAN - 1);
-  const semua = (await tokoMengirim(idGudang)).flatMap((t) =>
-    tanggalKirimToko(t.sumber.jadwal, t.sumber.diLuarJadwal, hariIni, sampai),
-  );
+  const semua = (await tokoMengirim(idGudang)).flatMap((t) => tanggalKirimToko(t.sumber.jadwal, t.sumber.diLuarJadwal, hariIni, sampai));
   return [...new Set(semua)].sort();
 }

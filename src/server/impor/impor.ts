@@ -115,9 +115,7 @@ export function alasanTidakBisaAktif({ status, jumlahError }: { status: StatusIm
     case "diarsipkan":
       return "Impor ini sudah diarsipkan dan tidak bisa diaktifkan lagi.";
     case "siap-ditinjau":
-      return jumlahError > 0
-        ? `Tidak bisa diaktifkan: ada ${jumlahError} error. Perbaiki di Excel, lalu unggah ulang.`
-        : null;
+      return jumlahError > 0 ? `Tidak bisa diaktifkan: ada ${jumlahError} error. Perbaiki di Excel, lalu unggah ulang.` : null;
   }
 }
 
@@ -256,16 +254,16 @@ export async function aktifkanSemuaImporSiap(idPengguna: string): Promise<HasilA
   return hasil;
 }
 
-async function aktifkanSatu(
-  idImpor: number,
-  idPengguna: string,
-): Promise<{ keadaan: "diaktifkan" } | { keadaan: "gagal"; pesan: string }> {
+async function aktifkanSatu(idImpor: number, idPengguna: string): Promise<{ keadaan: "diaktifkan" } | { keadaan: "gagal"; pesan: string }> {
   try {
     const hasil = await aktifkanImpor(idImpor, idPengguna);
     return hasil.keadaan === "berhasil" ? { keadaan: "diaktifkan" } : hasil;
   } catch (galat) {
     // Transaksi impor ini dibatalkan; impor lain tetap diproses (hasil per impor), tanpa pengulangan otomatis.
     console.error(`[aktifkan-semua-impor] impor ${idImpor}:`, galat);
-    return { keadaan: "gagal", pesan: "Impor ini gagal diaktifkan karena kesalahan server. Periksa statusnya di Daftar impor sebelum mencoba lagi." };
+    return {
+      keadaan: "gagal",
+      pesan: "Impor ini gagal diaktifkan karena kesalahan server. Periksa statusnya di Daftar impor sebelum mencoba lagi.",
+    };
   }
 }

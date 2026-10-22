@@ -362,20 +362,18 @@ export async function bacaRencanaFinal(idGudang: number, idRencana: number): Pro
       cakupan: r.cakupan.map((c) => ({ ...c, tanggal: parseTanggalBisnis(c.tanggal) })),
     },
     rumusJumlahKirim: r.rumusJumlahKirim,
-    baris: baris.map(
-      (b): BarisRencanaFinal => ({
-        kodeProduk: b.kodeProduk,
-        namaProduk: b.namaProduk,
-        kategoriProduk: b.kategoriProduk,
-        status: b.status,
-        kebutuhan: b.kebutuhan,
-        tanpaRataRata: b.tanpaRataRata?.map((t) => ({ ...t, tanggal: parseTanggalBisnis(t.tanggal) })) ?? null,
-        stokAkhir: b.stokAkhir,
-        persenBuffer: b.persenBuffer,
-        jumlahKirim: b.jumlahKirim,
-        rincian: b.rincian,
-      }),
-    ),
+    baris: baris.map((b): BarisRencanaFinal => ({
+      kodeProduk: b.kodeProduk,
+      namaProduk: b.namaProduk,
+      kategoriProduk: b.kategoriProduk,
+      status: b.status,
+      kebutuhan: b.kebutuhan,
+      tanpaRataRata: b.tanpaRataRata?.map((t) => ({ ...t, tanggal: parseTanggalBisnis(t.tanggal) })) ?? null,
+      stokAkhir: b.stokAkhir,
+      persenBuffer: b.persenBuffer,
+      jumlahKirim: b.jumlahKirim,
+      rincian: b.rincian,
+    })),
   };
 }
 

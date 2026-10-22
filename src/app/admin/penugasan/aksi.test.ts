@@ -48,15 +48,13 @@ describe("non-admin ditolak di server", () => {
     await tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] });
 
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: bandung, hakTindakan: ["ekspor"] }),
-    ).rejects.toBeInstanceOf(AksesDitolakError);
-    await expect(
-      simpanHakTindakan({ idPengguna: target.id, idGudang: bali, hakTindakan: ["finalisasi"] }),
-    ).rejects.toBeInstanceOf(AksesDitolakError);
-    await expect(cabutPenugasanOperator({ idPengguna: target.id, idGudang: bali })).rejects.toBeInstanceOf(
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: bandung, hakTindakan: ["ekspor"] })).rejects.toBeInstanceOf(
       AksesDitolakError,
     );
+    await expect(simpanHakTindakan({ idPengguna: target.id, idGudang: bali, hakTindakan: ["finalisasi"] })).rejects.toBeInstanceOf(
+      AksesDitolakError,
+    );
+    await expect(cabutPenugasanOperator({ idPengguna: target.id, idGudang: bali })).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await hakDi(target.id, bali)).toEqual([["ekspor"]]);
     expect(await hakDi(target.id, bandung)).toEqual([]);
   });
@@ -71,16 +69,14 @@ describe("non-admin ditolak di server", () => {
     });
 
     kepala.cookie = operator.cookie;
-    await expect(cabutPenugasanOperator({ idPengguna: operator.id, idGudang: bali })).rejects.toBeInstanceOf(
-      AksesDitolakError,
-    );
+    await expect(cabutPenugasanOperator({ idPengguna: operator.id, idGudang: bali })).rejects.toBeInstanceOf(AksesDitolakError);
   });
 
   it("pengguna yang belum masuk diarahkan ke halaman masuk", async () => {
     const target = await buatPenggunaUji("viewer");
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] }),
-    ).rejects.toMatchObject({ digest: expect.stringContaining("/masuk") });
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] })).rejects.toMatchObject({
+      digest: expect.stringContaining("/masuk"),
+    });
     expect(await hakDi(target.id, bali)).toEqual([]);
   });
 });
@@ -109,9 +105,7 @@ describe("admin mengelola penugasan", () => {
   it("menugaskan dua kali di gudang yang sama → gagal; hak lama tetap", async () => {
     const target = await buatPenggunaUji("viewer");
     await tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["input-stok"] });
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] }),
-    ).resolves.toEqual({
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] })).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Pengguna ini sudah ditugaskan di gudang tersebut. Ubah hak tindakannya di daftar penugasan.",
     });
@@ -139,9 +133,10 @@ describe("admin mengelola penugasan", () => {
   it("mengubah atau mencabut penugasan yang tidak ada → gagal", async () => {
     const target = await buatPenggunaUji("viewer");
     const pesan = "Penugasan tidak ditemukan. Muat ulang halaman untuk melihat daftar terbaru.";
-    await expect(
-      simpanHakTindakan({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] }),
-    ).resolves.toEqual({ keadaan: "gagal", pesan });
+    await expect(simpanHakTindakan({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan,
+    });
     await expect(cabutPenugasanOperator({ idPengguna: target.id, idGudang: bali })).resolves.toEqual({
       keadaan: "gagal",
       pesan,
@@ -150,15 +145,17 @@ describe("admin mengelola penugasan", () => {
 
   it("isian tidak valid → gagal dengan pesan, tanpa menulis data", async () => {
     const target = await buatPenggunaUji("viewer");
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["hapus-semua"] }),
-    ).resolves.toMatchObject({ keadaan: "gagal" });
-    await expect(
-      tugaskanOperator({ idPengguna: "tidak-ada", idGudang: bali, hakTindakan: ["ekspor"] }),
-    ).resolves.toEqual({ keadaan: "gagal", pesan: "Pengguna tidak ditemukan." });
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: -1, hakTindakan: ["ekspor"] }),
-    ).resolves.toEqual({ keadaan: "gagal", pesan: "Gudang tidak ditemukan." });
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["hapus-semua"] })).resolves.toMatchObject({
+      keadaan: "gagal",
+    });
+    await expect(tugaskanOperator({ idPengguna: "tidak-ada", idGudang: bali, hakTindakan: ["ekspor"] })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Pengguna tidak ditemukan.",
+    });
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: -1, hakTindakan: ["ekspor"] })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Gudang tidak ditemukan.",
+    });
     await expect(tugaskanOperator({ idPengguna: "", idGudang: bali, hakTindakan: [] })).resolves.toMatchObject({
       keadaan: "gagal",
     });
@@ -171,9 +168,9 @@ describe("admin mengelola penugasan", () => {
   it("tersimpan tetapi gagal memuat ulang tampilan", async () => {
     kepala.muatUlangGagal = true;
     const target = await buatPenggunaUji("viewer");
-    await expect(
-      tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] }),
-    ).resolves.toEqual({ keadaan: "tersimpanGagalMuatUlang" });
+    await expect(tugaskanOperator({ idPengguna: target.id, idGudang: bali, hakTindakan: ["ekspor"] })).resolves.toEqual({
+      keadaan: "tersimpanGagalMuatUlang",
+    });
     expect(await hakDi(target.id, bali)).toEqual([["ekspor"]]);
   });
 });

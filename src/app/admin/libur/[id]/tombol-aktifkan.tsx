@@ -42,7 +42,12 @@ export function TombolAktifkanSnapshot({
           disabled={alasanTidakBisa !== null || menunggu || sudahBerhasil}
           aria-describedby={catatan ? `${id}-keterangan` : undefined}
           className="active:scale-95"
-          onClick={() => simpan(() => aktifkanSnapshot({ idSnapshot, versi }), () => router.refresh())}
+          onClick={() =>
+            simpan(
+              () => aktifkanSnapshot({ idSnapshot, versi }),
+              () => router.refresh(),
+            )
+          }
         >
           {arsip ? "Aktifkan ulang" : "Aktifkan"}
         </Button>

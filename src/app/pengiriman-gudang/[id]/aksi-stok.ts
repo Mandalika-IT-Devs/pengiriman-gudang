@@ -84,7 +84,11 @@ export type { HasilUnggahStok };
 export async function unggahStok(form: FormData): Promise<HasilUnggahStok> {
   const gudang = skemaGudang.safeParse({ idGudang: Number(form.get("idGudang")) });
   await wajibHakTindakan(gudang.success ? gudang.data.idGudang : 0, "input-stok");
-  const isian = skemaUnggah.safeParse({ idGudang: form.get("idGudang"), tanggalKirim: form.get("tanggalKirim"), tokoId: form.get("tokoId") });
+  const isian = skemaUnggah.safeParse({
+    idGudang: form.get("idGudang"),
+    tanggalKirim: form.get("tanggalKirim"),
+    tokoId: form.get("tokoId"),
+  });
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
   const tanggalKirim = bacaTanggalKirim(isian.data.tanggalKirim);
   if (tanggalKirim === null) return { keadaan: "gagal", pesan: PESAN_TANGGAL };

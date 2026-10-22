@@ -11,10 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
  */
 export default function HalamanError({ retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
-    <main
-      data-halaman-error
-      className="mx-auto flex max-w-3xl flex-col items-start gap-4 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8"
-    >
+    <main data-halaman-error className="mx-auto flex max-w-3xl flex-col items-start gap-4 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
       <span aria-hidden className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
         <CircleX strokeWidth={2} className="size-5" />
       </span>

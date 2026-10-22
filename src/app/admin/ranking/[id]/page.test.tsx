@@ -87,13 +87,26 @@ describe("/admin/ranking/[id]", () => {
   it("baris yang cocok ke keluarga aroma nonaktif → peringatan ikon + teks di barisnya; Publikasikan tetap aktif", async () => {
     const k = kode();
     const aktif = await keluargaUji(`AKTIF ${k}`);
-    const [nonaktif] = await db.insert(keluargaAroma).values({ nama: `NONAKTIF ${k}`, aktif: false }).returning();
+    const [nonaktif] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `NONAKTIF ${k}`, aktif: false })
+      .returning();
     await db.insert(aliasKeluargaAroma).values({ keluargaId: nonaktif.id, alias: nonaktif.nama });
-    const id = await rankingUji({ isi: workbookRankingUji([[1, aktif.nama, 9], [2, nonaktif.nama, 5]]), idPengguna: idAdmin });
+    const id = await rankingUji({
+      isi: workbookRankingUji([
+        [1, aktif.nama, 9],
+        [2, nonaktif.nama, 5],
+      ]),
+      idPengguna: idAdmin,
+    });
 
     const html = await tampil(id);
     expect(html.match(/data-penanda="keluarga-nonaktif"/g)).toHaveLength(2); // tujuh besar + pencocokan setiap baris
-    expect(html).toMatch(new RegExp(`NONAKTIF ${k}<span[^>]*data-penanda="keluarga-nonaktif"[^>]*><svg[^>]*lucide-triangle-alert[^>]*>.*?</svg>Keluarga aroma nonaktif`));
+    expect(html).toMatch(
+      new RegExp(
+        `NONAKTIF ${k}<span[^>]*data-penanda="keluarga-nonaktif"[^>]*><svg[^>]*lucide-triangle-alert[^>]*>.*?</svg>Keluarga aroma nonaktif`,
+      ),
+    );
     expect(html).not.toMatch(new RegExp(`>AKTIF ${k}<span[^>]*data-penanda="keluarga-nonaktif"`));
     expect(html).toMatch(/<button[^>]*>Publikasikan<\/button>/);
     expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Publikasikan<\/button>/);
@@ -106,17 +119,28 @@ describe("/admin/ranking/[id]", () => {
 
   it("dua baris cocok ke keluarga yang sama → bagian Keluarga aroma ganda dengan baris-barisnya; Publikasikan dinonaktifkan dengan alasannya", async () => {
     const k = kode();
-    const [keluarga] = await db.insert(keluargaAroma).values({ nama: `GANDA ${k}` }).returning();
+    const [keluarga] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `GANDA ${k}` })
+      .returning();
     await db.insert(aliasKeluargaAroma).values([
       { keluargaId: keluarga.id, alias: `GANDA A ${k}` },
       { keluargaId: keluarga.id, alias: `GANDA B ${k}` },
     ]);
-    const id = await rankingUji({ isi: workbookRankingUji([[1, `GANDA A ${k}`, 9], [2, `GANDA B ${k}`, 5]]), idPengguna: idAdmin });
+    const id = await rankingUji({
+      isi: workbookRankingUji([
+        [1, `GANDA A ${k}`, 9],
+        [2, `GANDA B ${k}`, 5],
+      ]),
+      idPengguna: idAdmin,
+    });
 
     const html = await tampil(id);
     expect(html).toContain("Keluarga aroma ganda");
     expect(html).toContain('aria-label="Keluarga aroma ganda"');
-    expect(html).toMatch(/data-penanda="keluarga-ganda"[^>]*><svg[^>]*lucide-circle-x[^>]*>.*?<\/svg>Keluarga muncul di lebih dari satu baris/);
+    expect(html).toMatch(
+      /data-penanda="keluarga-ganda"[^>]*><svg[^>]*lucide-circle-x[^>]*>.*?<\/svg>Keluarga muncul di lebih dari satu baris/,
+    );
     expect(html).toContain(`RANK 1 (GANDA A ${k}), RANK 2 (GANDA B ${k})`);
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Publikasikan<\/button>/);
     expect(html).toContain(`GANDA ${k} muncul di RANK 1 (GANDA A ${k}) dan RANK 2 (GANDA B ${k})`);
@@ -125,10 +149,17 @@ describe("/admin/ranking/[id]", () => {
   it("T120 (DESIGN §11.4): kartu Publikasikan berada setelah data yang ditinjau, bersama jumlah error dan peringatan", async () => {
     const k = kode();
     const aktif = await keluargaUji(`TINJAU ${k}`);
-    const [nonaktif] = await db.insert(keluargaAroma).values({ nama: `TIDUR ${k}`, aktif: false }).returning();
+    const [nonaktif] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `TIDUR ${k}`, aktif: false })
+      .returning();
     await db.insert(aliasKeluargaAroma).values({ keluargaId: nonaktif.id, alias: nonaktif.nama });
     const id = await rankingUji({
-      isi: workbookRankingUji([[1, aktif.nama, 9], [2, nonaktif.nama, 5], [3, `LAIN ${k}`, 1]]),
+      isi: workbookRankingUji([
+        [1, aktif.nama, 9],
+        [2, nonaktif.nama, 5],
+        [3, `LAIN ${k}`, 1],
+      ]),
       idPengguna: idAdmin,
     });
 
@@ -145,7 +176,13 @@ describe("/admin/ranking/[id]", () => {
   });
 
   it("file dengan error validasi → daftar error (T52) dengan status Gagal; Publikasikan dinonaktifkan", async () => {
-    const id = await rankingUji({ isi: workbookRankingUji([[1, `A ${kode()}`, 1], [1, `B ${kode()}`, 2]]), idPengguna: idAdmin });
+    const id = await rankingUji({
+      isi: workbookRankingUji([
+        [1, `A ${kode()}`, 1],
+        [1, `B ${kode()}`, 2],
+      ]),
+      idPengguna: idAdmin,
+    });
     const html = await tampil(id);
     expect(html).toContain("Error validasi");
     expect(html).toContain("RANK 1 di baris 3 sudah dipakai di baris 2");
@@ -168,7 +205,9 @@ describe("/admin/ranking/[id]", () => {
     expect(html).toContain("sudah dipublikasikan dan sedang berlaku");
     // T120 (DESIGN §11.9, §7): ranking berlaku berstatus Aktif (success, CircleCheck), tanpa ikon error.
     expect(html).toMatch(/data-status-ranking="dipublikasikan"[^>]*><svg[^>]*lucide-circle-check[^>]*>.*?<\/svg>Aktif</);
-    expect(html).toMatch(/data-alasan-publikasi[^>]*><svg[^>]*lucide-circle-check[^>]*text-success[^>]*>.*?<\/svg>Ranking ini sudah dipublikasikan/);
+    expect(html).toMatch(
+      /data-alasan-publikasi[^>]*><svg[^>]*lucide-circle-check[^>]*text-success[^>]*>.*?<\/svg>Ranking ini sudah dipublikasikan/,
+    );
     expect(html).not.toContain("lucide-circle-x");
   });
 });

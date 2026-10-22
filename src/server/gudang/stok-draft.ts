@@ -11,8 +11,7 @@ import { nilaiKirimBaris } from "./draft-rencana";
 // jumlah kirim baris diperbarui dari kebutuhan dan buffer yang tersimpan. Kewenangan diperiksa pemanggil (server action).
 
 /** Draft, toko, atau varian yang dikirim tidak ada lagi di draft (mis. draft baru saja dihitung ulang). */
-export const PESAN_DRAFT_BERUBAH =
-  "Draft rencana sudah berubah sejak halaman dibuka. Muat ulang halaman, periksa stok, lalu simpan lagi.";
+export const PESAN_DRAFT_BERUBAH = "Draft rencana sudah berubah sejak halaman dibuka. Muat ulang halaman, periksa stok, lalu simpan lagi.";
 
 export type IsianStok = { kodeProduk: string; stokAkhir: number | null };
 

@@ -65,11 +65,12 @@ export default async function HalamanImpor() {
                 <span className="block text-muted-foreground">oleh {i.diunggahOleh}</span>
               </TableCell>
               <TableCell>
-                <Link
-                  href={`/admin/impor/${i.id}`}
-                  className={tautanTombolVariants()}
-                >
-                  Tinjau impor<span className="sr-only"> {i.namaSheet} ({i.namaFile})</span>
+                <Link href={`/admin/impor/${i.id}`} className={tautanTombolVariants()}>
+                  Tinjau impor
+                  <span className="sr-only">
+                    {" "}
+                    {i.namaSheet} ({i.namaFile})
+                  </span>
                 </Link>
               </TableCell>
             </TableRow>

@@ -31,7 +31,9 @@ export function enkripsiSalinan(sandi: string, ikatan: string, rahasia = rahasia
   const cipher = createCipheriv(ALGORITMA, turunkanKunci(rahasia), iv, { authTagLength: PANJANG_TAG });
   cipher.setAAD(Buffer.from(ikatan, "utf8"));
   const isi = Buffer.concat([cipher.update(sandi, "utf8"), cipher.final()]);
-  return [VERSI, iv, cipher.getAuthTag(), isi].map((bagian) => (typeof bagian === "string" ? bagian : bagian.toString("base64url"))).join(".");
+  return [VERSI, iv, cipher.getAuthTag(), isi]
+    .map((bagian) => (typeof bagian === "string" ? bagian : bagian.toString("base64url")))
+    .join(".");
 }
 
 /** Kata sandi dari `salinan`, atau `null` jika tidak terbaca dengan `rahasia` dan `ikatan` ini. */

@@ -148,7 +148,7 @@ describe("admin menyinkronkan libur", () => {
     [
       "format tanggal salah",
       (tahun) => ({ isi: { data: [{ date: `01/01/${tahun}`, description: "Tahun Baru" }] } }),
-      "Entri ke-1: tanggal \"01/01/{tahun}\" bukan tanggal YYYY-MM-DD yang ada di kalender.",
+      'Entri ke-1: tanggal "01/01/{tahun}" bukan tanggal YYYY-MM-DD yang ada di kalender.',
     ],
     [
       "tahun salah",
@@ -171,9 +171,7 @@ describe("admin menyinkronkan libur", () => {
 
   it.each(kasusGagal)("%s → gagal dengan pesan jelas, snapshot aktif tidak berubah, kegagalan tercatat", async (_, jawaban, polaPesan) => {
     const tahun = await tahunLiburUji();
-    const pesan = polaPesan
-      .replace("{tahun-1}", String(tahun - 1))
-      .replaceAll("{tahun}", String(tahun));
+    const pesan = polaPesan.replace("{tahun-1}", String(tahun - 1)).replaceAll("{tahun}", String(tahun));
     const aktif = await buatSnapshotAktifUji(tahun, idAdmin);
     gantiApiHariLibur(jawaban(tahun));
 
@@ -182,9 +180,7 @@ describe("admin menyinkronkan libur", () => {
     expect(await entriSnapshotUji(aktif.id)).toEqual([
       { tanggal: `${tahun}-01-01`, keterangan: "Tahun Baru", jenis: "libur nasional", jenisUsulan: true },
     ]);
-    expect(await kejadianTahunUji(tahun)).toEqual([
-      { jenis: "sinkronisasi-gagal", snapshotId: null, pesan, pelaku: idAdmin },
-    ]);
+    expect(await kejadianTahunUji(tahun)).toEqual([{ jenis: "sinkronisasi-gagal", snapshotId: null, pesan, pelaku: idAdmin }]);
   });
 
   it("tahun tidak valid → gagal tanpa memanggil API", async () => {

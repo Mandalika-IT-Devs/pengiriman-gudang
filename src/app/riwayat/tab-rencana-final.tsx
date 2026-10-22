@@ -129,11 +129,16 @@ export async function isiTabRencanaFinal({
   return (
     <>
       <p className="text-muted-foreground">
-        Rencana final dibaca dari snapshot saat finalisasi dan tidak berubah oleh pembaruan data berikutnya. Finalisasi
-        hanya menyatakan rencana kebutuhan barang telah disimpan, bukan konfirmasi pengiriman fisik atau penerimaan barang.
+        Rencana final dibaca dari snapshot saat finalisasi dan tidak berubah oleh pembaruan data berikutnya. Finalisasi hanya menyatakan
+        rencana kebutuhan barang telah disimpan, bukan konfirmasi pengiriman fisik atau penerimaan barang.
       </p>
       <FilterRiwayat action={urlHalaman} gudang={pilihan.gudang} toko={pilihan.toko} terapan={terapan} />
-      <EksporRiwayat cakupan={cakupanEkspor} parameter={keadaanUrl} idGudangHasil={hasil.map((r) => r.gudang.id)} pilihanGudang={pilihan.gudang} />
+      <EksporRiwayat
+        cakupan={cakupanEkspor}
+        parameter={keadaanUrl}
+        idGudangHasil={hasil.map((r) => r.gudang.id)}
+        pilihanGudang={pilihan.gudang}
+      />
       <Table aria-label="Riwayat rencana final" panjang>
         <TableHeader>
           <TableRow>

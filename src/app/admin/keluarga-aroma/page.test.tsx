@@ -43,8 +43,14 @@ describe("/admin/keluarga-aroma", () => {
 
   it("admin melihat form tambah keluarga dan daftar ringkas: nama, jumlah alias, segmen kode, jumlah produk terpetakan, status", async () => {
     const kode = randomUUID().slice(0, 8).toUpperCase();
-    const [aktif] = await db.insert(keluargaAroma).values({ nama: `GIFT SET BOX ${kode}` }).returning();
-    const [nonaktif] = await db.insert(keluargaAroma).values({ nama: `NONAKTIF ${kode}`, aktif: false }).returning();
+    const [aktif] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `GIFT SET BOX ${kode}` })
+      .returning();
+    const [nonaktif] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `NONAKTIF ${kode}`, aktif: false })
+      .returning();
     await db.insert(aliasKeluargaAroma).values([
       { keluargaId: aktif.id, alias: `GIFT SET BOX ${kode}` },
       { keluargaId: aktif.id, alias: `GSB ${kode}` },
@@ -91,8 +97,14 @@ describe("/admin/keluarga-aroma", () => {
 
   it("cari nama, alias, atau segmen kode menyaring daftar", async () => {
     const kode = randomUUID().slice(0, 8).toUpperCase();
-    const [a] = await db.insert(keluargaAroma).values({ nama: `MAWAR ${kode}` }).returning();
-    const [b] = await db.insert(keluargaAroma).values({ nama: `MELATI ${kode}` }).returning();
+    const [a] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `MAWAR ${kode}` })
+      .returning();
+    const [b] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `MELATI ${kode}` })
+      .returning();
     await db.insert(aliasKeluargaAroma).values({ keluargaId: b.id, alias: `JASMINE ${kode}` });
     await db.insert(segmenKodeKeluargaAroma).values({ keluargaId: a.id, segmen: `MWR${kode}` });
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
@@ -119,8 +131,14 @@ describe("/admin/keluarga-aroma", () => {
 
   it('"Ubah" membuka panel samping berisi form keluarga itu; simpan memperbarui daftar', async () => {
     const kode = randomUUID().slice(0, 8).toUpperCase();
-    const [keluarga] = await db.insert(keluargaAroma).values({ nama: `GORGEOUS ${kode}` }).returning();
-    const [lain] = await db.insert(keluargaAroma).values({ nama: `LAIN ${kode}` }).returning();
+    const [keluarga] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `GORGEOUS ${kode}` })
+      .returning();
+    const [lain] = await db
+      .insert(keluargaAroma)
+      .values({ nama: `LAIN ${kode}` })
+      .returning();
     await db.insert(aliasKeluargaAroma).values({ keluargaId: keluarga.id, alias: `GORGEOUS ${kode}` });
     await db.insert(segmenKodeKeluargaAroma).values({ keluargaId: keluarga.id, segmen: `GOR${kode}` });
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;

@@ -27,7 +27,12 @@ export function AktifkanSemuaImpor({ jumlahSiap }: { jumlahSiap: number }) {
           type="button"
           disabled={jumlahSiap === 0 || menunggu}
           className="active:scale-95"
-          onClick={() => simpan(() => aktifkanSemuaImporSiap(), () => router.refresh())}
+          onClick={() =>
+            simpan(
+              () => aktifkanSemuaImporSiap(),
+              () => router.refresh(),
+            )
+          }
         >
           {`Aktifkan semua yang siap (${jumlahSiap})`}
         </Button>

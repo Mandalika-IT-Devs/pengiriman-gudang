@@ -56,11 +56,7 @@ function HasilPerToko({ hasil }: { hasil: Extract<HasilTambahTokoMassal, { hasil
   return (
     <section aria-label="Hasil per toko" className="flex flex-col gap-3">
       <p role="status" className="flex items-start gap-2 font-semibold">
-        <IkonRingkasan
-          aria-hidden
-          strokeWidth={2}
-          className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")}
-        />
+        <IkonRingkasan aria-hidden strokeWidth={2} className={cn("size-5 shrink-0", semua ? "text-success" : "text-warning")} />
         {jumlahBerhasil} dari {hasil.length} toko ditambahkan.
       </p>
       <Table aria-label="Hasil tambah toko">
@@ -95,9 +91,7 @@ export function FormTambahToko({ daftarGudang, daftarToko }: { daftarGudang: Dat
   const id = useId();
   const [idGudang, setIdGudang] = useState("");
   const [terpilih, setTerpilih] = useState<ReadonlySet<number>>(new Set());
-  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilTambahTokoMassal>(
-    "kolom Gudang di daftar toko",
-  );
+  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilTambahTokoMassal>("kolom Gudang di daftar toko");
   const namaGudang = daftarGudang.find((g) => String(g.id) === idGudang)?.nama;
 
   function pilihToko(idToko: number, dipilih: boolean) {
@@ -125,9 +119,7 @@ export function FormTambahToko({ daftarGudang, daftarToko }: { daftarGudang: Dat
       >
         <CardHeader>
           <CardTitle level={2}>Tambah toko ke gudang</CardTitle>
-          <CardDescription>
-            Pilih gudang dan toko, lalu tekan satu tombol. Satu toko hanya boleh terhubung ke satu gudang.
-          </CardDescription>
+          <CardDescription>Pilih gudang dan toko, lalu tekan satu tombol. Satu toko hanya boleh terhubung ke satu gudang.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex max-w-sm flex-col gap-2 font-semibold">
@@ -190,11 +182,7 @@ export function FormTambahToko({ daftarGudang, daftarToko }: { daftarGudang: Dat
                     <TableCell>
                       <BadgeStatusToko aktif={t.aktif} />
                     </TableCell>
-                    <TableCell
-                      className={cn(
-                        !t.namaGudang && (dipilih ? "text-accent-foreground" : "text-muted-foreground"),
-                      )}
-                    >
+                    <TableCell className={cn(!t.namaGudang && (dipilih ? "text-accent-foreground" : "text-muted-foreground"))}>
                       {t.namaGudang ?? "Belum terhubung"}
                     </TableCell>
                     <TableCell className="whitespace-normal">
@@ -211,9 +199,7 @@ export function FormTambahToko({ daftarGudang, daftarToko }: { daftarGudang: Dat
             Tambahkan toko terpilih
           </Button>
           <span className="text-muted-foreground">{terpilih.size} toko dipilih</span>
-          {tampilan && tampilan.keadaan !== "berhasil" ? (
-            <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} />
-          ) : null}
+          {tampilan && tampilan.keadaan !== "berhasil" ? <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} /> : null}
         </CardFooter>
         {!menunggu && hasil && hasil.keadaan !== "gagal" ? <HasilPerToko hasil={hasil.hasil} /> : null}
       </form>

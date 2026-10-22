@@ -22,9 +22,7 @@ type RataRataBulananFixture = {
   rataRataBulanan: number;
 };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/laporan-15GL-GOR-PMS-juni.json"), "utf8"),
-) as {
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/laporan-15GL-GOR-PMS-juni.json"), "utf8")) as {
   pengamatan: { tanggal: string; qty: number; selSumber: string }[];
   harapan: {
     nilaiMingguan: NilaiMingguanFixture[];
@@ -60,33 +58,25 @@ describe("hitungLaporan (golden laporan-15GL-GOR-PMS-juni)", () => {
     expect(hasil.nilaiMingguan).toHaveLength(fixture.harapan.nilaiMingguan.length);
   });
 
-  it.each(fixture.harapan.nilaiMingguan)(
-    "nilai mingguan $bulanLaporan M$mingguLaporan $kategori = $nilaiMingguan",
-    (harapan) => {
-      const kelompok = hasil.nilaiMingguan.find(
-        (nilai) =>
-          nilai.bulanLaporan === harapan.bulanLaporan &&
-          nilai.mingguLaporan === harapan.mingguLaporan &&
-          nilai.kategori === harapan.kategori,
-      );
-      expect(kelompok).toMatchObject({
-        tanggal: harapan.tanggal,
-        jumlahQty: harapan.jumlahQty,
-        pembagiTanggal: harapan.pembagiTanggal,
-        nilaiMingguan: harapan.nilaiMingguan,
-      });
-    },
-  );
+  it.each(fixture.harapan.nilaiMingguan)("nilai mingguan $bulanLaporan M$mingguLaporan $kategori = $nilaiMingguan", (harapan) => {
+    const kelompok = hasil.nilaiMingguan.find(
+      (nilai) =>
+        nilai.bulanLaporan === harapan.bulanLaporan && nilai.mingguLaporan === harapan.mingguLaporan && nilai.kategori === harapan.kategori,
+    );
+    expect(kelompok).toMatchObject({
+      tanggal: harapan.tanggal,
+      jumlahQty: harapan.jumlahQty,
+      pembagiTanggal: harapan.pembagiTanggal,
+      nilaiMingguan: harapan.nilaiMingguan,
+    });
+  });
 
-  it.each(fixture.harapan.rataRataBulananJuni)(
-    "rata-rata bulanan $bulanLaporan $kategori = $rataRataBulanan",
-    (harapan) => {
-      const rataRata = hasil.rataRataBulanan.find(
-        (nilai) => nilai.bulanLaporan === harapan.bulanLaporan && nilai.kategori === harapan.kategori,
-      );
-      expect(rataRata).toMatchObject({ ...harapan, kelengkapan: "lengkap" });
-    },
-  );
+  it.each(fixture.harapan.rataRataBulananJuni)("rata-rata bulanan $bulanLaporan $kategori = $rataRataBulanan", (harapan) => {
+    const rataRata = hasil.rataRataBulanan.find(
+      (nilai) => nilai.bulanLaporan === harapan.bulanLaporan && nilai.kategori === harapan.kategori,
+    );
+    expect(rataRata).toMatchObject({ ...harapan, kelengkapan: "lengkap" });
+  });
 
   it("total penjualan mentah Juni = 4, dalam field terpisah dari rata-rata", () => {
     expect(hasil.totalPenjualanMentah).toContainEqual({
@@ -112,9 +102,12 @@ describe("hitungLaporan (golden laporan-15GL-GOR-PMS-juni)", () => {
   });
 
   it("rata-rata bulanan Juli Senin–Kamis parsial karena kelompok pembentuknya parsial", () => {
-    expect(
-      hasil.rataRataBulanan.find((nilai) => nilai.bulanLaporan === "2026-07" && nilai.kategori === "Senin–Kamis"),
-    ).toMatchObject({ jumlahNilaiMingguan: 0, pembagiMinggu: 1, rataRataBulanan: 0, kelengkapan: "parsial" });
+    expect(hasil.rataRataBulanan.find((nilai) => nilai.bulanLaporan === "2026-07" && nilai.kategori === "Senin–Kamis")).toMatchObject({
+      jumlahNilaiMingguan: 0,
+      pembagiMinggu: 1,
+      rataRataBulanan: 0,
+      kelengkapan: "parsial",
+    });
   });
 
   it("menyimpan sel sumber setiap kelompok mingguan", () => {
@@ -273,8 +266,7 @@ describe("hitungLaporan: aturan tahap", () => {
 
   it("Jumat/Sabtu/Minggu memakai total; tanggal yang kategorinya diubah tetap di posisi aslinya (PRD B6)", () => {
     // Selasa 30 Juni diubah menjadi Jumat → tetap Juli M1, bergabung dengan Jumat 3 Juli.
-    const kategori = (tanggal: TanggalBisnis): KategoriDasar =>
-      tanggal === "2026-06-30" ? "Jumat" : posisiLaporan(tanggal).kategoriDasar;
+    const kategori = (tanggal: TanggalBisnis): KategoriDasar => (tanggal === "2026-06-30" ? "Jumat" : posisiLaporan(tanggal).kategoriDasar);
     const hasil = hitungLaporan({
       pengamatan: amati([
         ["2026-06-29", 1],
@@ -333,16 +325,12 @@ describe("hitungLaporan: aturan tahap", () => {
 
 describe("hitungLaporan: validasi masukan", () => {
   it.each([[[]], [["2026-06", "2026-06"]], [["2026-6"]], [["2026-13"]]])("menolak bulan pilihan %j", (bulanPilihan) => {
-    expect(() =>
-      hitungLaporan({ pengamatan: [], kategoriEfektif: kategoriDasar, bulanPilihan }),
-    ).toThrow(RangeError);
+    expect(() => hitungLaporan({ pengamatan: [], kategoriEfektif: kategoriDasar, bulanPilihan })).toThrow(RangeError);
   });
 
   it("menolak lebih dari 12 bulan pilihan", () => {
     const bulanPilihan = Array.from({ length: 13 }, (_, i) => `${2025 + (i >= 12 ? 1 : 0)}-${String((i % 12) + 1).padStart(2, "0")}`);
-    expect(() => hitungLaporan({ pengamatan: [], kategoriEfektif: kategoriDasar, bulanPilihan })).toThrow(
-      RangeError,
-    );
+    expect(() => hitungLaporan({ pengamatan: [], kategoriEfektif: kategoriDasar, bulanPilihan })).toThrow(RangeError);
   });
 
   it("menolak pengamatan ganda pada tanggal yang sama", () => {

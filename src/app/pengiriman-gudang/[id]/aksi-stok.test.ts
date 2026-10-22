@@ -40,8 +40,7 @@ const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../../te
 };
 const TANGGAL_KIRIM = golden.kasusCakupan.tanggalKirim;
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 
 // Nama master dan alias diberi akhiran unik: database test dipakai bersama berkas test lain yang memakai nama contoh
 // yang sama (T82), sedangkan pencocokan nama master mengambil produk pertama yang namanya sama.
@@ -139,7 +138,9 @@ beforeAll(async () => {
     ],
   });
   await hitungUlangCacheLaporan();
-  expect(await tetapkanPeriodeSumber({ idGudang: cibubur, bulan: [`${tahun}-06`], idPengguna: idAdmin })).toMatchObject({ keadaan: "berhasil" });
+  expect(await tetapkanPeriodeSumber({ idGudang: cibubur, bulan: [`${tahun}-06`], idPengguna: idAdmin })).toMatchObject({
+    keadaan: "berhasil",
+  });
   const tujuhBesar = await buatKeluargaUji();
   await publikasikanRankingUji({ keluarga: [tujuhBesar.id], idPengguna: idAdmin });
   await db
@@ -150,11 +151,16 @@ beforeAll(async () => {
     .insert(produk)
     .values({ kode: kode.a10mNo1, nama: NAMA.a10mNo1, ukuran: "10ML", kategori: "ATOMIZER", klasifikasi: "otomatis" })
     .onConflictDoNothing();
-  await db.insert(aliasNamaStok).values({ alias: ALIAS, kodeProduk: kode.pw110p, dibuatOleh: idAdmin }).onConflictDoUpdate({
-    target: aliasNamaStok.alias,
-    set: { kodeProduk: kode.pw110p },
-  });
-  expect(await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: parseTanggalBisnis(TANGGAL_KIRIM), idPengguna: idAdmin })).toMatchObject({
+  await db
+    .insert(aliasNamaStok)
+    .values({ alias: ALIAS, kodeProduk: kode.pw110p, dibuatOleh: idAdmin })
+    .onConflictDoUpdate({
+      target: aliasNamaStok.alias,
+      set: { kodeProduk: kode.pw110p },
+    });
+  expect(
+    await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: parseTanggalBisnis(TANGGAL_KIRIM), idPengguna: idAdmin }),
+  ).toMatchObject({
     keadaan: "berhasil",
   });
 });
@@ -213,7 +219,10 @@ describe("operator berhak mengunggah file stok", () => {
         [NAMA.a10mNo1, "PARFUM PRIA", 7],
         ["HOLY SWEET - 2ML EDP", "PARFUM WANITA", "abc"],
       ],
-      Lain: [["Name - Variant", "Ending"], [NAMA.a10mGor, 99]],
+      Lain: [
+        ["Name - Variant", "Ending"],
+        [NAMA.a10mGor, 99],
+      ],
     });
     expect(await kirim("stok.xlsx", workbook)).toEqual(HASIL_CONTOH);
     expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
@@ -256,6 +265,9 @@ describe("operator berhak mengunggah file stok", () => {
     const tokoLain = await buatTokoUji();
     expect(await kirim("stok.csv", FILE_CONTOH, { tokoId: tokoLain.id })).toEqual({ keadaan: "gagal", pesan: PESAN_DRAFT_BERUBAH });
     expect(await kirim("stok.csv", FILE_CONTOH, { tanggalKirim: "2026-06-15" })).toEqual({ keadaan: "gagal", pesan: PESAN_DRAFT_BERUBAH });
-    expect(await kirim("stok.csv", FILE_CONTOH, { tanggalKirim: "bukan-tanggal" })).toEqual({ keadaan: "gagal", pesan: "Tanggal kirim tidak valid." });
+    expect(await kirim("stok.csv", FILE_CONTOH, { tanggalKirim: "bukan-tanggal" })).toEqual({
+      keadaan: "gagal",
+      pesan: "Tanggal kirim tidak valid.",
+    });
   });
 });

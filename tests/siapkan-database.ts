@@ -15,9 +15,7 @@ export default async function siapkanDatabase() {
   const target = new URL(url);
   const namaDatabase = decodeURIComponent(target.pathname.slice(1));
   if (!namaDatabase.endsWith("_test")) {
-    throw new Error(
-      `Database test harus bernama *_test agar aman dibuat ulang, tetapi DATABASE_URL menunjuk "${namaDatabase}".`,
-    );
+    throw new Error(`Database test harus bernama *_test agar aman dibuat ulang, tetapi DATABASE_URL menunjuk "${namaDatabase}".`);
   }
 
   const urlAdmin = new URL(url);

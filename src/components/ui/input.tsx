@@ -8,12 +8,7 @@ export const ukuranKontrol = {
   tabel: "h-9 rounded-xl px-3 text-sm",
 } as const;
 
-export function Input({
-  className,
-  ukuran = "form",
-  type,
-  ...props
-}: ComponentProps<"input"> & { ukuran?: keyof typeof ukuranKontrol }) {
+export function Input({ className, ukuran = "form", type, ...props }: ComponentProps<"input"> & { ukuran?: keyof typeof ukuranKontrol }) {
   return (
     <input
       type={type}

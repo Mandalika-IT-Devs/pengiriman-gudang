@@ -21,7 +21,10 @@ export function FormTambahKeluarga() {
         className="flex flex-col gap-4"
         onSubmit={(event) => {
           event.preventDefault();
-          simpan(() => tambahKeluargaAroma({ nama }), () => setNama(""));
+          simpan(
+            () => tambahKeluargaAroma({ nama }),
+            () => setNama(""),
+          );
         }}
       >
         <CardHeader>

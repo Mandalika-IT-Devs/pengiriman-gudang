@@ -16,8 +16,7 @@ import { buatTokoUji } from "./uji-bantu";
 
 const RATA_RATA_SMB: Record<KategoriDasar, number> = { "Senin–Kamis": 5, Jumat: 5, Sabtu: 8, Minggu: 7 };
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 
 /**
  * Toko uji di gudang `idGudang` dengan jadwal aktif seperti SMB dan satu produk otomatis (keluarga tujuh besar ranking

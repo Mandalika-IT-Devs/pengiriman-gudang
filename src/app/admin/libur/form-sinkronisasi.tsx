@@ -19,8 +19,7 @@ const labelKeadaan: Partial<Record<KeadaanSimpan, string>> = {
 /** Pilih tahun lalu sinkronisasi (PRD B2). Hasil disimpan sebagai snapshot menunggu persetujuan. */
 export function FormSinkronisasiLibur({ tahunAwal }: { tahunAwal: number }) {
   const [tahun, setTahun] = useState(String(tahunAwal));
-  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } =
-    usePenyimpanan<HasilSinkronkanLibur>("daftar snapshot di bawah");
+  const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilSinkronkanLibur>("daftar snapshot di bawah");
   const siap = /^\d{4}$/.test(tahun);
 
   // Mengganti tahun bukan perubahan data, jadi keadaan "belum disimpan" tidak ditampilkan.
@@ -43,8 +42,7 @@ export function FormSinkronisasiLibur({ tahunAwal }: { tahunAwal: number }) {
         <CardHeader>
           <CardTitle level={2}>Sinkronisasi libur</CardTitle>
           <CardDescription>
-            Ambil daftar libur satu tahun dari API Hari Libur. Hasilnya menunggu persetujuan admin; daftar libur aktif
-            tidak berubah.
+            Ambil daftar libur satu tahun dari API Hari Libur. Hasilnya menunggu persetujuan admin; daftar libur aktif tidak berubah.
           </CardDescription>
         </CardHeader>
         <CardContent>

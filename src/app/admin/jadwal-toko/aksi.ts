@@ -63,8 +63,7 @@ export async function nonaktifkanJadwalTetapToko(input: unknown): Promise<HasilS
 
 /** Hasil salin jadwal: hasil per toko (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
 export type HasilSalinJadwal =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilSalinToko[] }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilSalinToko[] } | { keadaan: "gagal"; pesan: string };
 
 /**
  * Menerapkan satu pengaturan jadwal tetap langsung ke beberapa toko gudang yang sama. Setiap toko diproses sendiri;

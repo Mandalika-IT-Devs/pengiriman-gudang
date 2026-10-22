@@ -29,13 +29,7 @@ function BarisAlias({ baris }: { baris: BarisAliasStok }) {
             destruktif
             konfirmasi={() => simpan(() => hapusAliasStok({ alias: baris.alias }))}
             pemicu={
-              <Button
-                type="button"
-                size="sm"
-                variant="destructiveOutline"
-                disabled={menunggu}
-                aria-label={`Hapus alias ${baris.alias}`}
-              >
+              <Button type="button" size="sm" variant="destructiveOutline" disabled={menunggu} aria-label={`Hapus alias ${baris.alias}`}>
                 Hapus
               </Button>
             }

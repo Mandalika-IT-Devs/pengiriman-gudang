@@ -100,10 +100,7 @@ export async function tetapkanAktifGudang(idGudang: number, aktif: boolean): Pro
     if (!tujuan) return gagal(PESAN_TIDAK_DITEMUKAN);
     if (!aktif) {
       if (tujuan.nama === NAMA_GUDANG_PUSAT) return gagal(`${PESAN_PUSAT_TERKUNCI}.`);
-      const [{ jumlah }] = await tx
-        .select({ jumlah: count() })
-        .from(hubunganTokoGudang)
-        .where(eq(hubunganTokoGudang.gudangId, idGudang));
+      const [{ jumlah }] = await tx.select({ jumlah: count() }).from(hubunganTokoGudang).where(eq(hubunganTokoGudang.gudangId, idGudang));
       if (jumlah > 0) {
         return gagal(
           `${tujuan.nama} masih terhubung dengan ${jumlah} toko. Gudang hanya bisa dinonaktifkan jika tidak ada lagi toko yang terhubung.`,

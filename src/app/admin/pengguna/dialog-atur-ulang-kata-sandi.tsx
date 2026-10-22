@@ -29,7 +29,10 @@ function FormAturUlangKataSandi({ idPengguna, nama }: { idPengguna: string; nama
       className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
-        simpan(() => aturUlangKataSandi({ idPengguna, ...isian }), () => setIsian(isianKosong));
+        simpan(
+          () => aturUlangKataSandi({ idPengguna, ...isian }),
+          () => setIsian(isianKosong),
+        );
       }}
     >
       <p>{nama} akan keluar dari semua perangkat dan harus masuk dengan kata sandi baru.</p>
@@ -81,13 +84,7 @@ export function DialogAturUlangKataSandi({ idPengguna, nama }: { idPengguna: str
   const [terbuka, setTerbuka] = useState(false);
   return (
     <Dialog open={terbuka} onOpenChange={setTerbuka}>
-      <Button
-        type="button"
-        size="sm"
-        variant="outline"
-        aria-label={`Atur ulang kata sandi ${nama}`}
-        onClick={() => setTerbuka(true)}
-      >
+      <Button type="button" size="sm" variant="outline" aria-label={`Atur ulang kata sandi ${nama}`} onClick={() => setTerbuka(true)}>
         <KeyRound aria-hidden strokeWidth={2} className="size-5" />
         Atur ulang kata sandi
       </Button>

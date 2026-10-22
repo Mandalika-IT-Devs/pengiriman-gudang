@@ -37,9 +37,7 @@ function ErrorValidasi({ data }: { data: DataTinjauRanking }) {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-xl font-semibold">Error validasi</h2>
-      <p>
-        {formatAngka(data.errorValidasi.length)} error. Perbaiki file di Excel, lalu unggah ulang sebagai ranking baru.
-      </p>
+      <p>{formatAngka(data.errorValidasi.length)} error. Perbaiki file di Excel, lalu unggah ulang sebagai ranking baru.</p>
       <Table aria-label="Error validasi">
         <TableHeader>
           <TableRow>
@@ -74,8 +72,8 @@ function BarisTidakCocok({ data }: { data: DataTinjauRanking }) {
       ) : (
         <>
           <p>
-            {formatAngka(data.tidakCocok.length)} baris tidak cocok dengan alias mana pun dan menahan publikasi.
-            Tambahkan VARIANT-nya sebagai alias di halaman Keluarga aroma, lalu tekan Cocokkan ulang.
+            {formatAngka(data.tidakCocok.length)} baris tidak cocok dengan alias mana pun dan menahan publikasi. Tambahkan VARIANT-nya
+            sebagai alias di halaman Keluarga aroma, lalu tekan Cocokkan ulang.
           </p>
           <ul className="flex flex-col gap-2" aria-label="Baris tidak cocok">
             {data.tidakCocok.map((variant) => (
@@ -101,8 +99,8 @@ function KeluargaGanda({ data }: { data: DataTinjauRanking }) {
     <section className="flex flex-col gap-4">
       <h2 className="text-xl font-semibold">Keluarga aroma ganda</h2>
       <p>
-        {formatAngka(data.keluargaGanda.length)} keluarga aroma muncul di lebih dari satu baris dan menahan publikasi.
-        Perbaiki aliasnya di halaman Keluarga aroma, lalu tekan Cocokkan ulang.
+        {formatAngka(data.keluargaGanda.length)} keluarga aroma muncul di lebih dari satu baris dan menahan publikasi. Perbaiki aliasnya di
+        halaman Keluarga aroma, lalu tekan Cocokkan ulang.
       </p>
       <ul className="flex flex-col gap-2" aria-label="Keluarga aroma ganda">
         {data.keluargaGanda.map((k) => (

@@ -112,17 +112,9 @@ export function FormFinalisasi({
         </label>
       ) : null}
       {stokBelumDisimpan ? (
-        <PesanStatusSimpan
-          data-finalisasi-stok-belum-disimpan
-          keadaan="belumDisimpan"
-          pesan="Simpan stok lebih dulu, lalu finalisasi."
-        />
+        <PesanStatusSimpan data-finalisasi-stok-belum-disimpan keadaan="belumDisimpan" pesan="Simpan stok lebih dulu, lalu finalisasi." />
       ) : null}
-      <Button
-        type="submit"
-        disabled={menunggu || stokBelumDisimpan || (ulang && alasan.trim() === "")}
-        className="w-fit active:scale-95"
-      >
+      <Button type="submit" disabled={menunggu || stokBelumDisimpan || (ulang && alasan.trim() === "")} className="w-fit active:scale-95">
         {ulang ? "Finalisasi ulang" : "Finalisasi rencana"}
         <span className="sr-only"> {namaToko}</span>
       </Button>
@@ -156,8 +148,8 @@ export function FormFinalisasi({
           <dd className="font-semibold tabular-nums">{formatAngka(ringkasan.totalJumlahKirim)}</dd>
         </dl>
         <p data-penjelasan-finalisasi>
-          Finalisasi menyimpan rencana kebutuhan barang toko ini beserta dasar perhitungannya. Ini bukan konfirmasi
-          pengiriman fisik atau penerimaan barang.
+          Finalisasi menyimpan rencana kebutuhan barang toko ini beserta dasar perhitungannya. Ini bukan konfirmasi pengiriman fisik atau
+          penerimaan barang.
         </p>
         {ringkasan.peringatan.map((teks) => (
           <p key={teks} data-peringatan-finalisasi className="flex items-start gap-2 font-semibold">

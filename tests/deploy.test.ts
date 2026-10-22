@@ -119,7 +119,9 @@ describe("deploy/backup-luar.sh", () => {
 
   it("tujuan folder Backup DRP di root My Drive", () => {
     expect(perintah).toContain('TUJUAN="gdrive:Backup DRP/drp"');
-    const tujuanRclone = [...perintah.matchAll(/rclone \w+ [^\n]*/g)].map(([baris]) => baris).filter((baris) => /gdrive:|TUJUAN/.test(baris));
+    const tujuanRclone = [...perintah.matchAll(/rclone \w+ [^\n]*/g)]
+      .map(([baris]) => baris)
+      .filter((baris) => /gdrive:|TUJUAN/.test(baris));
     expect(tujuanRclone).toHaveLength(3);
     for (const baris of tujuanRclone) expect(baris).not.toContain("gdrive:");
   });
@@ -127,7 +129,9 @@ describe("deploy/backup-luar.sh", () => {
   it("menyalin dump terbaru, copy (bukan sync) bucket ke workbook, menghapus hanya dump lebih tua dari 30 hari", () => {
     expect(perintah).toContain('rclone copy "$terbaru" "$TUJUAN/database/"');
     expect(perintah).toContain('rclone copy "minio:${S3_BUCKET:?}" "$TUJUAN/workbook/"');
-    const hapus = perintah.split("\n").filter((baris) => /rclone (delete|purge|rmdirs|deletefile|move|sync)|--min-age|--max-age/.test(baris));
+    const hapus = perintah
+      .split("\n")
+      .filter((baris) => /rclone (delete|purge|rmdirs|deletefile|move|sync)|--min-age|--max-age/.test(baris));
     expect(hapus).toEqual([expect.stringContaining(`rclone delete "$TUJUAN/database/" --min-age 30d --include 'drp-*.sql.gz'`)]);
   });
 
@@ -191,7 +195,13 @@ describe("rahasia", () => {
     const berkas = execFileSync("git", ["ls-files"], { cwd: akar, encoding: "utf8" }).split("\n").filter(Boolean);
     expect(berkas.filter((nama) => /google-(backup|drive-token)\.json$/.test(nama))).toEqual([]);
     // git grep keluar 1 jika tidak ada yang cocok. Access token Google berawalan ya29., refresh token berawalan 1//.
-    const pola = ['"type": *"service_account"', "BEGIN (RSA )?PRIVATE KEY", '"(access|refresh)_token" *: *"[^"]', "ya29\\.[A-Za-z0-9_-]{20}", "1//0[A-Za-z0-9_-]{20}"];
+    const pola = [
+      '"type": *"service_account"',
+      "BEGIN (RSA )?PRIVATE KEY",
+      '"(access|refresh)_token" *: *"[^"]',
+      "ya29\\.[A-Za-z0-9_-]{20}",
+      "1//0[A-Za-z0-9_-]{20}",
+    ];
     const cari = spawnSync("git", ["grep", "-lE", ...pola.flatMap((p) => ["-e", p])], {
       cwd: akar,
       encoding: "utf8",

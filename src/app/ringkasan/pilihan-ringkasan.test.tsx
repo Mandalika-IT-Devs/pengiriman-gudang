@@ -110,7 +110,12 @@ describe("PilihanRingkasan: Pilih semua dan Kosongkan (T87, PRD A2 ▶ Keputusan
 
   it("tombol bertipe button: URL dan hasil belum berubah sebelum Terapkan", () => {
     const wadah = buka();
-    for (const label of ["Pilih semua toko", "Kosongkan pilihan toko", "Pilih semua kategori produk", "Kosongkan pilihan kategori produk"]) {
+    for (const label of [
+      "Pilih semua toko",
+      "Kosongkan pilihan toko",
+      "Pilih semua kategori produk",
+      "Kosongkan pilihan kategori produk",
+    ]) {
       expect(tombol(wadah, label).type).toBe("button");
       klik(tombol(wadah, label));
     }
@@ -159,8 +164,20 @@ function bukaLengkap(terapan: { toko?: string[]; kategoriProduk?: string[]; prod
     akar.render(
       <PilihanRingkasan
         bulanTersedia={[{ kode: "2026-06", label: "Juni 2026" }]}
-        opsiFilter={{ toko: TOKO, kategoriProduk: KATEGORI, produk: [{ kode: "15GL-GOR", nama: "15ML GLITTER - GORGEOUS" }, { kode: "30-MRF", nama: null }] }}
-        terapan={{ bulan: ["2026-06"], toko: terapan.toko ?? [], kategoriProduk: terapan.kategoriProduk ?? [], produk: terapan.produk ?? [] }}
+        opsiFilter={{
+          toko: TOKO,
+          kategoriProduk: KATEGORI,
+          produk: [
+            { kode: "15GL-GOR", nama: "15ML GLITTER - GORGEOUS" },
+            { kode: "30-MRF", nama: null },
+          ],
+        }}
+        terapan={{
+          bulan: ["2026-06"],
+          toko: terapan.toko ?? [],
+          kategoriProduk: terapan.kategoriProduk ?? [],
+          produk: terapan.produk ?? [],
+        }}
       />,
     ),
   );
@@ -196,7 +213,12 @@ describe("PilihanRingkasan: cincin fokus chip (T122, DESIGN §11.8, WCAG 2.4.7)"
     for (const nama of ["bulan", "toko", "kategoriProduk"]) {
       const label = wadah.querySelector(`input[name="${nama}"]`)?.closest("label") ?? null;
       expect(kelasDari(label)).toEqual(
-        expect.arrayContaining(["has-[:checked]:bg-accent", "has-[:checked]:text-accent-foreground", "has-[:focus-visible]:ring-2", "has-[:focus-visible]:ring-ring"]),
+        expect.arrayContaining([
+          "has-[:checked]:bg-accent",
+          "has-[:checked]:text-accent-foreground",
+          "has-[:focus-visible]:ring-2",
+          "has-[:focus-visible]:ring-ring",
+        ]),
       );
     }
   });

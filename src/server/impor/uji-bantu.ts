@@ -42,7 +42,17 @@ export function kodeProdukUji(akhiran = "GOR") {
  * Sheet penjualan satu blok toko mulai kolom F, dengan header tanggal `DD/MM` (tahun = tahun impor).
  * `hari` = tanggal-tanggal kolom; `kuantitas` per produk sejajar dengan `hari`.
  */
-export function sheetPenjualanUji({ toko, bulan, hari, produk }: { toko: string; bulan: number; hari: (number | string)[]; produk: ProdukUji[] }): Sel[][] {
+export function sheetPenjualanUji({
+  toko,
+  bulan,
+  hari,
+  produk,
+}: {
+  toko: string;
+  bulan: number;
+  hari: (number | string)[];
+  produk: ProdukUji[];
+}): Sel[][] {
   const header = hari.map((h) => (typeof h === "string" ? h : `${h}/${bulan}`));
   return [
     ["SALES", null, null, null, "TOKO :", toko],

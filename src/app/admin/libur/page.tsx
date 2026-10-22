@@ -29,8 +29,7 @@ function KegagalanTerakhir({ kegagalan }: { kegagalan: KegagalanSinkronisasi }) 
       <CardContent className="flex flex-col gap-2">
         <BadgeStatus status="gagal" />
         <p>
-          <span className="font-semibold">Tahun {kegagalan.tahun}</span> · {formatWaktu(kegagalan.terjadiPada)} oleh{" "}
-          {kegagalan.pelaku}
+          <span className="font-semibold">Tahun {kegagalan.tahun}</span> · {formatWaktu(kegagalan.terjadiPada)} oleh {kegagalan.pelaku}
         </p>
         <p className="whitespace-pre-line">{kegagalan.pesan}</p>
         <p className="text-muted-foreground">Snapshot libur yang sudah ada tidak berubah.</p>

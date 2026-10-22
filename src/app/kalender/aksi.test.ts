@@ -58,13 +58,23 @@ async function revisiKalenderSaatIni() {
 describe("non-admin ditolak di server", () => {
   it("viewer dan operator dengan semua hak tindakan tidak bisa membuat, merevisi, atau membatalkan", async () => {
     const toko = await buatTokoUji();
-    await buatLangsung({ tanggal: parseTanggalBisnis(TANGGAL), idToko: toko.id, kategoriBaru: "Minggu", alasan: "Awal", idPengguna: idAdmin });
+    await buatLangsung({
+      tanggal: parseTanggalBisnis(TANGGAL),
+      idToko: toko.id,
+      kategoriBaru: "Minggu",
+      alasan: "Awal",
+      idPengguna: idAdmin,
+    });
     const sebelum = await barisToko(toko.id);
     const revisiAwal = await revisiKalenderSaatIni();
 
     const viewer = await kepalaPenggunaUji("viewer");
     const viewerOperator = await kepalaPenggunaUji("viewer");
-    await tugaskanOperator({ idPengguna: viewerOperator.id, idGudang: await idGudangUji("Gudang Bali"), hakTindakan: [...daftarHakTindakan] });
+    await tugaskanOperator({
+      idPengguna: viewerOperator.id,
+      idGudang: await idGudangUji("Gudang Bali"),
+      hakTindakan: [...daftarHakTindakan],
+    });
 
     for (const cookie of [viewer.cookie, viewerOperator.cookie]) {
       kepala.cookie = cookie;
@@ -81,9 +91,9 @@ describe("non-admin ditolak di server", () => {
 
   it("pengguna belum masuk diarahkan ke halaman masuk", async () => {
     kepala.cookie = "";
-    await expect(
-      buatPerubahanKategori({ tanggal: TANGGAL, idToko: null, kategoriBaru: "Jumat", alasan: "Coba" }),
-    ).rejects.toMatchObject({ digest: expect.stringContaining("/masuk") });
+    await expect(buatPerubahanKategori({ tanggal: TANGGAL, idToko: null, kategoriBaru: "Jumat", alasan: "Coba" })).rejects.toMatchObject({
+      digest: expect.stringContaining("/masuk"),
+    });
   });
 });
 
@@ -112,8 +122,26 @@ describe("admin: buat, revisi, batal", () => {
       })),
     ).toEqual([
       // 2 Maret 2427 = Selasa: kategori dasar Senin–Kamis.
-      { revisi: 1, kategoriSebelum: "Senin–Kamis", kategoriSesudah: "Sabtu", alasan: "Event", dibuatOleh: idAdmin, status: "dibatalkan", dibatalkanOleh: idAdmin, alasanPembatalan: "Event batal" },
-      { revisi: 2, kategoriSebelum: "Sabtu", kategoriSesudah: "Minggu", alasan: "Event diperpanjang", dibuatOleh: idAdmin, status: "dibatalkan", dibatalkanOleh: idAdmin, alasanPembatalan: "Event batal" },
+      {
+        revisi: 1,
+        kategoriSebelum: "Senin–Kamis",
+        kategoriSesudah: "Sabtu",
+        alasan: "Event",
+        dibuatOleh: idAdmin,
+        status: "dibatalkan",
+        dibatalkanOleh: idAdmin,
+        alasanPembatalan: "Event batal",
+      },
+      {
+        revisi: 2,
+        kategoriSebelum: "Sabtu",
+        kategoriSesudah: "Minggu",
+        alasan: "Event diperpanjang",
+        dibuatOleh: idAdmin,
+        status: "dibatalkan",
+        dibatalkanOleh: idAdmin,
+        alasanPembatalan: "Event batal",
+      },
     ]);
   });
 

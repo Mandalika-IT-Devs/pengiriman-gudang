@@ -51,9 +51,7 @@ export function lepasTerpasang() {
 
 /** Menekan tombol pembuka dialog konfirmasi berdasarkan `aria-label` atau teksnya. */
 export function bukaDialogKonfirmasi(wadah: HTMLElement, nama: string) {
-  const tombol = [...wadah.querySelectorAll("button")].find(
-    (b) => b.getAttribute("aria-label") === nama || b.textContent?.trim() === nama,
-  );
+  const tombol = [...wadah.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === nama || b.textContent?.trim() === nama);
   if (tombol === undefined) throw new Error(`Tombol "${nama}" tidak ada.`);
   act(() => tombol.click());
   return tombol;

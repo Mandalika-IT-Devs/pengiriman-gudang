@@ -58,11 +58,7 @@ import { muatStatusCacheLaporan, type StatusCacheLaporan } from "@/server/lapora
 export type PeranTampil = "admin" | "operator" | "viewer";
 
 type JenisTindakanAdmin =
-  | "usulan-jadwal"
-  | "snapshot-libur"
-  | "produk-belum-dipetakan"
-  | "ranking-bulan-berjalan"
-  | "impor-gagal-atau-menunggu";
+  "usulan-jadwal" | "snapshot-libur" | "produk-belum-dipetakan" | "ranking-bulan-berjalan" | "impor-gagal-atau-menunggu";
 
 type JenisTindakanOperator = "draft-perlu-dihitung-ulang" | "toko-baris-tertahan" | "toko-belum-final";
 
@@ -261,8 +257,7 @@ async function langkahGudang({ gudang: g, belumFinal }: GudangTerdekat): Promise
     .from(draftRencana)
     .where(and(eq(draftRencana.gudangId, g.id), eq(draftRencana.tanggalKirim, tanggalKirim)));
   const perluDihitungUlang =
-    draft !== undefined &&
-    (await periksaHitungUlang({ ...draft, idDraft: draft.id, idGudang: g.id, tanggalKirim })).alasan.length > 0;
+    draft !== undefined && (await periksaHitungUlang({ ...draft, idDraft: draft.id, idGudang: g.id, tanggalKirim })).alasan.length > 0;
   const tidakDikirim = [...(await tokoTidakDikirimPekanIni(g.id, tanggalKirim))];
   const barisTertahan =
     draft === undefined

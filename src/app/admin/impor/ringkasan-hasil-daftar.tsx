@@ -8,7 +8,10 @@ import type { HasilDaftarSheet } from "@/server/impor/impor";
 export function RingkasanHasilDaftar({ sheet }: { sheet: readonly HasilDaftarSheet[] }) {
   const berhasil = sheet.filter((s) => s.keadaan === "berhasil").length;
   return (
-    <section aria-label="Hasil pendaftaran per sheet" className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-soft">
+    <section
+      aria-label="Hasil pendaftaran per sheet"
+      className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-card p-4 shadow-soft"
+    >
       <p className="font-semibold tabular-nums">{`Hasil unggahan: ${berhasil} sheet berhasil didaftarkan, ${sheet.length - berhasil} gagal.`}</p>
       <ul className="flex flex-col gap-2">
         {sheet.map((s) => (

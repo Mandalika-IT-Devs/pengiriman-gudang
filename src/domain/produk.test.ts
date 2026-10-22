@@ -10,16 +10,14 @@ type KasusKlasifikasi = {
   alasan?: string;
 };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/klasifikasi-produk.json"), "utf8"),
-) as { kasus: KasusKlasifikasi[] };
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/klasifikasi-produk.json"), "utf8")) as {
+  kasus: KasusKlasifikasi[];
+};
 
 describe("klasifikasiProduk (golden klasifikasi-produk)", () => {
   it.each(fixture.kasus)("$kode ($kategori) → $klasifikasi", (kasus) => {
     const harapan =
-      kasus.alasan === undefined
-        ? { klasifikasi: kasus.klasifikasi }
-        : { klasifikasi: kasus.klasifikasi, alasan: kasus.alasan };
+      kasus.alasan === undefined ? { klasifikasi: kasus.klasifikasi } : { klasifikasi: kasus.klasifikasi, alasan: kasus.alasan };
 
     expect(klasifikasiProduk(kasus.kode, kasus.kategori)).toStrictEqual(harapan);
   });

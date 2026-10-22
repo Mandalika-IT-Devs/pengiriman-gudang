@@ -74,7 +74,9 @@ describe("panjang cakupan hasil hitung di tampilan", () => {
       new RegExp(`data-draft-toko="${toko.id}".*?data-teks-cakupan="Cakupan 3 hari: 3 hari sampai sebelum kiriman berikutnya"`),
     );
     expect(await bukaToko(KAMIS)).toMatch(
-      new RegExp(`data-draft-toko="${toko.id}".*?data-teks-cakupan="Cakupan 5 hari: persiapan 1 hari \\+ 4 hari sampai sebelum kiriman berikutnya"`),
+      new RegExp(
+        `data-draft-toko="${toko.id}".*?data-teks-cakupan="Cakupan 5 hari: persiapan 1 hari \\+ 4 hari sampai sebelum kiriman berikutnya"`,
+      ),
     );
   });
 

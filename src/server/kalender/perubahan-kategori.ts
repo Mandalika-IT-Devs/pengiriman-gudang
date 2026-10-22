@@ -28,10 +28,7 @@ type IsianPerubahan = Cakupan & { kategoriBaru: KategoriDasar; alasan: string; i
 const PESAN_ALASAN_KOSONG = "Alasan wajib diisi.";
 
 const milikCakupan = ({ tanggal, idToko }: Cakupan) =>
-  and(
-    eq(perubahanKategori.tanggal, tanggal),
-    idToko === null ? isNull(perubahanKategori.tokoId) : eq(perubahanKategori.tokoId, idToko),
-  );
+  and(eq(perubahanKategori.tanggal, tanggal), idToko === null ? isNull(perubahanKategori.tokoId) : eq(perubahanKategori.tokoId, idToko));
 
 /**
  * Kategori yang berlaku untuk cakupan itu saat ini (▶ Keputusan 2026-10-10): untuk satu toko, perubahan toko itu →
@@ -39,9 +36,7 @@ const milikCakupan = ({ tanggal, idToko }: Cakupan) =>
  */
 function kategoriBerlaku({ tanggal, idToko }: Cakupan, daftar: readonly PerubahanKategori[]) {
   const toko = idToko === null ? "" : String(idToko);
-  const relevan = daftar.filter(
-    ({ cakupan }) => cakupan.jenis === "semua-toko" || (idToko !== null && cakupan.toko === toko),
-  );
+  const relevan = daftar.filter(({ cakupan }) => cakupan.jenis === "semua-toko" || (idToko !== null && cakupan.toko === toko));
   return kategoriEfektif(tanggal, toko, relevan);
 }
 
@@ -66,7 +61,10 @@ async function adaPerubahanAktif(tx: Tx, cakupan: Cakupan) {
 
 /** Nomor revisi berikutnya pada tanggal + cakupan: melanjutkan semua revisi yang pernah ada, termasuk yang dibatalkan. */
 async function revisiBerikutnya(tx: Tx, cakupan: Cakupan) {
-  const [baris] = await tx.select({ terbesar: max(perubahanKategori.revisi) }).from(perubahanKategori).where(milikCakupan(cakupan));
+  const [baris] = await tx
+    .select({ terbesar: max(perubahanKategori.revisi) })
+    .from(perubahanKategori)
+    .where(milikCakupan(cakupan));
   return (baris?.terbesar ?? 0) + 1;
 }
 
@@ -122,9 +120,7 @@ export async function revisiPerubahanKategori(isian: IsianPerubahan): Promise<Ha
  * Membatalkan seluruh perubahan aktif pada tanggal + cakupan (▶ Keputusan 2026-10-10), sehingga tanggal kembali ke
  * level berikutnya. Baris tidak dihapus: statusnya `dibatalkan`, dengan siapa, kapan, dan alasan pembatalan.
  */
-export async function batalkanPerubahanKategori(
-  isian: Cakupan & { alasan: string; idPengguna: string },
-): Promise<HasilPerubahanKategori> {
+export async function batalkanPerubahanKategori(isian: Cakupan & { alasan: string; idPengguna: string }): Promise<HasilPerubahanKategori> {
   const alasan = isian.alasan.trim();
   if (alasan === "") return { keadaan: "gagal", pesan: "Alasan pembatalan wajib diisi." };
 
@@ -271,10 +267,7 @@ export type PerubahanKategoriDibatalkan = PerubahanKategoriBerlaku & {
  * perubahan toko itu dan perubahan seluruh toko. Setiap revisi yang dibatalkan menjadi satu entri, terbaru dahulu.
  * Riwayat ini tidak ikut menentukan kategori efektif.
  */
-export async function muatRiwayatDibatalkanCakupan(
-  tanggal: TanggalBisnis,
-  idToko: number | null,
-): Promise<PerubahanKategoriDibatalkan[]> {
+export async function muatRiwayatDibatalkanCakupan(tanggal: TanggalBisnis, idToko: number | null): Promise<PerubahanKategoriDibatalkan[]> {
   const pembatal = alias(user, "pembatal");
   const baris = await db
     .select({

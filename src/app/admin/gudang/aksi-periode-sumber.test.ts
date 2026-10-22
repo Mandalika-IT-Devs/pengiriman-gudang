@@ -55,9 +55,7 @@ describe("operator dan viewer ditolak di server", () => {
     await tugaskanOperator({ idPengguna: operator.id, idGudang: bali, hakTindakan: [...daftarHakTindakan] });
     kepala.cookie = operator.cookie;
 
-    await expect(tetapkanPeriodeSumberGudang({ idGudang: bali, bulan: [januari, juni] })).rejects.toBeInstanceOf(
-      AksesDitolakError,
-    );
+    await expect(tetapkanPeriodeSumberGudang({ idGudang: bali, bulan: [januari, juni] })).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await bacaPeriodeSumber(bali)).toEqual(sebelum);
   });
 

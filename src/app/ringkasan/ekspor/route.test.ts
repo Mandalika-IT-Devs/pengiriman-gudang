@@ -103,7 +103,12 @@ async function baca(respons: Response) {
   const semua = XLSX.utils.sheet_to_json<(string | number | null)[]>(wb.Sheets.Ringkasan, { header: 1, defval: null });
   const indeksJudul = semua.findIndex((b) => b[0] === "Toko");
   const kolom = semua[indeksJudul] as string[];
-  const kepalaBerkas = Object.fromEntries(semua.slice(0, indeksJudul).filter((b) => b.length >= 2).map((b) => [b[0], b[1]]));
+  const kepalaBerkas = Object.fromEntries(
+    semua
+      .slice(0, indeksJudul)
+      .filter((b) => b.length >= 2)
+      .map((b) => [b[0], b[1]]),
+  );
   const baris = semua.slice(indeksJudul + 1).map((b) => Object.fromEntries(kolom.map((k, i) => [k, b[i]])));
   return { kepala: kepalaBerkas, kolom, baris };
 }
@@ -119,7 +124,10 @@ describe("GET /ringkasan/ekspor: akses", () => {
   });
 
   it("viewer (tanpa penugasan gudang) bisa mengekspor", async () => {
-    const respons = await ekspor("viewer", [["bulan", bulanUji()[0]], ["toko", String(data.tokoA.id)]]);
+    const respons = await ekspor("viewer", [
+      ["bulan", bulanUji()[0]],
+      ["toko", String(data.tokoA.id)],
+    ]);
     expect(respons.status).toBe(200);
     expect(respons.headers.get("content-type")).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     expect(respons.headers.get("content-disposition")).toBe(`attachment; filename="ringkasan-${data.tahun}-04.xlsx"`);
@@ -198,9 +206,7 @@ describe("GET /ringkasan/ekspor: isi berkas", () => {
   it("label status dan kategori di berkas sama dengan label di layar Ringkasan untuk baris yang sama (T77)", async () => {
     const parameter: [string, string][] = [...bulanUji().map((b): [string, string] => ["bulan", b]), ["produk", data.kodeB]];
     const { kolom, baris } = await baca(await ekspor("viewer", parameter));
-    const html = renderToStaticMarkup(
-      await HalamanRingkasan({ searchParams: Promise.resolve({ bulan: bulanUji(), produk: data.kodeB }) }),
-    );
+    const html = renderToStaticMarkup(await HalamanRingkasan({ searchParams: Promise.resolve({ bulan: bulanUji(), produk: data.kodeB }) }));
     const tr = new RegExp(`<tr[^>]*data-baris="${data.tokoB.nama}\\|${data.kodeB}".*?</tr>`).exec(html)?.[0] ?? "";
     expect(tr).not.toBe("");
     /** Teks terlihat satu sel kategori di layar (tanpa teks khusus pembaca layar). */
@@ -228,7 +234,10 @@ describe("GET /ringkasan/ekspor: isi berkas", () => {
     expect(tanpaPeriode.status).toBe(400);
     expect(await tanpaPeriode.json()).toEqual({ pesan: expect.stringContaining("Belum ada periode") });
 
-    const filterAsing = await ekspor("viewer", [["bulan", bulanUji()[0]], ["produk", "TIDAK-ADA"]]);
+    const filterAsing = await ekspor("viewer", [
+      ["bulan", bulanUji()[0]],
+      ["produk", "TIDAK-ADA"],
+    ]);
     expect(filterAsing.status).toBe(400);
     expect(await filterAsing.json()).toEqual({ pesan: expect.stringContaining("filter yang tidak tersedia") });
   });

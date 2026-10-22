@@ -9,7 +9,14 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: tiruan.segarkan
 
 import { Table, TableBody, TableCell } from "@/components/ui/table";
 
-import { BarisFilterKosong, BarisVarian, FilterVarian, KontrolFilterVarian, TautanTampilkanTertahan, type BarisFilter } from "./filter-varian";
+import {
+  BarisFilterKosong,
+  BarisVarian,
+  FilterVarian,
+  KontrolFilterVarian,
+  TautanTampilkanTertahan,
+  type BarisFilter,
+} from "./filter-varian";
 import { FormStokToko, InputStok } from "./form-stok-toko";
 
 // T117 (DESIGN §11.4): filter tampilan tabel varian satu toko. Semua · Tertahan · Stok kosong · Jumlah kirim > 0 dengan
@@ -22,8 +29,22 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const BARIS: (BarisFilter & { stokAkhir: number | null })[] = [
-  { kodeProduk: "PW110P-GOR", namaProduk: "GORGEOUS TUBEROSE - 110ML M PARFUM INTENSE", tertahan: true, stokKosong: true, kirimPositif: false, stokAkhir: null },
-  { kodeProduk: "A10M-GOR", namaProduk: "GORGEOUS TUBEROSE - 10ML ATOMIZER", tertahan: false, stokKosong: false, kirimPositif: true, stokAkhir: 3 },
+  {
+    kodeProduk: "PW110P-GOR",
+    namaProduk: "GORGEOUS TUBEROSE - 110ML M PARFUM INTENSE",
+    tertahan: true,
+    stokKosong: true,
+    kirimPositif: false,
+    stokAkhir: null,
+  },
+  {
+    kodeProduk: "A10M-GOR",
+    namaProduk: "GORGEOUS TUBEROSE - 10ML ATOMIZER",
+    tertahan: false,
+    stokKosong: false,
+    kirimPositif: true,
+    stokAkhir: 3,
+  },
   { kodeProduk: "A10M-SAN", namaProduk: "SANTAL - 10ML ATOMIZER", tertahan: true, stokKosong: false, kirimPositif: false, stokAkhir: -2 },
   { kodeProduk: "A10M-NO1", namaProduk: "NO1 GORGEOUS EDITION", tertahan: false, stokKosong: false, kirimPositif: true, stokAkhir: 8 },
   { kodeProduk: "A10M-HOL", namaProduk: null, tertahan: false, stokKosong: false, kirimPositif: false, stokAkhir: 50 },
@@ -116,10 +137,7 @@ function ketik(elemen: HTMLInputElement, nilai: string) {
 describe("filter tampilan tabel varian", () => {
   it("setiap filter menampilkan jumlahnya; awalnya Semua dengan seluruh baris", () => {
     const wadah = buka();
-    const label = [...wadah.querySelectorAll("button[data-filter-varian]")].map((b) => [
-      b.textContent,
-      b.getAttribute("aria-pressed"),
-    ]);
+    const label = [...wadah.querySelectorAll("button[data-filter-varian]")].map((b) => [b.textContent, b.getAttribute("aria-pressed")]);
     expect(label).toEqual([
       ["Semua(5)", "true"],
       ["Tertahan(2)", "false"],

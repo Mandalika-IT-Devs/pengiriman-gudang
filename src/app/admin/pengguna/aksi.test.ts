@@ -43,9 +43,7 @@ describe("viewer yang memanggil aksi admin langsung (tanpa UI) ditolak", () => {
 
   it("buatPengguna ditolak dan tidak ada pengguna yang dibuat", async () => {
     const email = emailUnik("oleh-viewer");
-    await expect(buatPengguna({ nama: "X", email, sandi: sandiUji, peran: "admin" })).rejects.toBeInstanceOf(
-      AksesDitolakError,
-    );
+    await expect(buatPengguna({ nama: "X", email, sandi: sandiUji, peran: "admin" })).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await cariPengguna(email)).toBeUndefined();
   });
 
@@ -262,10 +260,7 @@ describe("aplikasi selalu punya minimal satu admin aktif (PRD A3)", () => {
     await sisakanAdminAktifUji(admin.id, adminLain.id);
     kepala.cookie = admin.cookie;
 
-    await Promise.allSettled([
-      nonaktifkanPengguna({ idPengguna: adminLain.id }),
-      ubahPeran({ idPengguna: admin.id, peran: "viewer" }),
-    ]);
+    await Promise.allSettled([nonaktifkanPengguna({ idPengguna: adminLain.id }), ubahPeran({ idPengguna: admin.id, peran: "viewer" })]);
     expect(await adminAktifUji(admin.id, adminLain.id)).toHaveLength(1);
   });
 });

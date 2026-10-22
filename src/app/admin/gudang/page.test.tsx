@@ -86,7 +86,9 @@ describe("/admin/gudang: periode sumber", () => {
     const barisBali = new RegExp(`<tr[^>]*data-periode-gudang="${bali}"[^>]*>(.*?)</tr>`).exec(html)?.[1] ?? "";
     expect(barisBali).toContain(`Agustus ${tahun}, November ${tahun}`);
     // T121 (DESIGN §11.6): kolom Ditetapkan berisi tanggal singkat; waktu lengkap lewat title saat disorot.
-    expect(barisBali).toMatch(/Uji admin, <time dateTime="[^"]+" title="\w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB">\w+, \d{2}-\d{2}-\d{4}<\/time>/);
+    expect(barisBali).toMatch(
+      /Uji admin, <time dateTime="[^"]+" title="\w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB">\w+, \d{2}-\d{2}-\d{4}<\/time>/,
+    );
     const barisBandung = new RegExp(`<tr[^>]*data-periode-gudang="${bandung}"[^>]*>(.*?)</tr>`).exec(html)?.[1] ?? "";
     expect(barisBandung).toContain('data-status="periodeBelumDitetapkan"');
     expect(barisBandung).toContain("Belum ditetapkan");

@@ -102,7 +102,9 @@ test("Ringkasan 375 px: tombol Filter (n) membuka panel; tabel langsung setelah 
   expect(bayangan).not.toBe("none");
 });
 
-test("Kalender: grid tidak melebar keluar kolomnya di 1024–1440 px; di 375 px memilih tanggal menggulir ke Detail tanggal", async ({ page }) => {
+test("Kalender: grid tidak melebar keluar kolomnya di 1024–1440 px; di 375 px memilih tanggal menggulir ke Detail tanggal", async ({
+  page,
+}) => {
   await masuk(page);
 
   for (const lebar of [1024, 1280, 1440]) {
@@ -122,7 +124,9 @@ test("Kalender: grid tidak melebar keluar kolomnya di 1024–1440 px; di 375 px 
     // Tabel kisi muat di kolomnya: tidak lebih lebar dari wadahnya (tanpa gulir horizontal).
     const lebarKisi = await wadahTabel.evaluate((el) => ({ isi: el.scrollWidth, wadah: el.clientWidth }));
     expect(lebarKisi.isi, `lebar ${lebar}`).toBeLessThanOrEqual(lebarKisi.wadah);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `lebar ${lebar}`).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), `lebar ${lebar}`).toBe(
+      true,
+    );
   }
 
   await page.setViewportSize({ width: 375, height: 812 });

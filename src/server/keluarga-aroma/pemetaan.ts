@@ -26,10 +26,7 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type Pemetaan = { status: StatusKeluargaAroma; keluarga: Keluarga | null };
 
 /** Tujuan konfirmasi admin: tetapkan keluarga, tandai tanpa aroma, atau kembalikan ke belum dipetakan. */
-export type TujuanPemetaan =
-  | { status: "terpetakan"; idKeluarga: number }
-  | { status: "tanpa-aroma" }
-  | { status: "belum-dipetakan" };
+export type TujuanPemetaan = { status: "terpetakan"; idKeluarga: number } | { status: "tanpa-aroma" } | { status: "belum-dipetakan" };
 
 export type ButirPemetaan = { kodeProduk: string; tujuan: TujuanPemetaan };
 
@@ -89,14 +86,8 @@ export async function muatPemetaanProduk(filterStatus: StatusKeluargaAroma | nul
     .filter((s) => idKeluargaAktif.has(s.keluargaId))
     .map((s) => ({ segmen: s.segmen, keluarga: s.keluargaId }));
 
-  const jumlah = await db
-    .select({ status: produk.statusKeluargaAroma, jumlah: count() })
-    .from(produk)
-    .groupBy(produk.statusKeluargaAroma);
-  const jumlahPerStatus = Object.fromEntries(daftarStatusKeluargaAroma.map((s) => [s, 0])) as Record<
-    StatusKeluargaAroma,
-    number
-  >;
+  const jumlah = await db.select({ status: produk.statusKeluargaAroma, jumlah: count() }).from(produk).groupBy(produk.statusKeluargaAroma);
+  const jumlahPerStatus = Object.fromEntries(daftarStatusKeluargaAroma.map((s) => [s, 0])) as Record<StatusKeluargaAroma, number>;
   for (const j of jumlah) jumlahPerStatus[j.status] = j.jumlah;
 
   const semuaProduk = await db
@@ -170,9 +161,7 @@ export async function terapkanPemetaan(
   induk: typeof db | Tx = db,
 ): Promise<HasilPemetaanProduk[]> {
   return induk.transaction(async (tx) => {
-    const idKeluarga = [
-      ...new Set(butir.flatMap((b) => (b.tujuan.status === "terpetakan" ? [b.tujuan.idKeluarga] : []))),
-    ];
+    const idKeluarga = [...new Set(butir.flatMap((b) => (b.tujuan.status === "terpetakan" ? [b.tujuan.idKeluarga] : [])))];
     const daftarKeluarga =
       idKeluarga.length === 0 ? [] : await tx.select().from(keluargaAroma).where(inArray(keluargaAroma.id, idKeluarga));
     const keluargaPerId = new Map(daftarKeluarga.map((k) => [k.id, k]));

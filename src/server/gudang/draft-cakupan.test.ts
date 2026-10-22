@@ -58,11 +58,19 @@ describe("draft rencana menyimpan panjang cakupan hasil hitung dari jadwal", () 
 
   it("rencana final menyimpan panjang cakupan hasil hitung sebagai snapshot", async () => {
     await tokoDraft(KAMIS);
-    expect(await simpanStokToko({ idGudang: bandung, tanggalKirim: KAMIS, tokoId: toko.id, stok: [{ kodeProduk, stokAkhir: 10 }] })).toEqual({
+    expect(
+      await simpanStokToko({ idGudang: bandung, tanggalKirim: KAMIS, tokoId: toko.id, stok: [{ kodeProduk, stokAkhir: 10 }] }),
+    ).toEqual({
       keadaan: "berhasil",
     });
     const versiDilihat = (await bacaDraftRencana(bandung, KAMIS))?.toko.find((t) => t.id === toko.id)?.versi ?? "";
-    const hasil = await finalisasiRencanaToko({ idGudang: bandung, tanggalKirim: KAMIS, tokoId: toko.id, idPengguna: idOperator, versiDilihat });
+    const hasil = await finalisasiRencanaToko({
+      idGudang: bandung,
+      tanggalKirim: KAMIS,
+      tokoId: toko.id,
+      idPengguna: idOperator,
+      versiDilihat,
+    });
     if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
     const rencana = await bacaRencanaFinal(bandung, hasil.idRencana);
     expect(rencana?.jadwal).toMatchObject({ pola: "2x-seminggu", persiapanHari: 1, panjangCakupan: 4 });

@@ -38,7 +38,8 @@ const rencana = { xA: 0, xB: 0, yB: 0, zN: 0 };
 const pengiriman = { xA: 0, yB: 0, zN: 0 };
 type Sesi = { pengguna: PenggunaMasuk; cookie: string };
 /** Pengguna uji dan cookie sesinya. */
-const sesi: Record<"admin" | "viewer" | "operatorA" | "operatorLihatA" | "operatorAN" | "operatorN" | "operatorC", Sesi> = Object.create(null);
+const sesi: Record<"admin" | "viewer" | "operatorA" | "operatorLihatA" | "operatorAN" | "operatorN" | "operatorC", Sesi> =
+  Object.create(null);
 
 async function masuk(peran: "admin" | "viewer", penugasan: { idGudang: number; hakTindakan: HakTindakan[] }[] = []): Promise<Sesi> {
   const { id, email, cookie } = await kepalaPenggunaUji(peran);
@@ -63,7 +64,13 @@ beforeAll(async () => {
   rencana.yB = await final(gudangB, tokoY);
   rencana.zN = await final(gudangN, tokoZ);
 
-  const dasar = { persiapanHari: 1 as const, alasan: "permintaan mendesak", diusulkanOleh: admin.id, jenis: "tambahan" as const, status: "menunggu" as const };
+  const dasar = {
+    persiapanHari: 1 as const,
+    alasan: "permintaan mendesak",
+    diusulkanOleh: admin.id,
+    jenis: "tambahan" as const,
+    status: "menunggu" as const,
+  };
   const [xA, yB, zN] = await db
     .insert(pengirimanDiLuarJadwal)
     .values([
@@ -96,9 +103,12 @@ beforeEach(() => {
   kepala.cookie = "";
 });
 
-const buka = async (parameter: Record<string, string> = {}) => renderToStaticMarkup(await HalamanRiwayat({ searchParams: Promise.resolve(parameter) }));
+const buka = async (parameter: Record<string, string> = {}) =>
+  renderToStaticMarkup(await HalamanRiwayat({ searchParams: Promise.resolve(parameter) }));
 const bukaRincian = async (idRencana: number) =>
-  renderToStaticMarkup(await HalamanRincianRencanaFinal({ params: Promise.resolve({ idRencana: String(idRencana) }), searchParams: Promise.resolve({}) }));
+  renderToStaticMarkup(
+    await HalamanRincianRencanaFinal({ params: Promise.resolve({ idRencana: String(idRencana) }), searchParams: Promise.resolve({}) }),
+  );
 const idRencanaDiDaftar = (html: string) => [...html.matchAll(/<tr[^>]*data-rencana-final="(\d+)"/g)].map((m) => Number(m[1]));
 const idPengirimanDiDaftar = (html: string) => [...html.matchAll(/<tr[^>]*data-pengiriman="(\d+)"/g)].map((m) => Number(m[1]));
 const barisRencana = (html: string, id: number) => new RegExp(`<tr[^>]*data-rencana-final="${id}".*?</tr>`).exec(html)?.[0] ?? "";

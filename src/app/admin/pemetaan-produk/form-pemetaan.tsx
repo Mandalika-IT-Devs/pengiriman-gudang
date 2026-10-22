@@ -44,15 +44,7 @@ export function pilihanPemetaan(pemetaan: Pemetaan, keluargaAktif: readonly Kelu
 /**
  * Konfirmasi satu produk: tetapkan keluarga, tandai tanpa aroma, atau kembalikan ke belum dipetakan (T45).
  */
-export function FormPemetaan({
-  kode,
-  pemetaan,
-  keluarga,
-}: {
-  kode: string;
-  pemetaan: Pemetaan;
-  keluarga: Keluarga[];
-}) {
+export function FormPemetaan({ kode, pemetaan, keluarga }: { kode: string; pemetaan: Pemetaan; keluarga: Keluarga[] }) {
   const id = useId();
   const [nilai, setNilai] = useState(nilaiDari(pemetaan));
   const { tampilan, menunggu, berubah, tandaiBerubah, simpan } = usePenyimpanan(`status produk ${kode}`);

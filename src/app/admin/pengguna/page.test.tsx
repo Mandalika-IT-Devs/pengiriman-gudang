@@ -63,8 +63,7 @@ describe("/admin/pengguna", () => {
     const saya = await kepalaPenggunaUji("admin");
     kepala.cookie = saya.cookie;
     const html = renderToStaticMarkup(await HalamanPengguna());
-    const baris = (email: string) =>
-      [...html.matchAll(/<tr[^>]*>(.*?)<\/tr>/g)].map((m) => m[1]!).find((isi) => isi.includes(email)) ?? "";
+    const baris = (email: string) => [...html.matchAll(/<tr[^>]*>(.*?)<\/tr>/g)].map((m) => m[1]!).find((isi) => isi.includes(email)) ?? "";
     const peranTampil = (email: string) => /<span data-peran-tampil="[^"]+"[^>]*>([^<]*)<\/span>/.exec(baris(email))?.[1];
 
     expect(peranTampil(operator.email)).toBe("Operator");
@@ -113,9 +112,7 @@ describe("/admin/pengguna: kolom Kata sandi (T137, PRD A3 ▶ Keputusan 2026-10-
 
     expect(html).not.toContain(sandiUji);
     // Data yang dikirim ke komponen klien (payload RSC) juga tanpa kata sandi.
-    expect(JSON.stringify(halaman, (kunci, nilai: unknown) => (kunci.startsWith("_") ? undefined : nilai))).not.toContain(
-      sandiUji,
-    );
+    expect(JSON.stringify(halaman, (kunci, nilai: unknown) => (kunci.startsWith("_") ? undefined : nilai))).not.toContain(sandiUji);
   });
 
   it("akun admin: Kata sandi —; akun yang dibuat sebelum fitur ini: Belum tersedia dan —", async () => {

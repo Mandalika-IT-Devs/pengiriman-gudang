@@ -11,8 +11,26 @@ import { seedMasterGudangToko } from "./seed-master";
 // Seed hubungan toko–gudang dan jadwal awal (T84, PRD A3 dan A5 ▶ Keputusan 2026-10-12). Ekspektasi disalin dari tabel PRD A5.
 
 const TOKO_SEED = [
-  "SMB", "BOTANI", "MKG", "KOKAS", "SMS", "ALSUT", "BXC", "KARAWACI", "CCM", "BSD", "DELTAMAS", "PMB", "KUNCIT",
-  "TSM CBB", "SENTUL", "LMK", "DMB", "LWB", "PASKAL", "PVJ",
+  "SMB",
+  "BOTANI",
+  "MKG",
+  "KOKAS",
+  "SMS",
+  "ALSUT",
+  "BXC",
+  "KARAWACI",
+  "CCM",
+  "BSD",
+  "DELTAMAS",
+  "PMB",
+  "KUNCIT",
+  "TSM CBB",
+  "SENTUL",
+  "LMK",
+  "DMB",
+  "LWB",
+  "PASKAL",
+  "PVJ",
 ];
 const TOKO_TERBUKA = ["PMS", "PMJ", "QUEEN", "MKS", "DPM"];
 
@@ -21,7 +39,10 @@ let idAdmin: string;
 let adminDinonaktifkan: string[] = [];
 
 async function idTokoMaster(nama: readonly string[]) {
-  const baris = await db.select({ id: toko.id, nama: toko.nama }).from(toko).where(inArray(toko.nama, [...nama]));
+  const baris = await db
+    .select({ id: toko.id, nama: toko.nama })
+    .from(toko)
+    .where(inArray(toko.nama, [...nama]));
   return new Map(baris.map((b) => [b.nama, b.id]));
 }
 
@@ -85,7 +106,24 @@ describe("seedHubunganJadwalAwal", () => {
     const idToko = await idTokoMaster([...TOKO_SEED, ...TOKO_TERBUKA]);
     const gudangToko = new Map((await hubunganSeed()).map((h) => [h.tokoId, h.gudang]));
     expect(gudangToko.size).toBe(20);
-    for (const nama of ["SMB", "BOTANI", "MKG", "KOKAS", "SMS", "ALSUT", "BXC", "KARAWACI", "CCM", "BSD", "DELTAMAS", "PMB", "KUNCIT", "TSM CBB", "SENTUL", "LMK"]) {
+    for (const nama of [
+      "SMB",
+      "BOTANI",
+      "MKG",
+      "KOKAS",
+      "SMS",
+      "ALSUT",
+      "BXC",
+      "KARAWACI",
+      "CCM",
+      "BSD",
+      "DELTAMAS",
+      "PMB",
+      "KUNCIT",
+      "TSM CBB",
+      "SENTUL",
+      "LMK",
+    ]) {
       expect(gudangToko.get(idToko.get(nama)!), nama).toBe("Gudang Cibubur");
     }
     for (const nama of ["DMB", "LWB"]) expect(gudangToko.get(idToko.get(nama)!), nama).toBe("Gudang Bali");

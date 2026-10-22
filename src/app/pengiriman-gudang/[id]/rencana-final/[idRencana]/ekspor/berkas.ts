@@ -44,7 +44,15 @@ function nilaiProduk(b: BarisProduk): Record<KolomProduk, Sel> {
 }
 
 /** Kolom tabel produk ekspor halaman Riwayat (T129; PRD A7 ▶ Keputusan 2026-10-14, tidak berubah oleh T133). */
-export const KOLOM_PRODUK_EKSPOR: readonly KolomProduk[] = ["Kode produk", "Nama produk", "Kebutuhan barang", "Stok akhir", "Buffer (%)", "Jumlah kirim", "Status"];
+export const KOLOM_PRODUK_EKSPOR: readonly KolomProduk[] = [
+  "Kode produk",
+  "Nama produk",
+  "Kebutuhan barang",
+  "Stok akhir",
+  "Buffer (%)",
+  "Jumlah kirim",
+  "Status",
+];
 
 /** Sel tabel produk satu baris rencana final, urut `KOLOM_PRODUK_EKSPOR` (ekspor halaman Riwayat). */
 export function selProdukEkspor(b: BarisProduk): Sel[] {

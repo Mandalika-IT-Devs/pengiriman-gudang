@@ -50,9 +50,7 @@ export async function gantiNamaToko(input: unknown): Promise<HasilSimpan> {
  */
 export async function ubahStatusToko(input: unknown): Promise<HasilSimpan> {
   await wajibAdmin();
-  const isian = z
-    .object({ idToko: skemaIdToko, aktif: z.boolean({ error: "Status toko tidak dikenal." }) })
-    .safeParse(input);
+  const isian = z.object({ idToko: skemaIdToko, aktif: z.boolean({ error: "Status toko tidak dikenal." }) }).safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
   const ada = await tetapkanAktifToko(isian.data.idToko, isian.data.aktif);

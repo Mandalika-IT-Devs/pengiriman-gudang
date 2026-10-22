@@ -24,9 +24,7 @@ type Konteks = { eksekutor: Eksekutor; produk: Map<string, ProdukMaster>; alias:
 
 async function muatKonteks(eksekutor: Eksekutor): Promise<Konteks> {
   const master = await eksekutor.select({ kode: produk.kode, nama: produk.nama }).from(produk);
-  const alias = await eksekutor
-    .select({ alias: aliasNamaStok.alias, kodeProduk: aliasNamaStok.kodeProduk })
-    .from(aliasNamaStok);
+  const alias = await eksekutor.select({ alias: aliasNamaStok.alias, kodeProduk: aliasNamaStok.kodeProduk }).from(aliasNamaStok);
   return { eksekutor, produk: new Map(master.map((p) => [p.kode.toUpperCase(), p])), alias };
 }
 
@@ -78,10 +76,7 @@ async function tambahSatu(
   return { keadaan: "ditambahkan", alias, kodeProduk };
 }
 
-export async function tambahAliasStok(
-  isian: { alias: string; kodeProduk: string },
-  idPengguna: string,
-): Promise<HasilTambahAlias> {
+export async function tambahAliasStok(isian: { alias: string; kodeProduk: string }, idPengguna: string): Promise<HasilTambahAlias> {
   return tambahSatu(await muatKonteks(db), isian, idPengguna);
 }
 

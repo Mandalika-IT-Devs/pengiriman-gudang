@@ -33,7 +33,10 @@ beforeAll(async () => {
   const pengguna = await buatPenggunaUji("admin");
   idGudang = (await buatGudangUji()).id;
   const lain = await buatTokoUji();
-  [mkg] = await db.insert(toko).values({ nama: `MKG ${acak}` }).returning({ id: toko.id, nama: toko.nama });
+  [mkg] = await db
+    .insert(toko)
+    .values({ nama: `MKG ${acak}` })
+    .returning({ id: toko.id, nama: toko.nama });
 
   await rencanaFinalUji({ idGudang, idToko: lain.id, tanggalKirim: "2030-03-31", idPengguna: pengguna.id });
   const [dasar] = await db.select().from(rencanaFinal).where(eq(rencanaFinal.gudangId, idGudang));
@@ -63,12 +66,7 @@ beforeAll(async () => {
     .returning({ id: rencanaFinal.id });
   id.mkgV1 = v1.id;
   id.mkgV2 = v2.id;
-  urutan = [
-    dasar.id,
-    ...tokoLain.sort((a, b) => b.tanggalKirim.localeCompare(a.tanggalKirim)).map((r) => r.id),
-    id.mkgV2,
-    id.mkgV1,
-  ];
+  urutan = [dasar.id, ...tokoLain.sort((a, b) => b.tanggalKirim.localeCompare(a.tanggalKirim)).map((r) => r.id), id.mkgV2, id.mkgV1];
 }, 60_000);
 
 afterAll(async () => {

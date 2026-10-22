@@ -25,19 +25,16 @@ export const DialogTutup = DialogPrimitive.Close;
  */
 export const DialogPortal = DialogPrimitive.Portal;
 
-const kelasIsi = cva(
-  "fixed z-50 flex flex-col border border-border/60 bg-card text-sm text-card-foreground shadow-float outline-none",
-  {
-    variants: {
-      bentuk: {
-        samping: "inset-y-0 right-0 w-full sm:w-[35rem] sm:max-w-[calc(100vw-2rem)] sm:rounded-l-3xl sm:border-r-0",
-        // Di tengah tanpa translate (translate dimatikan saat prefers-reduced-motion, DESIGN §5).
-        tengah: "inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-3xl rounded-3xl",
-        menu: "inset-4 gap-4 overflow-y-auto rounded-3xl p-4",
-      },
+const kelasIsi = cva("fixed z-50 flex flex-col border border-border/60 bg-card text-sm text-card-foreground shadow-float outline-none", {
+  variants: {
+    bentuk: {
+      samping: "inset-y-0 right-0 w-full sm:w-[35rem] sm:max-w-[calc(100vw-2rem)] sm:rounded-l-3xl sm:border-r-0",
+      // Di tengah tanpa translate (translate dimatikan saat prefers-reduced-motion, DESIGN §5).
+      tengah: "inset-0 m-auto h-fit max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-3xl rounded-3xl",
+      menu: "inset-4 gap-4 overflow-y-auto rounded-3xl p-4",
     },
   },
-);
+});
 
 type Bentuk = "samping" | "tengah" | "menu";
 

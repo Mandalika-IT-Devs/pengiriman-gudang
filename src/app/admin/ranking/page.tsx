@@ -100,10 +100,7 @@ export default async function HalamanRanking() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Link
-                      href={`/admin/ranking/${r.id}`}
-                      className={tautanTombolVariants()}
-                    >
+                    <Link href={`/admin/ranking/${r.id}`} className={tautanTombolVariants()}>
                       Tinjau ranking<span className="sr-only"> {formatVersiRanking(r)}</span>
                     </Link>
                   </TableCell>

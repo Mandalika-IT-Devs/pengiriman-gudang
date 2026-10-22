@@ -9,9 +9,7 @@ import { bacaRanking, type SelMentah } from "./ranking";
 type BarisGolden = { baris: number; rank: number; variant: string; qtySales: number };
 type KasusError = { nama: string; jenis: string; header: string[]; baris: SelMentah[][]; hasil: "ditolak" };
 
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/ranking-september-2026.json"), "utf8"),
-) as {
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/ranking-september-2026.json"), "utf8")) as {
   sheet: string;
   header: string[];
   barisKosongDiabaikan: number[];
@@ -43,7 +41,10 @@ function jenisError(hasil: ReturnType<typeof bacaRanking>): string[] {
 
 describe("bacaRanking — golden ranking-september-2026", () => {
   it("semua baris dan tujuh besar sesuai golden; baris kosong diabaikan", () => {
-    const hasil = bacaRanking([{ nama: "LAIN", baris: [["x"]] }, { nama: golden.sheet, baris: barisSheetGolden() }]);
+    const hasil = bacaRanking([
+      { nama: "LAIN", baris: [["x"]] },
+      { nama: golden.sheet, baris: barisSheetGolden() },
+    ]);
 
     expect(hasil).toEqual({ ok: true, baris: golden.baris, tujuhBesar: golden.tujuhBesar });
   });

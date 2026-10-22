@@ -51,7 +51,12 @@ export async function isiTabDiLuarJadwal({
         Catatan pengiriman di luar jadwal dengan semua status, terbaru di atas. Daftar ini hanya untuk dibaca.
       </p>
       <FilterRiwayat action={urlHalaman} tab={tab} gudang={pilihan.gudang} toko={pilihan.toko} terapan={terapan} />
-      <EksporRiwayat cakupan={cakupanEkspor} parameter={keadaanUrl} idGudangHasil={hasil.map((e) => e.idGudang)} pilihanGudang={pilihan.gudang} />
+      <EksporRiwayat
+        cakupan={cakupanEkspor}
+        parameter={keadaanUrl}
+        idGudangHasil={hasil.map((e) => e.idGudang)}
+        pilihanGudang={pilihan.gudang}
+      />
       <TabelRiwayatPengiriman
         label="Riwayat pengiriman di luar jadwal"
         daftar={daftar.baris}

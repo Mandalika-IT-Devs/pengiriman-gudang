@@ -48,11 +48,7 @@ async function pemetaanProduk(kode: string) {
 }
 
 async function riwayatProduk(kode: string) {
-  return db
-    .select()
-    .from(riwayatPemetaanProduk)
-    .where(eq(riwayatPemetaanProduk.kodeProduk, kode))
-    .orderBy(desc(riwayatPemetaanProduk.id));
+  return db.select().from(riwayatPemetaanProduk).where(eq(riwayatPemetaanProduk.kodeProduk, kode)).orderBy(desc(riwayatPemetaanProduk.id));
 }
 
 beforeEach(() => {
@@ -64,18 +60,18 @@ describe("non-admin ditolak di server sebelum membaca atau menulis", () => {
   it("viewer ditolak dan status produk tidak berubah, tanpa riwayat", async () => {
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
     const kode = await buatProduk(kodeUnik("DW110E-X"));
-    await expect(
-      konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "tanpa-aroma" } }] }),
-    ).rejects.toBeInstanceOf(AksesDitolakError);
+    await expect(konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "tanpa-aroma" } }] })).rejects.toBeInstanceOf(
+      AksesDitolakError,
+    );
     expect(await pemetaanProduk(kode)).toEqual({ status: "belum-dipetakan", idKeluarga: null });
     expect(await riwayatProduk(kode)).toEqual([]);
   });
 
   it("pengguna yang belum masuk diarahkan ke halaman masuk", async () => {
     const kode = await buatProduk(kodeUnik("DW110E-X"));
-    await expect(
-      konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "tanpa-aroma" } }] }),
-    ).rejects.toMatchObject({ digest: expect.stringContaining("/masuk") });
+    await expect(konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "tanpa-aroma" } }] })).rejects.toMatchObject({
+      digest: expect.stringContaining("/masuk"),
+    });
     expect(await pemetaanProduk(kode)).toEqual({ status: "belum-dipetakan", idKeluarga: null });
   });
 });
@@ -186,9 +182,10 @@ describe("admin mengonfirmasi pemetaan", () => {
   it("isian tidak valid ditolak tanpa mengubah apa pun", async () => {
     expect(await konfirmasiPemetaan({ butir: [] })).toEqual({ keadaan: "gagal", pesan: "Pilih minimal satu produk." });
     const kode = await buatProduk(kodeUnik("DW110E-X"));
-    expect(
-      await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan" } }] }),
-    ).toEqual({ keadaan: "gagal", pesan: "Pilih keluarga aroma." });
+    expect(await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan" } }] })).toEqual({
+      keadaan: "gagal",
+      pesan: "Pilih keluarga aroma.",
+    });
     expect(await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "lain" } }] })).toEqual({
       keadaan: "gagal",
       pesan: "Pilih keluarga aroma, tanpa aroma, atau belum dipetakan.",
@@ -221,13 +218,9 @@ describe("keluarga aroma nonaktif (PRD A6 ▶ Keputusan 2026-10-10)", () => {
     const keluarga = await buatKeluarga();
     await nonaktifkan(keluarga.id);
     const kode = await buatProduk(kodeUnik("DW110E-X"));
-    expect(
-      await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan", idKeluarga: keluarga.id } }] }),
-    ).toEqual({
+    expect(await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan", idKeluarga: keluarga.id } }] })).toEqual({
       keadaan: "berhasil",
-      hasil: [
-        { kodeProduk: kode, status: "gagal", pesan: `Keluarga aroma ${keluarga.nama} nonaktif. Pilih keluarga aroma yang aktif.` },
-      ],
+      hasil: [{ kodeProduk: kode, status: "gagal", pesan: `Keluarga aroma ${keluarga.nama} nonaktif. Pilih keluarga aroma yang aktif.` }],
     });
     expect(await pemetaanProduk(kode)).toEqual({ status: "belum-dipetakan", idKeluarga: null });
     expect(await riwayatProduk(kode)).toEqual([]);
@@ -278,9 +271,10 @@ describe("keluarga aroma nonaktif (PRD A6 ▶ Keputusan 2026-10-10)", () => {
     expect(await pemetaanProduk(kode)).toEqual({ status: "terpetakan", idKeluarga: keluarga.id });
 
     const ke = { status: "terpetakan", keluarga: { id: keluarga.id, nama: keluarga.nama } };
-    expect(
-      await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan", idKeluarga: keluarga.id } }] }),
-    ).toEqual({ keadaan: "berhasil", hasil: [{ kodeProduk: kode, status: "tidakBerubah", ke }] });
+    expect(await konfirmasiPemetaan({ butir: [{ kodeProduk: kode, tujuan: { status: "terpetakan", idKeluarga: keluarga.id } }] })).toEqual({
+      keadaan: "berhasil",
+      hasil: [{ kodeProduk: kode, status: "tidakBerubah", ke }],
+    });
     expect(await pemetaanProduk(kode)).toEqual({ status: "terpetakan", idKeluarga: keluarga.id });
     expect(await riwayatProduk(kode)).toHaveLength(1);
   });

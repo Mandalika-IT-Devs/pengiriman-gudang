@@ -18,14 +18,7 @@ vi.mock("next/cache", () => ({
   },
 }));
 
-import {
-  hapusAlias,
-  hapusSegmenKode,
-  tambahAlias,
-  tambahKeluargaAroma,
-  tambahSegmenKode,
-  ubahKeluargaAroma,
-} from "./aksi";
+import { hapusAlias, hapusSegmenKode, tambahAlias, tambahKeluargaAroma, tambahSegmenKode, ubahKeluargaAroma } from "./aksi";
 
 /** Teks unik per test: database test tidak dikosongkan antar putaran, dan alias unik di seluruh keluarga. */
 function unik(awalan: string) {
@@ -65,17 +58,15 @@ describe("non-admin ditolak di server sebelum membaca atau menulis", () => {
 
   it("ubahKeluargaAroma ditolak dan keluarga tidak berubah", async () => {
     const keluarga = await buatKeluargaUji();
-    await expect(
-      ubahKeluargaAroma({ idKeluarga: keluarga.id, nama: "DIUBAH VIEWER", aktif: false }),
-    ).rejects.toBeInstanceOf(AksesDitolakError);
+    await expect(ubahKeluargaAroma({ idKeluarga: keluarga.id, nama: "DIUBAH VIEWER", aktif: false })).rejects.toBeInstanceOf(
+      AksesDitolakError,
+    );
     expect(await cariKeluarga(keluarga.id)).toEqual(keluarga);
   });
 
   it("tambahAlias ditolak dan alias tidak bertambah", async () => {
     const keluarga = await buatKeluargaUji();
-    await expect(tambahAlias({ idKeluarga: keluarga.id, alias: unik("ALIAS") })).rejects.toBeInstanceOf(
-      AksesDitolakError,
-    );
+    await expect(tambahAlias({ idKeluarga: keluarga.id, alias: unik("ALIAS") })).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await aliasMilik(keluarga.id)).toEqual([]);
   });
 
@@ -193,10 +184,7 @@ describe("admin mengelola keluarga aroma", () => {
 });
 
 async function segmenMilik(idKeluarga: number) {
-  const baris = await db
-    .select()
-    .from(segmenKodeKeluargaAroma)
-    .where(eq(segmenKodeKeluargaAroma.keluargaId, idKeluarga));
+  const baris = await db.select().from(segmenKodeKeluargaAroma).where(eq(segmenKodeKeluargaAroma.keluargaId, idKeluarga));
   return baris.map((b) => b.segmen);
 }
 
@@ -209,9 +197,7 @@ describe("segmen kode keluarga (T45)", () => {
   it("non-admin ditolak: tambah dan hapus segmen tidak mengubah apa pun", async () => {
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
     const keluarga = await buatKeluargaUji();
-    await expect(tambahSegmenKode({ idKeluarga: keluarga.id, segmen: segmenUnik() })).rejects.toBeInstanceOf(
-      AksesDitolakError,
-    );
+    await expect(tambahSegmenKode({ idKeluarga: keluarga.id, segmen: segmenUnik() })).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await segmenMilik(keluarga.id)).toEqual([]);
 
     const segmen = segmenUnik();
@@ -269,10 +255,7 @@ describe("segmen kode keluarga (T45)", () => {
 
     it("hapus segmen", async () => {
       const keluarga = await buatKeluargaUji();
-      const [baris] = await db
-        .insert(segmenKodeKeluargaAroma)
-        .values({ keluargaId: keluarga.id, segmen: segmenUnik() })
-        .returning();
+      const [baris] = await db.insert(segmenKodeKeluargaAroma).values({ keluargaId: keluarga.id, segmen: segmenUnik() }).returning();
       expect(await hapusSegmenKode({ idSegmen: baris.id })).toEqual({ keadaan: "berhasil" });
       expect(await segmenMilik(keluarga.id)).toEqual([]);
       expect(await hapusSegmenKode({ idSegmen: baris.id })).toEqual({

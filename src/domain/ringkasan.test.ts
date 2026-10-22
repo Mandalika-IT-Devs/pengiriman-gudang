@@ -10,9 +10,7 @@ import {
   type MasukanRataRataBulanan,
 } from "./laporan";
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/laporan-15GL-GOR-PMS-juni.json"), "utf8"),
-) as {
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/laporan-15GL-GOR-PMS-juni.json"), "utf8")) as {
   pengamatan: { tanggal: string; qty: number; selSumber: string }[];
   harapan: {
     nilaiMingguan: (MasukanNilaiMingguan & { tanggal: string[] })[];
@@ -72,9 +70,7 @@ describe("hitungRingkasan (golden laporan-15GL-GOR-PMS-juni)", () => {
   });
 
   it("hasil sama dengan Ringkasan hitungLaporan", () => {
-    expect(hitungRingkasan(hasilGolden.rataRataBulanan, ["2026-06", "2026-07"])).toEqual(
-      hasilGolden.rataRataRingkasan,
-    );
+    expect(hitungRingkasan(hasilGolden.rataRataBulanan, ["2026-06", "2026-07"])).toEqual(hasilGolden.rataRataRingkasan);
   });
 });
 
@@ -126,9 +122,7 @@ describe("hitungRingkasan (PRD A2)", () => {
       rataRata("2026-06", "Jumat", 4),
       rataRata("2026-07", "Jumat", 3),
     ];
-    expect(
-      hitungRingkasan(masukan, ["2026-06", "2026-07"]).map(({ kategori, kelengkapan }) => ({ kategori, kelengkapan })),
-    ).toEqual([
+    expect(hitungRingkasan(masukan, ["2026-06", "2026-07"]).map(({ kategori, kelengkapan }) => ({ kategori, kelengkapan }))).toEqual([
       { kategori: "Senin–Kamis", kelengkapan: "parsial" },
       { kategori: "Jumat", kelengkapan: "lengkap" },
     ]);
@@ -141,18 +135,14 @@ describe("hitungRingkasan (PRD A2)", () => {
   it("menolak bulan pilihan tidak valid dan rata-rata bulanan ganda", () => {
     expect(() => hitungRingkasan([], [])).toThrow(RangeError);
     expect(() => hitungRingkasan([], ["2026-13"])).toThrow(RangeError);
-    expect(() =>
-      hitungRingkasan([rataRata("2026-06", "Sabtu", 1), rataRata("2026-06", "Sabtu", 2)], ["2026-06"]),
-    ).toThrow(RangeError);
+    expect(() => hitungRingkasan([rataRata("2026-06", "Sabtu", 1), rataRata("2026-06", "Sabtu", 2)], ["2026-06"])).toThrow(RangeError);
   });
 });
 
 describe("hitungPerbandinganMingguSama", () => {
   it("golden: Senin–Kamis M1 Juni 1 dan Juli 0 → ⌈1/2⌉ = 1", () => {
     const perbandingan = hitungPerbandinganMingguSama(fixture.harapan.nilaiMingguan, ["2026-06", "2026-07"]);
-    expect(
-      perbandingan.find((nilai) => nilai.kategori === "Senin–Kamis" && nilai.mingguLaporan === 1),
-    ).toEqual({
+    expect(perbandingan.find((nilai) => nilai.kategori === "Senin–Kamis" && nilai.mingguLaporan === 1)).toEqual({
       kategori: "Senin–Kamis",
       mingguLaporan: 1,
       bulanLaporan: ["2026-06", "2026-07"],
@@ -163,9 +153,7 @@ describe("hitungPerbandinganMingguSama", () => {
   });
 
   it("golden: hasil dari nilai mingguan fixture sama dengan hitungLaporan", () => {
-    expect(hitungPerbandinganMingguSama(fixture.harapan.nilaiMingguan, ["2026-06", "2026-07"])).toEqual(
-      hasilGolden.perbandinganMingguSama,
-    );
+    expect(hitungPerbandinganMingguSama(fixture.harapan.nilaiMingguan, ["2026-06", "2026-07"])).toEqual(hasilGolden.perbandinganMingguSama);
   });
 
   it("Minggu 1 Juni = 1, Minggu 1 Juli = 3 → ⌈4/2⌉ = 2; bulan tanpa nilai tidak menambah pembagi", () => {

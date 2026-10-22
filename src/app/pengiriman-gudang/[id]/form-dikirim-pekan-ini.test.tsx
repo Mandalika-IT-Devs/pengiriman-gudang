@@ -30,7 +30,8 @@ function buka(dikirim: boolean) {
   );
 }
 
-const pilihan = (wadah: HTMLElement, kode: "ya" | "tidak") => wadah.querySelector<HTMLInputElement>(`input[data-pilihan-dikirim="${kode}"]`)!;
+const pilihan = (wadah: HTMLElement, kode: "ya" | "tidak") =>
+  wadah.querySelector<HTMLInputElement>(`input[data-pilihan-dikirim="${kode}"]`)!;
 const tombol = (wadah: HTMLElement) => wadah.querySelector<HTMLButtonElement>('button[type="submit"]')!;
 const status = (wadah: HTMLElement) => wadah.querySelector("[data-keadaan]")?.getAttribute("data-keadaan") ?? null;
 

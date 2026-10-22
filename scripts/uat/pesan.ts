@@ -74,7 +74,7 @@ export function pesanPortBentrok(port: number): string {
   return [
     `Port ${port} sudah dipakai program lain di laptop ini, jadi pnpm uat tidak bisa memakainya.`,
     `Hentikan program yang memakai port ${port} (misalnya PostgreSQL atau aplikasi lain yang sedang berjalan),`,
-    "lalu jalankan pnpm uat lagi. Lihat docs/UAT.md bagian \"Jika ada masalah saat menyalakan\".",
+    'lalu jalankan pnpm uat lagi. Lihat docs/UAT.md bagian "Jika ada masalah saat menyalakan".',
   ].join("\n");
 }
 
@@ -99,7 +99,7 @@ export function pesanAplikasiSiap({ urlAplikasi, emailAdmin }: { urlAplikasi: st
 
 export const PESAN_DOCKER_MATI = [
   "Docker belum menyala.",
-  "Buka Docker Desktop, tunggu sampai statusnya \"running\", lalu jalankan pnpm uat lagi.",
+  'Buka Docker Desktop, tunggu sampai statusnya "running", lalu jalankan pnpm uat lagi.',
 ].join("\n");
 
 export const PESAN_DOCKER_TIDAK_ADA = [

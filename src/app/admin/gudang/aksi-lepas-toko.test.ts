@@ -55,8 +55,7 @@ const sebagai = (cookie: string) => {
 };
 const draft = (tanggalKirim: TanggalBisnis) => bacaDraftRencana(cibubur, tanggalKirim);
 const botaniDi = async (tanggalKirim: TanggalBisnis) => (await draft(tanggalKirim))?.toko.find((t) => t.id === botani.id);
-const bacaPengiriman = async (id: number) =>
-  (await db.select().from(pengirimanDiLuarJadwal).where(eq(pengirimanDiLuarJadwal.id, id)))[0];
+const bacaPengiriman = async (id: number) => (await db.select().from(pengirimanDiLuarJadwal).where(eq(pengirimanDiLuarJadwal.id, id)))[0];
 const jadwalBotani = () => db.select().from(jadwalToko).where(eq(jadwalToko.tokoId, botani.id)).orderBy(asc(jadwalToko.id));
 
 async function hitung(tanggalKirim: TanggalBisnis) {
@@ -64,7 +63,9 @@ async function hitung(tanggalKirim: TanggalBisnis) {
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
 }
 
-async function sisipkanPengiriman(isian: Omit<typeof pengirimanDiLuarJadwal.$inferInsert, "gudangId" | "tokoId" | "alasan" | "diusulkanOleh">) {
+async function sisipkanPengiriman(
+  isian: Omit<typeof pengirimanDiLuarJadwal.$inferInsert, "gudangId" | "tokoId" | "alasan" | "diusulkanOleh">,
+) {
   const berlaku = isian.status === "berlaku" ? { diputuskanOleh: admin.id, diputuskanPada: SEKARANG } : {};
   const [p] = await db
     .insert(pengirimanDiLuarJadwal)
@@ -102,7 +103,12 @@ beforeAll(async () => {
   idRencanaSenin = final.idRencana;
 
   // Pengiriman di luar jadwal: dua yang akan datang (berlaku dan menunggu), satu yang sudah lewat, satu yang sudah final.
-  pengiriman.tambahanBerlaku = await sisipkanPengiriman({ jenis: "tambahan", tanggalKirim: "2026-10-20", persiapanHari: 1, status: "berlaku" });
+  pengiriman.tambahanBerlaku = await sisipkanPengiriman({
+    jenis: "tambahan",
+    tanggalKirim: "2026-10-20",
+    persiapanHari: 1,
+    status: "berlaku",
+  });
   pengiriman.pindahMenunggu = await sisipkanPengiriman({
     jenis: "pindah",
     tanggalKirim: "2026-10-27",

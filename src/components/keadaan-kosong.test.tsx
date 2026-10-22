@@ -16,6 +16,8 @@ describe("KeadaanKosong", () => {
     expect(html).toMatch(
       /^<div data-keadaan-kosong[^>]*><span aria-hidden="true" class="[^"]*rounded-2xl bg-primary\/10 text-primary[^"]*"><svg[^>]*stroke-width="2"[^>]*class="[^"]*lucide-inbox[^"]*size-5[^"]*"/,
     );
-    expect(html).toMatch(/<p class="[^"]*font-semibold[^"]*">Belum ada apa-apa\.<\/p><p class="text-muted-foreground">Lakukan sesuatu\.<\/p><button/);
+    expect(html).toMatch(
+      /<p class="[^"]*font-semibold[^"]*">Belum ada apa-apa\.<\/p><p class="text-muted-foreground">Lakukan sesuatu\.<\/p><button/,
+    );
   });
 });

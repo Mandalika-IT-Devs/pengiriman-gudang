@@ -52,7 +52,10 @@ export function BarisGudang({ gudang }: { gudang: DataBarisGudang }) {
             id={`${id}-form`}
             onSubmit={(event) => {
               event.preventDefault();
-              simpan(() => gantiNamaGudang({ idGudang: gudang.id, nama }), () => setMengubah(false));
+              simpan(
+                () => gantiNamaGudang({ idGudang: gudang.id, nama }),
+                () => setMengubah(false),
+              );
             }}
           >
             <label className="sr-only" htmlFor={`${id}-nama`}>

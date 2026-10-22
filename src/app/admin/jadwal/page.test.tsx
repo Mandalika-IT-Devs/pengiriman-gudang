@@ -79,9 +79,31 @@ describe("/admin/jadwal", () => {
       .insert(pengirimanDiLuarJadwal)
       .values([
         { ...isi, jenis: "pindah", tanggalKirim: "2099-01-06", tanggalRutinDipindah: "2099-01-05" },
-        { ...isi, jenis: "tambahan", tanggalKirim: "2099-01-13", status: "berlaku", diputuskanOleh: admin.id, diputuskanPada: new Date("2026-10-10T03:00:00Z") },
-        { ...isi, jenis: "tambahan", tanggalKirim: "2020-01-07", status: "berlaku", diputuskanOleh: admin.id, diputuskanPada: new Date("2026-10-11T03:00:00Z") },
-        { ...isi, jenis: "tambahan", tanggalKirim: "2099-01-20", status: "ditolak", alasanPenolakan: "stok kosong", diputuskanOleh: admin.id, diputuskanPada: new Date("2026-10-12T03:00:00Z") },
+        {
+          ...isi,
+          jenis: "tambahan",
+          tanggalKirim: "2099-01-13",
+          status: "berlaku",
+          diputuskanOleh: admin.id,
+          diputuskanPada: new Date("2026-10-10T03:00:00Z"),
+        },
+        {
+          ...isi,
+          jenis: "tambahan",
+          tanggalKirim: "2020-01-07",
+          status: "berlaku",
+          diputuskanOleh: admin.id,
+          diputuskanPada: new Date("2026-10-11T03:00:00Z"),
+        },
+        {
+          ...isi,
+          jenis: "tambahan",
+          tanggalKirim: "2099-01-20",
+          status: "ditolak",
+          alasanPenolakan: "stok kosong",
+          diputuskanOleh: admin.id,
+          diputuskanPada: new Date("2026-10-12T03:00:00Z"),
+        },
       ])
       .returning();
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;

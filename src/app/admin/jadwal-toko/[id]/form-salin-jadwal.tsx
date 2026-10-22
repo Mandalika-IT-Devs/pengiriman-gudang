@@ -94,13 +94,9 @@ export function FormSalinJadwal({ idGudang, daftarToko }: { idGudang: number; da
           Terapkan ke toko terpilih
         </Button>
         <span className="text-muted-foreground">{terpilih.size} toko dipilih</span>
-        {tampilan && tampilan.keadaan !== "berhasil" ? (
-          <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} />
-        ) : null}
+        {tampilan && tampilan.keadaan !== "berhasil" ? <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} /> : null}
       </div>
-      {!menunggu && hasil && hasil.keadaan !== "gagal" ? (
-        <HasilSalinJadwal hasil={hasil.hasil} namaToko={namaToko} />
-      ) : null}
+      {!menunggu && hasil && hasil.keadaan !== "gagal" ? <HasilSalinJadwal hasil={hasil.hasil} namaToko={namaToko} /> : null}
     </form>
   );
 }

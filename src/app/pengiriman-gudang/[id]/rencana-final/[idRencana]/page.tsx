@@ -46,12 +46,12 @@ export default async function HalamanRencanaFinal({ params }: { params: Promise<
           <h1 className="text-4xl font-bold text-foreground md:text-5xl">Rencana final tersimpan</h1>
           <p>
             Rencana kebutuhan barang <span className="font-semibold">Toko {rencana.toko.nama}</span> untuk tanggal kirim{" "}
-            <span className="font-semibold">{formatTanggal(rencana.tanggalKirim)}</span> sudah difinalisasi dan disimpan
-            beserta dasar perhitungannya: sumber penjualan, stok, ranking pusat, jadwal, kalender, dan tanggal cakupan.
+            <span className="font-semibold">{formatTanggal(rencana.tanggalKirim)}</span> sudah difinalisasi dan disimpan beserta dasar
+            perhitungannya: sumber penjualan, stok, ranking pusat, jadwal, kalender, dan tanggal cakupan.
           </p>
           <p>
-            Finalisasi hanya menyatakan rencana kebutuhan barang telah disimpan. Ini bukan konfirmasi pengiriman fisik atau
-            penerimaan barang.
+            Finalisasi hanya menyatakan rencana kebutuhan barang telah disimpan. Ini bukan konfirmasi pengiriman fisik atau penerimaan
+            barang.
           </p>
           <p>Rencana ini tidak berubah walaupun data penjualan, kalender, jadwal, atau ranking pusat diperbarui kemudian.</p>
           {rencana.versi > 1 ? (
@@ -84,10 +84,7 @@ export default async function HalamanRencanaFinal({ params }: { params: Promise<
           <Link href={urlRincianRencanaFinal(rencana.id)} className={kelasTautanSuasana}>
             Lihat rincian rencana final
           </Link>
-          <Link
-            href={`/pengiriman-gudang/${idGudang}?tanggal=${rencana.tanggalKirim}`}
-            className={kelasTautanSuasana}
-          >
+          <Link href={`/pengiriman-gudang/${idGudang}?tanggal=${rencana.tanggalKirim}`} className={kelasTautanSuasana}>
             <ArrowLeft aria-hidden strokeWidth={2} className="size-7" />
             Kembali ke draft rencana
           </Link>

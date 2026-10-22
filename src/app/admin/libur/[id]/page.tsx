@@ -176,10 +176,7 @@ export default async function HalamanTinjauSnapshotLibur({ params }: { params: P
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
-      <Link
-        href="/admin/libur"
-        className={tautanTombolVariants()}
-      >
+      <Link href="/admin/libur" className={tautanTombolVariants()}>
         <ArrowLeft aria-hidden strokeWidth={2} className="size-5" />
         Daftar snapshot libur
       </Link>
@@ -228,9 +225,7 @@ export default async function HalamanTinjauSnapshotLibur({ params }: { params: P
             versi={data.versi}
             arsip={data.status === "diarsipkan"}
             alasanTidakBisa={data.status === "aktif" ? "Snapshot ini sudah aktif." : null}
-            keterangan={
-              adaAktifLain ? `Snapshot aktif saat ini untuk tahun ${data.tahun} akan diarsipkan, tidak dihapus.` : null
-            }
+            keterangan={adaAktifLain ? `Snapshot aktif saat ini untuk tahun ${data.tahun} akan diarsipkan, tidak dihapus.` : null}
           />
         </CardContent>
       </Card>

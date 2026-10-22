@@ -47,7 +47,9 @@ describe("Navigasi: kelompok menu per peran", () => {
     ]);
     // Beranda dan Riwayat berada di daftar yang sama, sebelum judul kelompok pertama.
     const sebelumKelompok = html.slice(0, html.indexOf("data-kelompok="));
-    expect(sebelumKelompok).toMatch(/<ul[^>]*><li><a [^>]*href="\/"[^>]*>Beranda<\/a><\/li><li><a [^>]*href="\/riwayat"[^>]*>Riwayat<\/a><\/li><\/ul>/);
+    expect(sebelumKelompok).toMatch(
+      /<ul[^>]*><li><a [^>]*href="\/"[^>]*>Beranda<\/a><\/li><li><a [^>]*href="\/riwayat"[^>]*>Riwayat<\/a><\/li><\/ul>/,
+    );
   });
 
   // T105 — DESIGN §6 ▶ Keputusan (2026-10-13 sore, pemilik): kelompok Pengiriman Gudang dihapus; Pengiriman Gudang
@@ -161,44 +163,63 @@ describe("Navigasi: penanda halaman aktif", () => {
   }
 
   it("di beranda hanya Beranda yang aktif", () => {
-    expect(tautanAktif(render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/"))).toEqual(["/"]);
+    expect(
+      tautanAktif(render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/")),
+    ).toEqual(["/"]);
   });
 
   it("sub-halaman menandai item induknya (/admin/impor/12 → Impor penjualan), bukan Beranda", () => {
     expect(
-      tautanAktif(render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/admin/impor/12")),
+      tautanAktif(
+        render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/admin/impor/12"),
+      ),
     ).toEqual(["/admin/impor"]);
   });
 
   it("/pengiriman-gudang/3/rencana-final/7 → Pengiriman Gudang", () => {
     expect(
       tautanAktif(
-        render({ pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/pengiriman-gudang/3/rencana-final/7"),
+        render(
+          { pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null },
+          "/pengiriman-gudang/3/rencana-final/7",
+        ),
       ),
     ).toEqual(["/pengiriman-gudang"]);
   });
 
   // T127 (DESIGN §6 ▶ Keputusan 2026-10-14): rincian rencana final di bawah /riwayat menandai Riwayat.
   it("/riwayat/rencana-final/7 → Riwayat aktif, tanpa kelompok terbuka", () => {
-    const html = render({ pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: false, children: null }, "/riwayat/rencana-final/7");
+    const html = render(
+      { pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: false, children: null },
+      "/riwayat/rencana-final/7",
+    );
     expect(tautanAktif(html)).toEqual(["/riwayat"]);
     expect(kelompokTerbuka(html)).toEqual([]);
   });
 
   it("/pengiriman-gudang/3 → Pengiriman Gudang aktif dan kelompok Pekerjaan rutin terbuka", () => {
-    const html = render({ pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/pengiriman-gudang/3");
+    const html = render(
+      { pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null },
+      "/pengiriman-gudang/3",
+    );
     expect(tautanAktif(html)).toEqual(["/pengiriman-gudang"]);
     expect(kelompokTerbuka(html)).toEqual(["Pekerjaan rutin"]);
   });
 
   it("/admin/jadwal-toko/3 → Jadwal toko aktif (bukan Persetujuan jadwal) dan kelompok Data Master terbuka", () => {
-    const html = render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: false, children: null }, "/admin/jadwal-toko/3");
+    const html = render(
+      { pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: false, children: null },
+      "/admin/jadwal-toko/3",
+    );
     expect(tautanAktif(html)).toEqual(["/admin/jadwal-toko"]);
     expect(kelompokTerbuka(html)).toEqual(["Data Master"]);
   });
 
   it("/usulan-jadwal/3 → Kirim di luar jadwal aktif dan kelompok Pekerjaan rutin terbuka", () => {
-    const html = render({ pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null }, "/usulan-jadwal/3");
+    const html = render(
+      { pengguna: OPERATOR, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null },
+      "/usulan-jadwal/3",
+    );
     expect(tautanAktif(html)).toEqual(["/usulan-jadwal"]);
     expect(kelompokTerbuka(html)).toEqual(["Pekerjaan rutin"]);
   });
@@ -285,7 +306,9 @@ describe("Navigasi: tampilan sidebar", () => {
 
   it("label peran: Admin, Operator, Viewer", () => {
     expect(render({ pengguna: ADMIN, tampilkanPengirimanGudang: true, tampilkanJadwalToko: true, children: null })).toContain(">Admin<");
-    expect(render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null })).toContain(">Viewer<");
+    expect(render({ pengguna: VIEWER, tampilkanPengirimanGudang: false, tampilkanJadwalToko: false, children: null })).toContain(
+      ">Viewer<",
+    );
   });
 
   it("tombol menu di layar kecil bisa dipakai keyboard dan memberi tahu keadaannya", () => {

@@ -12,12 +12,7 @@ import { buatTokoUji } from "@/server/gudang/uji-bantu";
 import { aktifkanImpor } from "@/server/impor/impor";
 import { pastikanBucket } from "@/server/impor/penyimpanan";
 import { buatWorkbookUji, imporUji, kodeProdukUji, sheetPenjualanUji } from "@/server/impor/uji-bantu";
-import {
-  bacaPerubahanKategori,
-  hitungUlangCacheLaporan,
-  idVersiCacheAktif,
-  muatStatusCacheLaporan,
-} from "@/server/laporan/cache";
+import { bacaPerubahanKategori, hitungUlangCacheLaporan, idVersiCacheAktif, muatStatusCacheLaporan } from "@/server/laporan/cache";
 import { aktifkanSnapshotLibur, muatTinjauSnapshotLibur } from "@/server/libur/aktivasi";
 import { sinkronkanLibur } from "@/server/libur/sinkronisasi";
 import { gantiApiHariLibur, tahunLiburUji } from "@/server/libur/uji-bantu";
@@ -148,9 +143,9 @@ describe("buat, revisi, batal", () => {
     await revisiPerubahanKategori({ ...isian, kategoriBaru: "Jumat" });
 
     const pembatal = await buatPenggunaUji("admin");
-    expect(
-      await batalkanPerubahanKategori({ tanggal, idToko: toko, alasan: "  Event dibatalkan  ", idPengguna: pembatal.id }),
-    ).toEqual({ keadaan: "berhasil" });
+    expect(await batalkanPerubahanKategori({ tanggal, idToko: toko, alasan: "  Event dibatalkan  ", idPengguna: pembatal.id })).toEqual({
+      keadaan: "berhasil",
+    });
 
     const baris = await barisCakupan(tanggal, toko);
     expect(baris).toHaveLength(2);
@@ -285,7 +280,9 @@ describe("cache laporan memakai kategori efektif (integrasi)", () => {
     // Satu sheet JUNI (S) dengan dua blok toko berdampingan: blok A di kolom F–G, blok B mulai kolom H.
     const blokA = sheetPenjualanUji({ toko: tokoA.nama, bulan: 6, hari: [29, 30], produk: produk([1, 4]) });
     const blokB = sheetPenjualanUji({ toko: tokoB.nama, bulan: 6, hari: [29, 30], produk: produk([1, 4]) });
-    const isi = buatWorkbookUji({ "JUNI (S)": blokA.map((baris, i) => [...baris, ...Array<null>(7 - baris.length).fill(null), ...blokB[i].slice(5)]) });
+    const isi = buatWorkbookUji({
+      "JUNI (S)": blokA.map((baris, i) => [...baris, ...Array<null>(7 - baris.length).fill(null), ...blokB[i].slice(5)]),
+    });
     const idImpor = await imporUji({ isi, tahunImpor: 2026, bulanImpor: 6, idPengguna: idAdmin });
     expect(await aktifkanImpor(idImpor, idAdmin)).toEqual({ keadaan: "berhasil" });
 
@@ -306,7 +303,9 @@ describe("cache laporan memakai kategori efektif (integrasi)", () => {
         await db
           .select()
           .from(cacheNilaiMingguan)
-          .where(and(eq(cacheNilaiMingguan.versiId, versiId), eq(cacheNilaiMingguan.tokoId, idToko), eq(cacheNilaiMingguan.kodeProduk, kode)))
+          .where(
+            and(eq(cacheNilaiMingguan.versiId, versiId), eq(cacheNilaiMingguan.tokoId, idToko), eq(cacheNilaiMingguan.kodeProduk, kode)),
+          )
           .orderBy(asc(cacheNilaiMingguan.kategori))
       ).map(({ bulanLaporan, mingguLaporan, kategori, tanggal: daftarTanggal, jumlahQty }) => ({
         bulanLaporan,

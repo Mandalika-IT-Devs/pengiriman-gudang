@@ -6,7 +6,13 @@ export type PolaJadwal = MasukanJadwal["pola"];
 export type Persiapan = MasukanJadwal["hariKirim"][number]["persiapan"];
 export type HariKirim = Jadwal["hariKirim"][number]["hari"];
 
-export const daftarPolaJadwal = ["mingguan", "2x-seminggu", "3x-seminggu", "dua-mingguan", "1x-sebulan"] as const satisfies readonly PolaJadwal[];
+export const daftarPolaJadwal = [
+  "mingguan",
+  "2x-seminggu",
+  "3x-seminggu",
+  "dua-mingguan",
+  "1x-sebulan",
+] as const satisfies readonly PolaJadwal[];
 
 export const daftarPersiapan = ["H", "H-1", "H-2"] as const satisfies readonly Persiapan[];
 

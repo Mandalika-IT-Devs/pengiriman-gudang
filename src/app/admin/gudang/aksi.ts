@@ -12,8 +12,7 @@ import { tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
 
 /** Hasil tambah toko massal: hasil per toko (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
 export type HasilTambahTokoMassal =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilTambahToko[] }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilTambahToko[] } | { keadaan: "gagal"; pesan: string };
 
 const PATH_HALAMAN = "/admin/gudang";
 /** Halaman Toko menampilkan gudang terhubung setiap toko (T111). */
@@ -110,9 +109,7 @@ export async function gantiNamaGudang(input: unknown): Promise<HasilSimpan> {
  */
 export async function ubahStatusGudang(input: unknown): Promise<HasilSimpan> {
   await wajibAdmin();
-  const isian = z
-    .object({ idGudang: skemaIdGudang, aktif: z.boolean({ error: "Status gudang tidak dikenal." }) })
-    .safeParse(input);
+  const isian = z.object({ idGudang: skemaIdGudang, aktif: z.boolean({ error: "Status gudang tidak dikenal." }) }).safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
   return muatUlangSetelahGudangBerubah(await tetapkanAktifGudang(isian.data.idGudang, isian.data.aktif));
 }

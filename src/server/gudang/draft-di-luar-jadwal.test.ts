@@ -74,7 +74,13 @@ async function berlakukan(isian: Omit<IsianPengirimanDiLuarJadwal, "idToko" | "a
 }
 
 async function batalkan(id: number) {
-  const hasil = await batalkanPengirimanDiLuarJadwal({ id, alasan: "Promo dibatalkan", idPengguna: idAdmin, hariIni: HARI_INI, gudangOperator: null });
+  const hasil = await batalkanPengirimanDiLuarJadwal({
+    id,
+    alasan: "Promo dibatalkan",
+    idPengguna: idAdmin,
+    hariIni: HARI_INI,
+    gudangOperator: null,
+  });
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
 }
 
@@ -100,9 +106,11 @@ describe("tambahan Selasa 2026-10-20 (H−1) ikut perhitungan seperti pengiriman
   });
 
   it("dihitung ulang: Senin L = 1 (cakupan Senin saja), stok yang sudah diisi dipertahankan", async () => {
-    expect(await simpanStokToko({ idGudang: cibubur, tanggalKirim: SENIN, tokoId: toko.id, stok: [{ kodeProduk, stokAkhir: 4 }] })).toEqual({
-      keadaan: "berhasil",
-    });
+    expect(await simpanStokToko({ idGudang: cibubur, tanggalKirim: SENIN, tokoId: toko.id, stok: [{ kodeProduk, stokAkhir: 4 }] })).toEqual(
+      {
+        keadaan: "berhasil",
+      },
+    );
     await hitung(SENIN);
     const senin = await tokoDi(SENIN);
     expect(senin).toMatchObject({ persiapanHari: 0, panjangCakupan: 1, diLuarJadwal: null, perluDihitungUlang: [] });
@@ -118,7 +126,14 @@ describe("tambahan Selasa 2026-10-20 (H−1) ikut perhitungan seperti pengiriman
       panjangCakupan: 2,
       kirimanSebelumnyaBelumSampai: "2026-10-19",
       perluDihitungUlang: [],
-      diLuarJadwal: { id: idTambahan, jenis: "tambahan", tanggalRutinDipindah: null, alasan: ALASAN, pengusul: "Uji viewer", penyetuju: "Uji admin" },
+      diLuarJadwal: {
+        id: idTambahan,
+        jenis: "tambahan",
+        tanggalRutinDipindah: null,
+        alasan: ALASAN,
+        pengusul: "Uji viewer",
+        penyetuju: "Uji admin",
+      },
     });
     expect(selasa?.cakupan?.map((c) => c.tanggal)).toEqual(["2026-10-19", "2026-10-20", "2026-10-21"]);
     const ringkasan = await bacaRingkasanDraft(cibubur, SELASA, toko.id);
@@ -128,7 +143,12 @@ describe("tambahan Selasa 2026-10-20 (H−1) ikut perhitungan seperti pengiriman
 
   it("Kamis 2026-10-22 tidak berubah: L = 4, tanpa peringatan", async () => {
     await hitung(KAMIS);
-    expect(await tokoDi(KAMIS)).toMatchObject({ persiapanHari: 1, panjangCakupan: 4, kirimanSebelumnyaBelumSampai: null, diLuarJadwal: null });
+    expect(await tokoDi(KAMIS)).toMatchObject({
+      persiapanHari: 1,
+      panjangCakupan: 4,
+      kirimanSebelumnyaBelumSampai: null,
+      diLuarJadwal: null,
+    });
   });
 
   it("membatalkan tambahan menandai draft Senin dan Selasa perlu dihitung ulang; setelah dihitung ulang toko keluar dari draft Selasa", async () => {
@@ -186,7 +206,12 @@ describe("pindah Senin 2026-10-19 → Selasa 2026-10-20 (H)", () => {
     await hitung(SELASA);
     await hitung(KAMIS);
     // Tambahan Rabu 21-10 (H−1): persiapan Selasa; Kamis 22-10 (H−1) kini berperingatan "Kiriman Rabu, 21-10-2026".
-    idRabu = await berlakukan({ jenis: "tambahan", tanggalKirim: parseTanggalBisnis("2026-10-21"), persiapanHari: 1, tanggalRutinDipindah: null });
+    idRabu = await berlakukan({
+      jenis: "tambahan",
+      tanggalKirim: parseTanggalBisnis("2026-10-21"),
+      persiapanHari: 1,
+      tanggalRutinDipindah: null,
+    });
     expect((await draft(KAMIS))?.perluDihitungUlang).toEqual(["jadwal"]);
     await hitung(KAMIS);
     expect(await tokoDi(KAMIS)).toMatchObject({ panjangCakupan: 4, kirimanSebelumnyaBelumSampai: "2026-10-21", perluDihitungUlang: [] });

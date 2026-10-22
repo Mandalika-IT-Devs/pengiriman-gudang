@@ -11,9 +11,7 @@ type KasusJumlahKirim = {
   catatan: string;
 };
 
-const fixture = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../tests/golden/jumlah-kirim.json"), "utf8"),
-) as {
+const fixture = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/jumlah-kirim.json"), "utf8")) as {
   kasusJumlahKirim: (KasusJumlahKirim & { stokTarget: number })[];
   kasusJumlahKirimRumusLama: { kasus: KasusJumlahKirim[] };
 };

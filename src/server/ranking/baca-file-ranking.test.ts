@@ -7,9 +7,7 @@ import { bacaFileRanking } from "./baca-file-ranking";
 type Sel = string | number | null;
 type BarisGolden = { baris: number; rank: number; variant: string; qtySales: number };
 
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../../tests/golden/ranking-september-2026.json"), "utf8"),
-) as {
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../tests/golden/ranking-september-2026.json"), "utf8")) as {
   sheet: string;
   header: string[];
   barisKosongDiabaikan: number[];
@@ -46,7 +44,14 @@ describe("bacaFileRanking", () => {
   });
 
   it("workbook tanpa sheet RANKING SALES → struktur-tidak-sesuai", () => {
-    const hasil = bacaFileRanking(buatWorkbook({ Sheet1: [["RANK", "VARIANT", "QTY SALES"], [1, "A", 1]] }));
+    const hasil = bacaFileRanking(
+      buatWorkbook({
+        Sheet1: [
+          ["RANK", "VARIANT", "QTY SALES"],
+          [1, "A", 1],
+        ],
+      }),
+    );
     expect(hasil.ok ? [] : hasil.error.map((e) => e.jenis)).toEqual(["struktur-tidak-sesuai"]);
   });
 });

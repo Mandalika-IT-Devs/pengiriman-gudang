@@ -27,11 +27,21 @@ describe("bacaFileStok: judul kolom", () => {
   });
 
   it("kolom yang kurang disebut di pesan", () => {
-    expect(bacaFileStok([["Name - Variant", "Category"], ["A", "B"]])).toEqual({
+    expect(
+      bacaFileStok([
+        ["Name - Variant", "Category"],
+        ["A", "B"],
+      ]),
+    ).toEqual({
       ok: false,
       pesan: "Judul kolom Ending tidak ditemukan di baris pertama.",
     });
-    expect(bacaFileStok([["Nama", "Ending"], ["A", "1"]])).toEqual({
+    expect(
+      bacaFileStok([
+        ["Nama", "Ending"],
+        ["A", "1"],
+      ]),
+    ).toEqual({
       ok: false,
       pesan: "Judul kolom Name - Variant tidak ditemukan di baris pertama.",
     });
@@ -67,7 +77,12 @@ describe("bacaFileStok: petunjuk file kasir yang disimpan ulang di Excel", () =>
   });
 
   it("baris pertama dengan beberapa sel terisi, atau satu sel tanpa pemisah → pesan tanpa petunjuk", () => {
-    expect(bacaFileStok([["Nama, varian", "Stok;akhir"], ["A", "1"]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
+    expect(
+      bacaFileStok([
+        ["Nama, varian", "Stok;akhir"],
+        ["A", "1"],
+      ]),
+    ).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
     expect(bacaFileStok([["Name - Variant Category Ending"], ["A B 1"]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
     expect(bacaFileStok([[null, "Inventory Summary", ""]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
   });
@@ -185,7 +200,11 @@ describe("kelompokkanBarisStok", () => {
       jumlahDiabaikan: 0,
       tidakValid: [
         { nomor: 2, nama: "GORGEOUS TUBEROSE - 110ML M PARFUM", alasan: "Ganda di file: baris 2 dan 4 mengarah ke produk PW110P-GOR." },
-        { nomor: 4, nama: "GORGEOUS TUBEROSE - 110ML M PARFUM INTENSE", alasan: "Ganda di file: baris 2 dan 4 mengarah ke produk PW110P-GOR." },
+        {
+          nomor: 4,
+          nama: "GORGEOUS TUBEROSE - 110ML M PARFUM INTENSE",
+          alasan: "Ganda di file: baris 2 dan 4 mengarah ke produk PW110P-GOR.",
+        },
       ],
     });
   });

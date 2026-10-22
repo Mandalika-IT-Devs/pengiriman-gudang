@@ -32,7 +32,13 @@ function cek(jadwal: Jadwal, tanggal: string) {
 
 const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../tests/golden/jumlah-kirim.json"), "utf8")) as {
   rataRata: Record<KategoriDasar, number>;
-  kasusCakupan: { tanggalKirim: string; persiapanHari: number; panjangCakupan: number; tanggalCakupan: { tanggal: string }[]; kebutuhan: number };
+  kasusCakupan: {
+    tanggalKirim: string;
+    persiapanHari: number;
+    panjangCakupan: number;
+    tanggalCakupan: { tanggal: string }[];
+    kebutuhan: number;
+  };
 };
 
 /** Cakupan dan kebutuhan pengiriman `tanggal` menurut jadwal (p dan L dari jadwal), produk otomatis tanpa stok. */
@@ -589,8 +595,7 @@ describe("tanggal kirim toko: L dan peringatan memakai jadwal tetap + pengiriman
       { hari: "Kamis", persiapan: "H-1" },
     ],
   });
-  const cekToko = (toko: Parameters<typeof tanggalKirimMenurutToko>[0], tanggal: string) =>
-    tanggalKirimMenurutToko(toko, t(tanggal));
+  const cekToko = (toko: Parameters<typeof tanggalKirimMenurutToko>[0], tanggal: string) => tanggalKirimMenurutToko(toko, t(tanggal));
 
   describe("contoh BOTANI PRD A5: tambahan Selasa 2026-10-20 (H−1)", () => {
     const tambahan = { tanggalKirim: t("2026-10-20"), persiapanHari: 1 as const, tanggalRutinDipindah: null };
@@ -685,8 +690,7 @@ describe("tanggal kirim toko: L dan peringatan memakai jadwal tetap + pengiriman
 describe("tanggal kirim toko dua mingguan: L = 14 untuk pengiriman rutin dan di luar jadwal (PRD A5 ▶ Revisi 2026-10-19)", () => {
   const t = parseTanggalBisnis;
   const bxc = jadwalValid({ pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] });
-  const cekToko = (toko: Parameters<typeof tanggalKirimMenurutToko>[0], tanggal: string) =>
-    tanggalKirimMenurutToko(toko, t(tanggal));
+  const cekToko = (toko: Parameters<typeof tanggalKirimMenurutToko>[0], tanggal: string) => tanggalKirimMenurutToko(toko, t(tanggal));
   const tambahanJumat = { tanggalKirim: t("2026-10-23"), persiapanHari: 1 as const, tanggalRutinDipindah: null };
   const toko = { jadwal: bxc, diLuarJadwal: [tambahanJumat] };
 

@@ -11,8 +11,7 @@ import { sinkronkanLibur } from "@/server/libur/sinkronisasi";
 // sebelum API dipanggil atau data disentuh.
 
 export type HasilSinkronkanLibur =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; tahun: number; jumlahLibur: number }
-  | { keadaan: "gagal"; pesan: string };
+  { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; tahun: number; jumlahLibur: number } | { keadaan: "gagal"; pesan: string };
 
 const PATH_HALAMAN = "/admin/libur";
 const PESAN_TAHUN = "Isi tahun empat digit.";
@@ -40,9 +39,7 @@ export async function sinkronkanLiburTahun(input: unknown): Promise<HasilSinkron
   return { keadaan: muatUlangGagal ? "tersimpanGagalMuatUlang" : "berhasil", tahun, jumlahLibur: hasil.jumlahLibur };
 }
 
-export type HasilAktifkanSnapshot =
-  | { keadaan: "berhasil" | "tersimpanGagalMuatUlang" }
-  | { keadaan: "gagal"; pesan: string };
+export type HasilAktifkanSnapshot = { keadaan: "berhasil" | "tersimpanGagalMuatUlang" } | { keadaan: "gagal"; pesan: string };
 
 const PESAN_TIDAK_DITEMUKAN = "Snapshot libur tidak ditemukan.";
 const PESAN_TINJAU_ULANG = "Muat ulang halaman dan tinjau ulang sebelum mengaktifkan.";

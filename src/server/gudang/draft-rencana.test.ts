@@ -58,15 +58,12 @@ type Golden = {
   kasusJumlahKirim: { kebutuhan: number; stokAkhir: number; persenBuffer: number; stokTarget: number; jumlahKirim: number }[];
   kasusJumlahKirimRumusLama: { kasus: { kebutuhan: number; stokAkhir: number; persenBuffer: number; jumlahKirim: number }[] };
 };
-const golden = JSON.parse(
-  readFileSync(join(import.meta.dirname, "../../../tests/golden/jumlah-kirim.json"), "utf8"),
-) as Golden;
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../tests/golden/jumlah-kirim.json"), "utf8")) as Golden;
 
 const TANGGAL_KIRIM = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
 
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
@@ -135,9 +132,16 @@ beforeAll(async () => {
   ];
   tokoNonaktif = await buatTokoUji({ aktif: false });
   await db.insert(hubunganTokoGudang).values(
-    [tokoContoh, tokoTanpaMinggu, tokoSelasa, tokoTanpaJadwal, tokoTanpaVarian, tokoNonaktif].map((t) => ({ tokoId: t.id, gudangId: bali })),
+    [tokoContoh, tokoTanpaMinggu, tokoSelasa, tokoTanpaJadwal, tokoTanpaVarian, tokoNonaktif].map((t) => ({
+      tokoId: t.id,
+      gudangId: bali,
+    })),
   );
-  const jadwalSenin = { pola: "mingguan" as const, hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }], dibuatOleh: idAdmin };
+  const jadwalSenin = {
+    pola: "mingguan" as const,
+    hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }],
+    dibuatOleh: idAdmin,
+  };
   await db.insert(jadwalToko).values([
     { ...jadwalSenin, tokoId: tokoContoh.id },
     { ...jadwalSenin, tokoId: tokoTanpaMinggu.id },
@@ -155,7 +159,10 @@ beforeAll(async () => {
     hari: SEMUA_HARI_JUNI,
     produk: [
       produkUji(kode.contoh, sesuaiContoh),
-      produkUji(kode.nol, SEMUA_HARI_JUNI.map(() => 0)),
+      produkUji(
+        kode.nol,
+        SEMUA_HARI_JUNI.map(() => 0),
+      ),
       produkUji(kode.manual, sesuaiContoh),
       produkUji(kode.rework, sesuaiContoh),
       produkUji(kode.luar, sesuaiContoh),
@@ -174,7 +181,12 @@ beforeAll(async () => {
     tahun: tahunTanpaMinggu,
     namaToko: tokoTanpaMinggu.nama,
     hari: hariTanpaMinggu,
-    produk: [produkUji(kode.tanpaMinggu, hariTanpaMinggu.map(() => 3))],
+    produk: [
+      produkUji(
+        kode.tanpaMinggu,
+        hariTanpaMinggu.map(() => 3),
+      ),
+    ],
   });
 
   const tahunSelasa = await tahunUjiBebas();
@@ -183,7 +195,12 @@ beforeAll(async () => {
     tahun: tahunSelasa,
     namaToko: tokoSelasa.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kodeProdukUji("GOR"), SEMUA_HARI_JUNI.map(() => 2))],
+    produk: [
+      produkUji(
+        kodeProdukUji("GOR"),
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
   });
   const tahunTanpaJadwal = await tahunUjiBebas();
   await aktifkanImporJuniUji({
@@ -191,7 +208,12 @@ beforeAll(async () => {
     tahun: tahunTanpaJadwal,
     namaToko: tokoTanpaJadwal.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kodeProdukUji("GOR"), SEMUA_HARI_JUNI.map(() => 2))],
+    produk: [
+      produkUji(
+        kodeProdukUji("GOR"),
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
   });
 
   const tahunNonaktif = await tahunUjiBebas();
@@ -200,7 +222,12 @@ beforeAll(async () => {
     tahun: tahunNonaktif,
     namaToko: tokoNonaktif.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kodeProdukUji("GOR"), SEMUA_HARI_JUNI.map(() => 2))],
+    produk: [
+      produkUji(
+        kodeProdukUji("GOR"),
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
   });
 
   await hitungUlangCacheLaporan();
@@ -363,7 +390,11 @@ describe("hitungDraftRencana", () => {
       jumlahKirim: null,
     });
     expect(
-      nilaiBarisDraft({ ...MASUKAN_CONTOH, produk: { kode: "UJI-GOR-T", kategori: "15ML GLITTER/LEATHER" }, stokAkhir: -3 }, belum, new Set()),
+      nilaiBarisDraft(
+        { ...MASUKAN_CONTOH, produk: { kode: "UJI-GOR-T", kategori: "15ML GLITTER/LEATHER" }, stokAkhir: -3 },
+        belum,
+        new Set(),
+      ),
     ).toMatchObject({ klasifikasi: "manual", kebutuhan: 56, tanpaRataRata: null, persenBuffer: null, masalah: [], jumlahKirim: null });
   });
 
@@ -470,7 +501,11 @@ describe("hitungDraftRencana", () => {
 
     const [jadwal] = await db.select({ id: jadwalToko.id }).from(jadwalToko).where(eq(jadwalToko.tokoId, tokoContoh.id));
     const tokoDraft = await db.select().from(tokoDraftRencana).where(eq(tokoDraftRencana.draftId, draft.id));
-    expect(tokoDraft.find((t) => t.tokoId === tokoContoh.id)).toMatchObject({ versiJadwal: jadwal.id, persiapanHari: 2, panjangCakupan: 7 });
+    expect(tokoDraft.find((t) => t.tokoId === tokoContoh.id)).toMatchObject({
+      versiJadwal: jadwal.id,
+      persiapanHari: 2,
+      panjangCakupan: 7,
+    });
   });
 
   it("toko tanpa jadwal pada tanggal itu tidak masuk draft; produk dengan penjualan nol tetap masuk; produk manual berstatus manual", async () => {
@@ -550,7 +585,9 @@ describe("hitungDraftRencana", () => {
       persiapanHari: 1,
       panjangCakupan: 7,
       // Persiapan H−1: cakupan golden tanpa tanggal H−2.
-      cakupan: golden.kasusCakupan.tanggalCakupan.slice(1).map(({ tanggal, kategoriEfektif }) => ({ tanggal, kategoriEfektif, sumberKategori: "dasar" })),
+      cakupan: golden.kasusCakupan.tanggalCakupan
+        .slice(1)
+        .map(({ tanggal, kategoriEfektif }) => ({ tanggal, kategoriEfektif, sumberKategori: "dasar" })),
       // Mingguan, p = 1: tidak pernah ada peringatan kiriman sebelumnya (T93).
       kirimanSebelumnyaBelumSampai: null,
       // Pengiriman rutin (T114).
@@ -608,8 +645,16 @@ describe("hitungDraftRencana", () => {
     const baris = toko?.baris.find((b) => b.kodeProduk === kode.contoh);
     expect(baris?.kebutuhan).toBe(62);
     // Sumber kategori efektif: perubahan khusus toko ini; tanggal lain memakai kategori dasar.
-    expect(toko?.cakupan?.find((t) => t.tanggal === "2026-06-12")).toEqual({ tanggal: "2026-06-12", kategoriEfektif: "Sabtu", sumberKategori: "toko" });
-    expect(toko?.cakupan?.find((t) => t.tanggal === "2026-06-11")).toEqual({ tanggal: "2026-06-11", kategoriEfektif: "Senin–Kamis", sumberKategori: "dasar" });
+    expect(toko?.cakupan?.find((t) => t.tanggal === "2026-06-12")).toEqual({
+      tanggal: "2026-06-12",
+      kategoriEfektif: "Sabtu",
+      sumberKategori: "toko",
+    });
+    expect(toko?.cakupan?.find((t) => t.tanggal === "2026-06-11")).toEqual({
+      tanggal: "2026-06-11",
+      kategoriEfektif: "Senin–Kamis",
+      sumberKategori: "dasar",
+    });
     expect(baris?.rincian?.kebutuhan).toEqual([
       { kategori: "Senin–Kamis", jumlahHari: 4, rataRata: 4, subtotal: 16 },
       { kategori: "Sabtu", jumlahHari: 3, rataRata: 10, subtotal: 30 },
@@ -639,7 +684,11 @@ describe("hitungDraftRencana", () => {
     try {
       await hitungDraftRencana({ idGudang: bali, tanggalKirim: senin, idPengguna: idOperator });
       const toko = (await bacaDraftRencana(bali, senin))?.toko.find((t) => t.id === tokoContoh.id);
-      expect(toko?.cakupan?.find((t) => t.tanggal === "9500-06-13")).toEqual({ tanggal: "9500-06-13", kategoriEfektif: "Minggu", sumberKategori: "semua-toko" });
+      expect(toko?.cakupan?.find((t) => t.tanggal === "9500-06-13")).toEqual({
+        tanggal: "9500-06-13",
+        kategoriEfektif: "Minggu",
+        sumberKategori: "semua-toko",
+      });
     } finally {
       await db.delete(perubahanKategori).where(eq(perubahanKategori.id, perubahan.id));
       await db.delete(draftRencana).where(and(eq(draftRencana.gudangId, bali), eq(draftRencana.tanggalKirim, senin)));
@@ -672,7 +721,15 @@ describe("hitungDraftRencana", () => {
     const dihitungPada = new Date("2026-05-30T03:00:00Z");
     const [lama] = await db
       .insert(draftRencana)
-      .values({ gudangId: bandung, tanggalKirim: tanggalLama, dihitungOleh: idAdmin, dihitungPada, versiPeriodeSumber: periode.id, revisiKalender: 0, versiRankingId: idVersiRanking })
+      .values({
+        gudangId: bandung,
+        tanggalKirim: tanggalLama,
+        dihitungOleh: idAdmin,
+        dihitungPada,
+        versiPeriodeSumber: periode.id,
+        revisiKalender: 0,
+        versiRankingId: idVersiRanking,
+      })
       .returning();
 
     try {
@@ -701,10 +758,9 @@ describe("simpanStokToko", () => {
   const barisContoh = async () => (await bacaDraftRencana(bali, TANGGAL_KIRIM))?.toko.find((t) => t.id === tokoContoh.id);
   const stokTersimpan = async () =>
     Object.fromEntries(
-      (await db.select({ kodeProduk: barisDraftRencana.kodeProduk, stokAkhir: barisDraftRencana.stokAkhir }).from(barisDraftRencana)).map((b) => [
-        b.kodeProduk,
-        b.stokAkhir,
-      ]),
+      (await db.select({ kodeProduk: barisDraftRencana.kodeProduk, stokAkhir: barisDraftRencana.stokAkhir }).from(barisDraftRencana)).map(
+        (b) => [b.kodeProduk, b.stokAkhir],
+      ),
     );
 
   beforeAll(async () => {
@@ -725,7 +781,11 @@ describe("simpanStokToko", () => {
     const baris = (await barisContoh())?.baris;
     expect(baris?.find((b) => b.kodeProduk === kode.contoh)).toMatchObject({ stokAkhir: 0, masalah: [] });
     expect(baris?.find((b) => b.kodeProduk === kode.contoh)?.jumlahKirim).not.toBeNull();
-    expect(baris?.find((b) => b.kodeProduk === kode.luar)).toMatchObject({ stokAkhir: null, masalah: ["stok-belum-diisi"], jumlahKirim: null });
+    expect(baris?.find((b) => b.kodeProduk === kode.luar)).toMatchObject({
+      stokAkhir: null,
+      masalah: ["stok-belum-diisi"],
+      jumlahKirim: null,
+    });
   });
 
   it("contoh PRD A6 ujung-ke-ujung: kebutuhan 56, stok 20 → jumlah kirim 48 (tujuh besar) dan 42 (di luar tujuh besar)", async () => {
@@ -778,7 +838,9 @@ describe("simpanStokToko", () => {
       .select({ id: tokoDraftRencana.id })
       .from(tokoDraftRencana)
       .innerJoin(draftRencana, eq(draftRencana.id, tokoDraftRencana.draftId))
-      .where(and(eq(draftRencana.gudangId, bali), eq(draftRencana.tanggalKirim, TANGGAL_KIRIM), eq(tokoDraftRencana.tokoId, tokoContoh.id)));
+      .where(
+        and(eq(draftRencana.gudangId, bali), eq(draftRencana.tanggalKirim, TANGGAL_KIRIM), eq(tokoDraftRencana.tokoId, tokoContoh.id)),
+      );
     // Keadaan sebelum migrasi: jumlah kirim tersimpan menurut rumus lama, ⌈(56 − 20) × 1,20⌉ = 44 dan ⌈(56 − 20) × 1,10⌉ = 40.
     const jumlahLama = new Map([
       [kode.contoh, lama.jumlahKirim],
@@ -827,16 +889,33 @@ describe("simpanStokToko", () => {
 
     const baris = (await barisContoh())?.baris;
     expect(baris?.find((b) => b.kodeProduk === kode.contoh)).toMatchObject({ stokAkhir: -3, masalah: ["stok-negatif"], jumlahKirim: null });
-    expect(baris?.find((b) => b.kodeProduk === kode.manual)).toMatchObject({ klasifikasi: "manual", stokAkhir: -3, masalah: [], jumlahKirim: null });
-    expect(baris?.find((b) => b.kodeProduk === kode.belumDipetakan)).toMatchObject({ stokAkhir: 20, masalah: ["belum-dipetakan"], jumlahKirim: null });
+    expect(baris?.find((b) => b.kodeProduk === kode.manual)).toMatchObject({
+      klasifikasi: "manual",
+      stokAkhir: -3,
+      masalah: [],
+      jumlahKirim: null,
+    });
+    expect(baris?.find((b) => b.kodeProduk === kode.belumDipetakan)).toMatchObject({
+      stokAkhir: 20,
+      masalah: ["belum-dipetakan"],
+      jumlahKirim: null,
+    });
     // Baris yang tidak dikirim tidak berubah.
-    expect(baris?.find((b) => b.kodeProduk === kode.luar)).toMatchObject({ stokAkhir: 20, jumlahKirim: golden.kasusJumlahKirim[1].jumlahKirim });
+    expect(baris?.find((b) => b.kodeProduk === kode.luar)).toMatchObject({
+      stokAkhir: 20,
+      jumlahKirim: golden.kasusJumlahKirim[1].jumlahKirim,
+    });
   });
 
   it("draft, toko, atau produk yang tidak ada di draft → gagal dengan pesan, tanpa mengubah stok", async () => {
     const sebelum = await stokTersimpan();
 
-    await expect(simpan([{ kodeProduk: kode.contoh, stokAkhir: 1 }, { kodeProduk: "TIDAK-ADA", stokAkhir: 1 }])).resolves.toEqual({
+    await expect(
+      simpan([
+        { kodeProduk: kode.contoh, stokAkhir: 1 },
+        { kodeProduk: "TIDAK-ADA", stokAkhir: 1 },
+      ]),
+    ).resolves.toEqual({
       keadaan: "gagal",
       pesan: PESAN_DRAFT_BERUBAH,
     });
@@ -845,7 +924,12 @@ describe("simpanStokToko", () => {
       pesan: PESAN_DRAFT_BERUBAH,
     });
     await expect(
-      simpanStokToko({ idGudang: bali, tanggalKirim: parseTanggalBisnis("2026-06-15"), tokoId: tokoContoh.id, stok: [{ kodeProduk: kode.contoh, stokAkhir: 1 }] }),
+      simpanStokToko({
+        idGudang: bali,
+        tanggalKirim: parseTanggalBisnis("2026-06-15"),
+        tokoId: tokoContoh.id,
+        stok: [{ kodeProduk: kode.contoh, stokAkhir: 1 }],
+      }),
     ).resolves.toEqual({ keadaan: "gagal", pesan: PESAN_DRAFT_BERUBAH });
     expect(await stokTersimpan()).toEqual(sebelum);
   });

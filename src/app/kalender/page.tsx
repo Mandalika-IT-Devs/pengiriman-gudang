@@ -225,9 +225,7 @@ function SelTanggal({
           {Number(tanggal.slice(8, 10))}
         </span>
         <span className={cn("text-xs", teksSekunder)}>{kategoriDasar}</span>
-        {kategoriEfektif !== kategoriDasar ? (
-          <span className="text-xs font-semibold">Efektif: {kategoriEfektif}</span>
-        ) : null}
+        {kategoriEfektif !== kategoriDasar ? <span className="text-xs font-semibold">Efektif: {kategoriEfektif}</span> : null}
         {kategori?.perubahan ? (
           // Penanda perubahan kategori manual untuk cakupan yang dilihat (DESIGN §7: ikon + teks lewat BadgeStatus).
           <BadgeStatus status="manual" className="self-start" title="Kategori diubah admin untuk cakupan ini" />
@@ -477,9 +475,10 @@ export default async function HalamanKalender({ searchParams }: { searchParams: 
         {/* DESIGN §11.6: paling banyak dua kalimat; sisanya di bantuan istilah. */}
         <p className="text-muted-foreground">
           Kategori dasar setiap tanggal dan minggu laporannya
-          <BantuanIstilah istilah="mingguLaporan" className="-my-1 ml-1" />. Libur hanya informasi dan tidak mengubah
-          kategori; penanda Manual berarti admin mengubah kategori tanggal itu untuk toko yang dilihat (kategori efektif
-          <BantuanIstilah istilah="kategori" className="-my-1 ml-1" />).
+          <BantuanIstilah istilah="mingguLaporan" className="-my-1 ml-1" />. Libur hanya informasi dan tidak mengubah kategori; penanda
+          Manual berarti admin mengubah kategori tanggal itu untuk toko yang dilihat (kategori efektif
+          <BantuanIstilah istilah="kategori" className="-my-1 ml-1" />
+          ).
         </p>
       </div>
 
@@ -492,15 +491,7 @@ export default async function HalamanKalender({ searchParams }: { searchParams: 
 
       {/* DESIGN §11.8: kolom kisi boleh menyempit (minmax(0,1fr)); tabel menggulir di dalam wadahnya, tidak melebar. */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <KisiBulan
-          bulan={bulan}
-          kisi={kisi}
-          hariIni={hariIni}
-          terpilih={terpilih}
-          libur={libur}
-          cakupan={cakupan}
-          kategori={kategori}
-        />
+        <KisiBulan bulan={bulan} kisi={kisi} hariIni={hariIni} terpilih={terpilih} libur={libur} cakupan={cakupan} kategori={kategori} />
         <div id={ID_DETAIL_TANGGAL} className="flex scroll-mt-20 flex-col gap-6">
           <DetailTanggal
             tanggal={terpilih}

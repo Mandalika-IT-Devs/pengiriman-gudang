@@ -5,7 +5,9 @@ import { expect, test } from "@playwright/test";
 import { buatWorkbookUji, sheetPenjualanUji, tahunUjiBebas } from "../../src/server/impor/uji-bantu";
 import { EMAIL_ADMIN_E2E, SANDI_ADMIN_E2E } from "./siapkan";
 
-test("alur bahagia: admin mengunggah dua sheet sekaligus, keduanya diproses, lalu meninjau dan mengaktifkan satu impor", async ({ page }) => {
+test("alur bahagia: admin mengunggah dua sheet sekaligus, keduanya diproses, lalu meninjau dan mengaktifkan satu impor", async ({
+  page,
+}) => {
   const tahun = await tahunUjiBebas();
   const kode = `E2E${randomUUID().slice(0, 8).toUpperCase()}-GOR`;
   const workbook = buatWorkbookUji({

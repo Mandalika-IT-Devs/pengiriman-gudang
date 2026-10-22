@@ -54,7 +54,10 @@ function pasang(nonaktif: boolean) {
 beforeEach(() => {
   tiruan.nonaktifkanPengguna.mockReset();
   tiruan.aktifkanKembaliPengguna.mockReset();
-  vi.stubGlobal("confirm", vi.fn(() => true));
+  vi.stubGlobal(
+    "confirm",
+    vi.fn(() => true),
+  );
 });
 
 afterEach(() => {

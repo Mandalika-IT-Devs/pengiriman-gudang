@@ -272,8 +272,8 @@ export function PerubahanKategoriTanggal({
         <CardHeader>
           <CardTitle id={`${id}-judul`}>Perubahan kategori</CardTitle>
           <CardDescription>
-            Mengganti kategori yang dipakai untuk menghitung. Bulan dan minggu laporan tetap. Setiap perubahan membuat
-            laporan dihitung ulang.
+            Mengganti kategori yang dipakai untuk menghitung. Bulan dan minggu laporan tetap. Setiap perubahan membuat laporan dihitung
+            ulang.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

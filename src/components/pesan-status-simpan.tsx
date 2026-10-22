@@ -42,11 +42,7 @@ export function PesanStatusSimpan({
       className={cn("flex items-start gap-2 text-sm font-semibold text-foreground", className)}
       {...props}
     >
-      <Ikon
-        aria-hidden
-        strokeWidth={2}
-        className={cn("size-5 shrink-0", warna, Ikon === LoaderCircle && "motion-safe:animate-spin")}
-      />
+      <Ikon aria-hidden strokeWidth={2} className={cn("size-5 shrink-0", warna, Ikon === LoaderCircle && "motion-safe:animate-spin")} />
       <span>
         {label}
         {pesan ? <span className="font-normal"> — {pesan}</span> : null}

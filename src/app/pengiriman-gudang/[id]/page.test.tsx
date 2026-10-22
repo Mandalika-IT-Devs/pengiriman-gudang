@@ -81,7 +81,9 @@ describe("/pengiriman-gudang/[id]", () => {
     expect(html).toContain("data-hanya-baca");
     expect(html).toContain("Hanya-baca: Anda bisa melihat halaman ini, tetapi tidak punya hak tindakan di gudang ini.");
     // T118: tabel "Toko terhubung" dihapus; status toko tampil di tabel Jadwal toko.
-    expect(html).toMatch(new RegExp(`data-jadwal-toko="${aktif.id}".*?${aktif.nama}.*?data-status-toko="aktif"[^>]*>.*?data-status="aktif"`));
+    expect(html).toMatch(
+      new RegExp(`data-jadwal-toko="${aktif.id}".*?${aktif.nama}.*?data-status-toko="aktif"[^>]*>.*?data-status="aktif"`),
+    );
     expect(html).toMatch(new RegExp(`data-jadwal-toko="${nonaktif.id}".*?${nonaktif.nama}.*?data-status-toko="nonaktif"[^>]*>.*?Nonaktif`));
     expect(html).not.toContain("Toko terhubung");
     expect(html).not.toContain(lain.nama);
@@ -137,14 +139,16 @@ describe("/pengiriman-gudang/[id]: kartu Periode sumber", () => {
     [februari, april, juli, oktober] = await siapkanBulanTersediaUji(admin.id, [2, 4, 7, 10]);
   }, 60_000);
 
-  it("belum ditetapkan → pesan \"Periode sumber belum ditetapkan admin\" tanpa periode cadangan", async () => {
+  it('belum ditetapkan → pesan "Periode sumber belum ditetapkan admin" tanpa periode cadangan', async () => {
     await db.delete(periodeSumberGudang).where(eq(periodeSumberGudang.gudangId, pusat));
     const operator = await kepalaPenggunaUji("viewer");
     await tugaskanOperator({ idPengguna: operator.id, idGudang: pusat, hakTindakan: ["hitung-kebutuhan"] });
     kepala.cookie = operator.cookie;
 
     const html = await buka(pusat);
-    expect(html).toMatch(/data-periode-sumber.*Periode sumber penjualan.*data-status="periodeBelumDitetapkan".*Periode sumber belum ditetapkan admin/);
+    expect(html).toMatch(
+      /data-periode-sumber.*Periode sumber penjualan.*data-status="periodeBelumDitetapkan".*Periode sumber belum ditetapkan admin/,
+    );
     expect(html).not.toContain("data-bulan=");
     expect(html).not.toContain("Ditetapkan oleh");
   });
@@ -169,7 +173,7 @@ describe("/pengiriman-gudang/[id]: kartu Periode sumber", () => {
     expect([...kartu.matchAll(/data-bulan="([^"]+)"/g)].map((m) => m[1])).toEqual([februari, oktober]);
     expect(kartu).toContain(`Februari ${februari.slice(0, 4)}`);
     expect(kartu).toContain(`Oktober ${oktober.slice(0, 4)}`);
-    expect(kartu).toContain("Ditetapkan oleh <span class=\"font-semibold text-foreground\">Uji admin</span> pada");
+    expect(kartu).toContain('Ditetapkan oleh <span class="font-semibold text-foreground">Uji admin</span> pada');
     expect(kartu).toMatch(/pada \w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB/);
     // Hanya-baca: tanpa kontrol ubah di halaman (form hitung draft untuk hak hitung-kebutuhan diuji di draft.test.tsx).
     expect(tanpaBantuanIstilah(sebelumBagianDraft(html))).not.toMatch(/<(button|input|select|form)\b/);
@@ -196,7 +200,7 @@ describe("/pengiriman-gudang/[id]: kartu Periode sumber", () => {
       /data-bulan-hilang="2990-05"[^>]*>.*?<span data-slot="badge"[^>]*>\s*<svg[^>]*lucide-triangle-alert.*?<\/svg>Mei 2990 — Tidak ada data aktif<\/span>/,
     );
     expect(kartu).toContain("Perhitungan memakai bulan yang masih punya data aktif.");
-    expect(kartu).toContain("Ditetapkan oleh <span class=\"font-semibold text-foreground\">Uji admin</span> pada");
+    expect(kartu).toContain('Ditetapkan oleh <span class="font-semibold text-foreground">Uji admin</span> pada');
     expect(tanpaBantuanIstilah(html)).not.toMatch(/<(button|input|select|form)\b/);
   });
 });
@@ -244,13 +248,15 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
   const tautanJadwal = (html: string) =>
     [...html.matchAll(/<a [^>]*href="(\/(?:usulan|salin)-jadwal\/\d+)"[^>]*>(.*?)<\/a>/g)].map((m) => [
       m[1],
-      m[2]!.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+      m[2]!
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
     ]);
 
   const tabelJadwal = (html: string) => /<table[^>]*aria-label="Jadwal aktif per toko".*?<\/table>/s.exec(html)?.[0] ?? "";
 
-  const barisJadwal = (html: string, idToko: number) =>
-    new RegExp(`<tr[^>]*data-jadwal-toko="${idToko}".*?</tr>`).exec(html)?.[0] ?? "";
+  const barisJadwal = (html: string, idToko: number) => new RegExp(`<tr[^>]*data-jadwal-toko="${idToko}".*?</tr>`).exec(html)?.[0] ?? "";
 
   it("operator Pusat dengan kelola-usulan-jadwal melihat jadwal aktif setiap toko dan tautan ke halaman jadwal, tanpa form", async () => {
     const { berjadwal, tanpaJadwal } = await siapkanTokoPusat();
@@ -271,7 +277,9 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(tabelJadwal(html)).toContain("Hari kirim (persiapan)");
     expect(tabelJadwal(html)).not.toMatch(/jangkar/i);
     // T121 (DESIGN §11.6): kolom Diatur berisi tanggal singkat; waktu lengkap lewat title saat disorot.
-    expect(aktif).toMatch(/Uji viewer, <time dateTime="[^"]+" title="\w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB">\w+, \d{2}-\d{2}-\d{4}<\/time>/);
+    expect(aktif).toMatch(
+      /Uji viewer, <time dateTime="[^"]+" title="\w+, \d{2}-\d{2}-\d{4} pukul \d{2}\.\d{2} WIB">\w+, \d{2}-\d{2}-\d{4}<\/time>/,
+    );
     // Jadwal lama yang nonaktif (Selasa) tidak tampil sebagai jadwal aktif. Diperiksa lewat hari kirim, bukan nama hari
     // saja: kolom Diatur memuat nama hari jadwal dibuat, yang bisa Selasa.
     expect(aktif).not.toContain("Selasa (H");
@@ -290,11 +298,13 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(html).not.toContain("/salin-jadwal");
   });
 
-  it("jadwal 1× sebulan tampil dengan label pola \"1× sebulan\" (T92)", async () => {
+  it('jadwal 1× sebulan tampil dengan label pola "1× sebulan" (T92)', async () => {
     const pembuat = await buatPenggunaUji("viewer");
     const t = await buatTokoUji();
     await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: pusat });
-    await db.insert(jadwalToko).values({ tokoId: t.id, pola: "1x-sebulan", hariKirim: [{ hari: "Selasa", persiapanHari: 1 }], dibuatOleh: pembuat.id });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: t.id, pola: "1x-sebulan", hariKirim: [{ hari: "Selasa", persiapanHari: 1 }], dibuatOleh: pembuat.id });
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
 
     const baris = barisJadwal(await buka(pusat), t.id);
@@ -361,7 +371,15 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
         { ...isi, jenis: "pindah", tanggalKirim: "2099-01-06", tanggalRutinDipindah: "2099-01-05" },
         { ...isi, jenis: "tambahan", tanggalKirim: "2099-01-08", status: "berlaku", diputuskanOleh: admin.id, diputuskanPada: new Date() },
         { ...isi, jenis: "tambahan", tanggalKirim: "2020-01-07", status: "berlaku", diputuskanOleh: admin.id, diputuskanPada: new Date() },
-        { ...isi, jenis: "tambahan", tanggalKirim: "2099-01-09", status: "ditolak", alasanPenolakan: "x", diputuskanOleh: admin.id, diputuskanPada: new Date() },
+        {
+          ...isi,
+          jenis: "tambahan",
+          tanggalKirim: "2099-01-09",
+          status: "ditolak",
+          alasanPenolakan: "x",
+          diputuskanOleh: admin.id,
+          diputuskanPada: new Date(),
+        },
       ])
       .returning();
     kepala.cookie = operator.cookie;

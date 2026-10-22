@@ -37,19 +37,12 @@ function revisiAktifTerbesar(kandidat: readonly PerubahanKategori[]): PerubahanK
  * perubahan aktif khusus toko → perubahan aktif semua-toko → kategori dasar.
  * Perubahan berstatus dibatalkan diabaikan.
  */
-export function kategoriEfektif(
-  tanggal: TanggalBisnis,
-  toko: string,
-  daftarPerubahan: readonly PerubahanKategori[],
-): HasilKategoriEfektif {
-  const aktifPadaTanggal = daftarPerubahan.filter(
-    (perubahan) => perubahan.tanggal === tanggal && perubahan.status === "aktif",
-  );
+export function kategoriEfektif(tanggal: TanggalBisnis, toko: string, daftarPerubahan: readonly PerubahanKategori[]): HasilKategoriEfektif {
+  const aktifPadaTanggal = daftarPerubahan.filter((perubahan) => perubahan.tanggal === tanggal && perubahan.status === "aktif");
 
   const terpilih =
-    revisiAktifTerbesar(
-      aktifPadaTanggal.filter(({ cakupan }) => cakupan.jenis === "toko" && cakupan.toko === toko),
-    ) ?? revisiAktifTerbesar(aktifPadaTanggal.filter(({ cakupan }) => cakupan.jenis === "semua-toko"));
+    revisiAktifTerbesar(aktifPadaTanggal.filter(({ cakupan }) => cakupan.jenis === "toko" && cakupan.toko === toko)) ??
+    revisiAktifTerbesar(aktifPadaTanggal.filter(({ cakupan }) => cakupan.jenis === "semua-toko"));
 
   if (terpilih === undefined) {
     return { kategoriEfektif: posisiLaporan(tanggal).kategoriDasar, sumberKategori: "dasar" };

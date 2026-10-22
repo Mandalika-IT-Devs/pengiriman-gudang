@@ -19,15 +19,7 @@ const akibatLepas = (namaToko: string, jumlahPengiriman: number) =>
  * Tetap terpasang setelah toko dilepas (`terhubung` = `null`) agar pesan hasilnya tidak hilang saat halaman dimuat ulang.
  * Kewenangan admin dan hubungan saat ini diperiksa lagi di server action.
  */
-export function TombolLepasToko({
-  idToko,
-  namaToko,
-  terhubung,
-}: {
-  idToko: number;
-  namaToko: string;
-  terhubung: DataLepasToko | null;
-}) {
+export function TombolLepasToko({ idToko, namaToko, terhubung }: { idToko: number; namaToko: string; terhubung: DataLepasToko | null }) {
   const { tampilan, menunggu, simpan } = usePenyimpanan("kolom Gudang di daftar toko");
 
   return (

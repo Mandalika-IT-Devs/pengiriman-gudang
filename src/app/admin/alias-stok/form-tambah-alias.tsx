@@ -34,8 +34,8 @@ export function FormTambahAlias() {
         <CardHeader>
           <CardTitle level={2}>Tambah alias</CardTitle>
           <CardDescription>
-            Nama produk persis seperti di file stok kasir, dipetakan ke satu kode produk master. Disimpan dalam huruf
-            besar dengan spasi dirapikan. Nama master produk sudah berlaku sebagai alias tanpa perlu ditambahkan.
+            Nama produk persis seperti di file stok kasir, dipetakan ke satu kode produk master. Disimpan dalam huruf besar dengan spasi
+            dirapikan. Nama master produk sudah berlaku sebagai alias tanpa perlu ditambahkan.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid max-w-3xl gap-4 sm:grid-cols-[2fr_1fr]">

@@ -1,9 +1,7 @@
 // Klasifikasi produk manual / otomatis (PRD A6 ▶ Revisi; ADR-0007).
 // Kode dan kategori dicocokkan persis seperti tertulis di ADR-0007, tanpa normalisasi.
 
-type HasilKlasifikasi =
-  | { klasifikasi: "manual"; alasan: "display-tester" | "kertas-tester" }
-  | { klasifikasi: "otomatis" };
+type HasilKlasifikasi = { klasifikasi: "manual"; alasan: "display-tester" | "kertas-tester" } | { klasifikasi: "otomatis" };
 
 const KATEGORI_KERTAS_TESTER: readonly string[] = ["KTP", "KTL"];
 

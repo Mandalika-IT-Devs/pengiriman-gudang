@@ -54,8 +54,7 @@ const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../../te
 };
 const TANGGAL_KIRIM = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
   nama: "15ML GLITTER - GORGEOUS",
@@ -93,13 +92,24 @@ beforeAll(async () => {
   // Satu impor aktif per bulan impor (ADR-0002): setiap toko memakai tahun uji sendiri.
   const [tahunSiap, tahunTertahan] = [await tahunUjiBebas(), await tahunUjiBebas()];
   const sesuaiContoh = kuantitasJuniMenurutHari(tahunSiap, SEMUA_HARI_JUNI, (nama) => golden.rataRata[kategoriHari(nama)]);
-  await aktifkanImporJuniUji({ idAdmin, tahun: tahunSiap, namaToko: tokoSiap.nama, hari: SEMUA_HARI_JUNI, produk: [produkUji(kode.siap, sesuaiContoh)] });
+  await aktifkanImporJuniUji({
+    idAdmin,
+    tahun: tahunSiap,
+    namaToko: tokoSiap.nama,
+    hari: SEMUA_HARI_JUNI,
+    produk: [produkUji(kode.siap, sesuaiContoh)],
+  });
   await aktifkanImporJuniUji({
     idAdmin,
     tahun: tahunTertahan,
     namaToko: tokoTertahan.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kode.tertahan, SEMUA_HARI_JUNI.map(() => 1))],
+    produk: [
+      produkUji(
+        kode.tertahan,
+        SEMUA_HARI_JUNI.map(() => 1),
+      ),
+    ],
   });
   await hitungUlangCacheLaporan();
   const periode = await tetapkanPeriodeSumber({
@@ -178,7 +188,8 @@ const bukaFinal = async (idRencana: number | string, idGudang: number | string =
   renderToStaticMarkup(await HalamanRencanaFinal({ params: Promise.resolve({ id: String(idGudang), idRencana: String(idRencana) }) }));
 
 /** Bagian satu toko di draft. */
-const bagianToko = (html: string, tokoId: number) => new RegExp(`<section[^>]*data-draft-toko="${tokoId}".*?</section>`).exec(html)?.[0] ?? "";
+const bagianToko = (html: string, tokoId: number) =>
+  new RegExp(`<section[^>]*data-draft-toko="${tokoId}".*?</section>`).exec(html)?.[0] ?? "";
 
 describe("kewenangan finalisasi (diperiksa di server)", () => {
   it("operator tanpa hak finalisasi, admin tanpa penugasan, dan hak finalisasi di gudang lain ditolak tanpa membuat rencana final", async () => {
@@ -223,7 +234,9 @@ describe("finalisasi di halaman Pengiriman Gudang", () => {
     expect(tertahan).not.toContain("data-finalisasi-toko");
     expect(tertahan).toMatch(/data-finalisasi-tertahan[^>]*>.*?lucide-triangle-alert.*?Belum bisa difinalisasi: 1 baris masih tertahan\./);
     // T117: alasan baris tertahan diikuti "Tampilkan baris tertahan" yang memasang filter Tertahan di tabel varian.
-    expect(tertahan).toMatch(/1 baris masih tertahan\.<\/p><button[^>]*type="button"[^>]*data-tampilkan-tertahan[^>]*>Tampilkan baris tertahan</);
+    expect(tertahan).toMatch(
+      /1 baris masih tertahan\.<\/p><button[^>]*type="button"[^>]*data-tampilkan-tertahan[^>]*>Tampilkan baris tertahan</,
+    );
     // Toko tanpa varian tampil sebagai masalah dan tidak bisa difinalisasi (PRD A7 ▶ Keputusan 2026-10-11, T62).
     const tanpaVarian = bagianToko(await bukaDraft(tokoTanpaVarian.id), tokoTanpaVarian.id);
     expect(tanpaVarian).toMatch(/data-tanpa-varian[^>]*>.*?lucide-triangle-alert.*?Tidak ada varian dari periode sumber untuk toko ini</);
@@ -252,7 +265,9 @@ describe("finalisasi di halaman Pengiriman Gudang", () => {
     try {
       await masukOperator(jabodetabek, ["finalisasi"]);
       const html = await bukaDraft();
-      expect(html).toMatch(/data-perlu-dihitung-ulang.*?Toko yang terkena perubahan ini tidak bisa difinalisasi sebelum draft dihitung ulang\./);
+      expect(html).toMatch(
+        /data-perlu-dihitung-ulang.*?Toko yang terkena perubahan ini tidak bisa difinalisasi sebelum draft dihitung ulang\./,
+      );
       // Ringkasan (T73): hanya toko yang terdampak ditandai perlu dihitung ulang.
       expect(ringkasanToko(html, tokoTertahan.id)).toContain('data-status="perluDihitungUlang"');
       expect(ringkasanToko(html, tokoSiap.id)).not.toContain('data-status="perluDihitungUlang"');
@@ -284,7 +299,9 @@ describe("finalisasi di halaman Pengiriman Gudang", () => {
 
     await masukOperator(jabodetabek, ["finalisasi"]);
     // Ringkasan tanpa toko dibuka (T73): status Final beserta versinya.
-    expect(ringkasanToko(await bukaDraft(), tokoSiap.id)).toMatch(/data-status="final".*?lucide-circle-check.*?Final.*?data-versi-final="1"[^>]*>Versi 1</);
+    expect(ringkasanToko(await bukaDraft(), tokoSiap.id)).toMatch(
+      /data-status="final".*?lucide-circle-check.*?Final.*?data-versi-final="1"[^>]*>Versi 1</,
+    );
     expect(ringkasanToko(await bukaDraft(), tokoTertahan.id)).not.toContain('data-status="final"');
     const siap = bagianToko(await bukaDraft(tokoSiap.id), tokoSiap.id);
     expect(siap).toMatch(/data-status="final".*?lucide-circle-check.*?Final.*?data-versi-final="1"[^>]*>Versi 1</);

@@ -54,8 +54,8 @@ export function FormTugaskanOperator({
         <CardHeader>
           <CardTitle level={2}>Tugaskan operator</CardTitle>
           <CardDescription>
-            Pengguna menjadi operator hanya di gudang yang ditugaskan, dengan hak tindakan yang dipilih. Peran admin
-            tidak memberi hak operator.
+            Pengguna menjadi operator hanya di gudang yang ditugaskan, dengan hak tindakan yang dipilih. Peran admin tidak memberi hak
+            operator.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

@@ -108,7 +108,12 @@ async function kunciTokoDiGudang(tx: Tx, idToko: number, idGudang: number) {
  */
 async function periksaSyarat(
   tx: Tx,
-  { idGudang, isian, hariIni, kecualiId }: { idGudang: number; isian: IsianPengirimanDiLuarJadwal; hariIni: TanggalBisnis; kecualiId: number | null },
+  {
+    idGudang,
+    isian,
+    hariIni,
+    kecualiId,
+  }: { idGudang: number; isian: IsianPengirimanDiLuarJadwal; hariIni: TanggalBisnis; kecualiId: number | null },
 ): Promise<string | null> {
   if (isian.alasan.trim() === "") return "Isi alasan.";
   if (!(await kunciTokoDiGudang(tx, isian.idToko, idGudang))) return syarat("toko tidak terhubung ke gudang ini.");
@@ -262,7 +267,10 @@ export async function tarikPengirimanDiLuarJadwal({
     if (p.diusulkanOleh !== idPengguna) return gagal("Hanya pengusul yang bisa menarik usulan ini.");
     if (p.status !== "menunggu") return gagal(PESAN_SUDAH_DIPUTUSKAN);
 
-    await tx.update(pengirimanDiLuarJadwal).set({ status: "ditarik", ditarikPada: sql`now()` }).where(eq(pengirimanDiLuarJadwal.id, id));
+    await tx
+      .update(pengirimanDiLuarJadwal)
+      .set({ status: "ditarik", ditarikPada: sql`now()` })
+      .where(eq(pengirimanDiLuarJadwal.id, id));
     return { keadaan: "berhasil", idGudang };
   });
 }
@@ -408,7 +416,10 @@ const TERBARU_DI_ATAS = [desc(pengirimanDiLuarJadwal.diusulkanPada), desc(pengir
  * berlaku yang masih bisa dibatalkan bila `bolehBatalkan` (jalur langsung, Pusat). Terbaru di atas. Pemeriksaan akses
  * oleh pemanggil.
  */
-export async function pengirimanPerluTindakan(idGudang: number, { bolehBatalkan, hariIni }: { bolehBatalkan: boolean; hariIni: TanggalBisnis }) {
+export async function pengirimanPerluTindakan(
+  idGudang: number,
+  { bolehBatalkan, hariIni }: { bolehBatalkan: boolean; hariIni: TanggalBisnis },
+) {
   const daftar = await bacaEntri(
     and(eq(pengirimanDiLuarJadwal.gudangId, idGudang), inArray(pengirimanDiLuarJadwal.status, AKTIF)),
     TERBARU_DI_ATAS,
@@ -484,7 +495,15 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
   const jadwal = await db
     .select({ idToko: jadwalToko.tokoId, pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim })
     .from(jadwalToko)
-    .where(and(eq(jadwalToko.status, "aktif"), inArray(jadwalToko.tokoId, daftar.map((d) => d.idToko))));
+    .where(
+      and(
+        eq(jadwalToko.status, "aktif"),
+        inArray(
+          jadwalToko.tokoId,
+          daftar.map((d) => d.idToko),
+        ),
+      ),
+    );
   const perToko = new Map(jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim }]));
   return daftar.map((d) => ({ ...d, jadwalTetap: perToko.get(d.idToko) ?? null }));
 }

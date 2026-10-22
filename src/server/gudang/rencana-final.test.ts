@@ -7,7 +7,17 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { parseTanggalBisnis, type KategoriDasar, type NamaHari } from "@/domain/kalender";
 import { buatPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
-import { draftRencana, hubunganTokoGudang, impor, jadwalToko, perubahanKategori, produk, rencanaFinal, toko, user } from "@/server/db/schema";
+import {
+  draftRencana,
+  hubunganTokoGudang,
+  impor,
+  jadwalToko,
+  perubahanKategori,
+  produk,
+  rencanaFinal,
+  toko,
+  user,
+} from "@/server/db/schema";
 import { pernyataanMigrasi } from "@/server/db/uji-bantu";
 import { kodeProdukUji, tahunUjiBebas } from "@/server/impor/uji-bantu";
 import { buatPerubahanKategori } from "@/server/kalender/perubahan-kategori";
@@ -53,10 +63,19 @@ const [CONTOH_RUMUS_LAMA] = golden.kasusJumlahKirimRumusLama.kasus;
 
 const TANGGAL_KIRIM = parseTanggalBisnis(golden.kasusCakupan.tanggalKirim);
 /** Cakupan contoh PRD A6: Sabtu 06-06 sampai Minggu 14-06-2026. */
-const TANGGAL_CAKUPAN = ["2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-13", "2026-06-14"];
+const TANGGAL_CAKUPAN = [
+  "2026-06-06",
+  "2026-06-07",
+  "2026-06-08",
+  "2026-06-09",
+  "2026-06-10",
+  "2026-06-11",
+  "2026-06-12",
+  "2026-06-13",
+  "2026-06-14",
+];
 const SEMUA_HARI_JUNI = Array.from({ length: 30 }, (_, i) => i + 1);
-const kategoriHari = (nama: NamaHari): KategoriDasar =>
-  nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis";
+const kategoriHari = (nama: NamaHari): KategoriDasar => (nama === "Jumat" || nama === "Sabtu" || nama === "Minggu" ? nama : "Senin–Kamis");
 const produkUji = (kode: string, kuantitas: number[]) => ({
   kode,
   nama: "15ML GLITTER - GORGEOUS",
@@ -84,7 +103,12 @@ let tahunManual: number;
 let sesuaiContoh: number[];
 let keluargaTujuhBesar: number;
 let keluargaLain: number;
-const kode = { contoh: kodeProdukUji("GOR"), manual: kodeProdukUji("GOR-T"), tokoB: kodeProdukUji("GOR"), tokoManual: kodeProdukUji("SAN-T") };
+const kode = {
+  contoh: kodeProdukUji("GOR"),
+  manual: kodeProdukUji("GOR-T"),
+  tokoB: kodeProdukUji("GOR"),
+  tokoManual: kodeProdukUji("SAN-T"),
+};
 
 const hitung = () => hitungDraftRencana({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, idPengguna: idOperator });
 const draft = () => bacaDraftRencana(bandung, TANGGAL_KIRIM);
@@ -99,7 +123,14 @@ async function tokoDraft(tokoId: number) {
 /** Finalisasi toko `tokoId` dengan versi draft yang sedang tersimpan (seperti yang dilihat di halaman). */
 async function finalisasi(tokoId: number, alasanFinalisasiUlang?: string) {
   const { versi } = await tokoDraft(tokoId);
-  return finalisasiRencanaToko({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, tokoId, idPengguna: idOperator, versiDilihat: versi, alasanFinalisasiUlang });
+  return finalisasiRencanaToko({
+    idGudang: bandung,
+    tanggalKirim: TANGGAL_KIRIM,
+    tokoId,
+    idPengguna: idOperator,
+    versiDilihat: versi,
+    alasanFinalisasiUlang,
+  });
 }
 
 const rencanaGudang = () =>
@@ -119,7 +150,11 @@ beforeAll(async () => {
   [tokoA, tokoB, tokoTanpaVarian, tokoManual] = [await buatTokoUji(), await buatTokoUji(), await buatTokoUji(), await buatTokoUji()];
   const semuaToko = [tokoA, tokoB, tokoTanpaVarian, tokoManual];
   await db.insert(hubunganTokoGudang).values(semuaToko.map((t) => ({ tokoId: t.id, gudangId: bandung })));
-  const jadwalSenin = { pola: "mingguan" as const, hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }], dibuatOleh: idAdmin };
+  const jadwalSenin = {
+    pola: "mingguan" as const,
+    hariKirim: [{ hari: "Senin" as const, persiapanHari: 2 as const }],
+    dibuatOleh: idAdmin,
+  };
   await db.insert(jadwalToko).values(semuaToko.map((t) => ({ ...jadwalSenin, tokoId: t.id })));
 
   [tahunA, tahunB, tahunManual] = [await tahunUjiBebas(), await tahunUjiBebas(), await tahunUjiBebas()];
@@ -136,14 +171,24 @@ beforeAll(async () => {
     tahun: tahunB,
     namaToko: tokoB.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kode.tokoB, SEMUA_HARI_JUNI.map(() => 2))],
+    produk: [
+      produkUji(
+        kode.tokoB,
+        SEMUA_HARI_JUNI.map(() => 2),
+      ),
+    ],
   });
   await aktifkanImporJuniUji({
     idAdmin,
     tahun: tahunManual,
     namaToko: tokoManual.nama,
     hari: SEMUA_HARI_JUNI,
-    produk: [produkUji(kode.tokoManual, SEMUA_HARI_JUNI.map(() => 1))],
+    produk: [
+      produkUji(
+        kode.tokoManual,
+        SEMUA_HARI_JUNI.map(() => 1),
+      ),
+    ],
   });
   await hitungUlangCacheLaporan();
   const periode = await tetapkanPeriodeSumber({
@@ -176,7 +221,12 @@ afterAll(async () => {
 describe("finalisasi rencana per toko", () => {
   it("ditolak bila ada baris tertahan; toko lain tetap bisa difinalisasi", async () => {
     expect(
-      await simpanStokToko({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, tokoId: tokoA.id, stok: [{ kodeProduk: kode.contoh, stokAkhir: CONTOH.stokAkhir }] }),
+      await simpanStokToko({
+        idGudang: bandung,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoA.id,
+        stok: [{ kodeProduk: kode.contoh, stokAkhir: CONTOH.stokAkhir }],
+      }),
     ).toEqual({ keadaan: "berhasil" });
 
     // Toko B: stok belum diisi → satu baris tertahan.
@@ -197,7 +247,14 @@ describe("finalisasi rencana per toko", () => {
     expect(rencana).not.toBeNull();
     if (rencana === null) return;
 
-    expect(rencana).toMatchObject({ id, versi: 1, alasanFinalisasiUlang: null, toko: tokoA, tanggalKirim: TANGGAL_KIRIM, difinalisasiOleh: "Uji viewer" });
+    expect(rencana).toMatchObject({
+      id,
+      versi: 1,
+      alasanFinalisasiUlang: null,
+      toko: tokoA,
+      tanggalKirim: TANGGAL_KIRIM,
+      difinalisasiOleh: "Uji viewer",
+    });
     // T126: finalisasi baru menyimpan rumus stok target (PRD A6 ▶ Revisi 2026-10-14).
     expect(rencana.rumusJumlahKirim).toBe("stok-target");
     expect(rencana.difinalisasiPada).toBeInstanceOf(Date);
@@ -288,10 +345,21 @@ describe("finalisasi rencana per toko", () => {
   it("draft yang berubah sejak dilihat ditolak", async () => {
     const versiLama = (await draft())?.toko.find((t) => t.id === tokoB.id)?.versi ?? "";
     expect(
-      await simpanStokToko({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, tokoId: tokoB.id, stok: [{ kodeProduk: kode.tokoB, stokAkhir: 3 }] }),
+      await simpanStokToko({
+        idGudang: bandung,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoB.id,
+        stok: [{ kodeProduk: kode.tokoB, stokAkhir: 3 }],
+      }),
     ).toEqual({ keadaan: "berhasil" });
     expect(
-      await finalisasiRencanaToko({ idGudang: bandung, tanggalKirim: TANGGAL_KIRIM, tokoId: tokoB.id, idPengguna: idOperator, versiDilihat: versiLama }),
+      await finalisasiRencanaToko({
+        idGudang: bandung,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoB.id,
+        idPengguna: idOperator,
+        versiDilihat: versiLama,
+      }),
     ).toEqual({ keadaan: "gagal", pesan: PESAN_DRAFT_BERUBAH_FINALISASI });
     expect(await rencanaToko(tokoB.id)).toEqual([]);
 
@@ -340,7 +408,13 @@ describe("perlu dihitung ulang hanya menahan toko yang terdampak (PRD A7 ▶ Kep
 
   it("kategori efektif diubah khusus toko B di tanggal cakupannya → hanya toko B tertahan", async () => {
     expect(
-      await buatPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-10"), idToko: tokoB.id, kategoriBaru: "Minggu", alasan: ALASAN_UJI, idPengguna: idAdmin }),
+      await buatPerubahanKategori({
+        tanggal: parseTanggalBisnis("2026-06-10"),
+        idToko: tokoB.id,
+        kategoriBaru: "Minggu",
+        alasan: ALASAN_UJI,
+        idPengguna: idAdmin,
+      }),
     ).toEqual({ keadaan: "berhasil" });
     await hanyaTokoBTertahan("kategori-efektif");
     await db.delete(perubahanKategori).where(eq(perubahanKategori.alasan, ALASAN_UJI));
@@ -349,7 +423,13 @@ describe("perlu dihitung ulang hanya menahan toko yang terdampak (PRD A7 ▶ Kep
 
   it("kategori efektif diubah untuk seluruh toko di tanggal cakupan → semua toko yang cakupannya kena tertahan", async () => {
     expect(
-      await buatPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-10"), idToko: null, kategoriBaru: "Minggu", alasan: ALASAN_UJI, idPengguna: idAdmin }),
+      await buatPerubahanKategori({
+        tanggal: parseTanggalBisnis("2026-06-10"),
+        idToko: null,
+        kategoriBaru: "Minggu",
+        alasan: ALASAN_UJI,
+        idPengguna: idAdmin,
+      }),
     ).toEqual({ keadaan: "berhasil" });
     for (const t of [tokoA, tokoB]) {
       expect((await tokoDraft(t.id)).perluDihitungUlang).toEqual(["kategori-efektif"]);
@@ -364,13 +444,17 @@ describe("perlu dihitung ulang hanya menahan toko yang terdampak (PRD A7 ▶ Kep
       .update(jadwalToko)
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoB.id), eq(jadwalToko.status, "aktif")));
-    await db.insert(jadwalToko).values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 2 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoB.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 2 }], dibuatOleh: idAdmin });
     await hanyaTokoBTertahan("jadwal");
     expect(await hitung()).toMatchObject({ keadaan: "berhasil" });
   });
 
   it("pemetaan produk yang hanya ada di baris toko B diubah → hanya toko B tertahan", async () => {
-    const [pemetaan] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.tokoB, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [pemetaan] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.tokoB, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(pemetaan.status).toBe("berhasil");
     await hanyaTokoBTertahan("pemetaan");
     expect(await hitung()).toMatchObject({ keadaan: "berhasil" });
@@ -389,11 +473,23 @@ describe("rencana final tidak berubah oleh pembaruan data berikutnya (PRD A5, A7
       tahun: tahunA,
       namaToko: tokoA.nama,
       hari: SEMUA_HARI_JUNI,
-      produk: [produkUji(kode.contoh, sesuaiContoh.map((q) => q * 2)), produkUji(kode.manual, sesuaiContoh)],
+      produk: [
+        produkUji(
+          kode.contoh,
+          sesuaiContoh.map((q) => q * 2),
+        ),
+        produkUji(kode.manual, sesuaiContoh),
+      ],
     });
     // Kategori tanggal cakupan diubah untuk semua toko.
     expect(
-      await buatPerubahanKategori({ tanggal: parseTanggalBisnis("2026-06-10"), idToko: null, kategoriBaru: "Minggu", alasan: ALASAN_UJI, idPengguna: idAdmin }),
+      await buatPerubahanKategori({
+        tanggal: parseTanggalBisnis("2026-06-10"),
+        idToko: null,
+        kategoriBaru: "Minggu",
+        alasan: ALASAN_UJI,
+        idPengguna: idAdmin,
+      }),
     ).toEqual({ keadaan: "berhasil" });
     await hitungUlangCacheLaporan();
     // Jadwal toko A diubah: persiapan H−1.
@@ -401,10 +497,14 @@ describe("rencana final tidak berubah oleh pembaruan data berikutnya (PRD A5, A7
       .update(jadwalToko)
       .set({ status: "nonaktif", dinonaktifkanOleh: idAdmin, dinonaktifkanPada: new Date() })
       .where(and(eq(jadwalToko.tokoId, tokoA.id), eq(jadwalToko.status, "aktif")));
-    await db.insert(jadwalToko).values({ tokoId: tokoA.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
+    await db
+      .insert(jadwalToko)
+      .values({ tokoId: tokoA.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapanHari: 1 }], dibuatOleh: idAdmin });
     // Ranking baru tanpa keluarga contoh di tujuh besar, dan pemetaan produk contoh diubah.
     await publikasikanRankingUji({ keluarga: [keluargaLain], idPengguna: idAdmin, bulanRanking: "2026-10" });
-    const [pemetaan] = await terapkanPemetaan(idAdmin, [{ kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } }]);
+    const [pemetaan] = await terapkanPemetaan(idAdmin, [
+      { kodeProduk: kode.contoh, tujuan: { status: "terpetakan", idKeluarga: keluargaLain } },
+    ]);
     expect(pemetaan.status).toBe("berhasil");
 
     expect((await draft())?.perluDihitungUlang).toEqual(["impor-aktif", "kategori-efektif", "jadwal", "ranking", "pemetaan"]);
@@ -423,7 +523,10 @@ describe("rencana final tidak berubah oleh pembaruan data berikutnya (PRD A5, A7
 
     const [{ nama: namaPemfinalisasi }] = await db.select({ nama: user.name }).from(user).where(eq(user.id, idOperator));
     try {
-      await db.update(toko).set({ nama: `${tokoA.nama} BARU` }).where(eq(toko.id, tokoA.id));
+      await db
+        .update(toko)
+        .set({ nama: `${tokoA.nama} BARU` })
+        .where(eq(toko.id, tokoA.id));
       await db.update(user).set({ name: "Nama baru operator" }).where(eq(user.id, idOperator));
       expect(await bacaRencanaFinal(bandung, rencanaA.id)).toEqual(sebelum);
     } finally {
@@ -463,7 +566,11 @@ describe("rumus jumlah kirim rencana final (PRD A6 ▶ Revisi 2026-10-14, T126)"
   });
 
   it("rencana final dengan rumus lama: jumlah kirim snapshot dan rinciannya tetap rumus lama, (56 − 20) × 120% = 43,2 → 44", async () => {
-    expect(CONTOH_RUMUS_LAMA).toMatchObject({ kebutuhan: CONTOH.kebutuhan, stokAkhir: CONTOH.stokAkhir, persenBuffer: CONTOH.persenBuffer });
+    expect(CONTOH_RUMUS_LAMA).toMatchObject({
+      kebutuhan: CONTOH.kebutuhan,
+      stokAkhir: CONTOH.stokAkhir,
+      persenBuffer: CONTOH.persenBuffer,
+    });
     // Rencana final dari sebelum migrasi 0028: snapshot versi 1 toko A dengan jumlah kirim rumus lama.
     const [asal] = await rencanaToko(tokoA.id);
     const idLama = await salinRencanaFinalRumusLama({
@@ -500,7 +607,9 @@ describe("rumus jumlah kirim rencana final (PRD A6 ▶ Revisi 2026-10-14, T126)"
       await tx.execute(sql`insert into "rencana_final" ("id") values (1), (2)`);
       for (const p of pernyataan) await tx.execute(sql.raw(p));
       await tx.execute(sql`insert into "rencana_final" ("id") values (3)`);
-      return tx.execute<{ id: number; rumus: string }>(sql`select "id", "rumus_jumlah_kirim" as "rumus" from "rencana_final" order by "id"`);
+      return tx.execute<{ id: number; rumus: string }>(
+        sql`select "id", "rumus_jumlah_kirim" as "rumus" from "rencana_final" order by "id"`,
+      );
     });
     expect([...hasil]).toEqual([
       { id: 1, rumus: "lama" },

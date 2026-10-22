@@ -9,12 +9,7 @@ import { keluar } from "@/app/keluar/aksi";
 import { Dialog, DialogIsi, DialogTutup } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-import {
-  bacaPilihanKelompok,
-  langgananPilihanKelompok,
-  tulisPilihanKelompok,
-  uraiPilihanKelompok,
-} from "./pilihan-kelompok-sidebar";
+import { bacaPilihanKelompok, langgananPilihanKelompok, tulisPilihanKelompok, uraiPilihanKelompok } from "./pilihan-kelompok-sidebar";
 
 // T78 — DESIGN §6 ▶ Keputusan (2026-10-11): navigasi berupa sidebar berkelompok; susunan kelompok T97, T98 (2026-10-13)
 // dan T105 (2026-10-13 sore).
@@ -235,10 +230,7 @@ function TautanAkunSaya({
 function TombolKeluar() {
   return (
     <form action={keluar}>
-      <button
-        type="submit"
-        className={cn(bentukItem, "text-foreground hover:bg-primary/10 hover:text-primary", fokusTerlihat)}
-      >
+      <button type="submit" className={cn(bentukItem, "text-foreground hover:bg-primary/10 hover:text-primary", fokusTerlihat)}>
         <LogOut aria-hidden strokeWidth={2} className="size-5" />
         Keluar
       </button>

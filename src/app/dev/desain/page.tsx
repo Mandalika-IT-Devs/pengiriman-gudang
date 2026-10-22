@@ -8,15 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const metadata: Metadata = {
   title: "Contoh komponen — Dashboard Penjualan MANDALIKA",
@@ -153,9 +145,7 @@ export default function HalamanContohDesain() {
             <CardContent>Isi kartu memakai Nunito text-sm.</CardContent>
             <CardFooter>
               <Button>Simpan</Button>
-              <Button variant="ghost">
-                Batal
-              </Button>
+              <Button variant="ghost">Batal</Button>
             </CardFooter>
           </Card>
           <Card className="transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-float">
@@ -179,11 +169,7 @@ export default function HalamanContohDesain() {
       <Bagian judul="Pesan status simpan">
         <div className="flex flex-col gap-3">
           {semuaKeadaanSimpan.map((keadaan) => (
-            <PesanStatusSimpan
-              key={keadaan}
-              keadaan={keadaan}
-              pesan={keadaan === "gagal" ? "Koneksi ke server terputus." : undefined}
-            />
+            <PesanStatusSimpan key={keadaan} keadaan={keadaan} pesan={keadaan === "gagal" ? "Koneksi ke server terputus." : undefined} />
           ))}
         </div>
       </Bagian>

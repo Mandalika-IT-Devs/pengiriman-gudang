@@ -12,13 +12,9 @@ const { hitungUlangCacheLaporan } = await import("../server/laporan/cache");
 
 await pastikanBucket();
 const boss = await mulaiBoss("worker");
-await boss.work<DataJobProsesImpor>(
-  ANTREAN_PROSES_IMPOR,
-  { pollingIntervalSeconds: 1, localConcurrency: 4 },
-  async ([job]) => {
-    await prosesImpor(job.data.idImpor);
-  },
-);
+await boss.work<DataJobProsesImpor>(ANTREAN_PROSES_IMPOR, { pollingIntervalSeconds: 1, localConcurrency: 4 }, async ([job]) => {
+  await prosesImpor(job.data.idImpor);
+});
 await boss.work(ANTREAN_HITUNG_CACHE_LAPORAN, { pollingIntervalSeconds: 1, localConcurrency: 1 }, async () => {
   await hitungUlangCacheLaporan();
 });

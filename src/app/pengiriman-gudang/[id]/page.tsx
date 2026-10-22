@@ -93,10 +93,7 @@ export default async function HalamanPengirimanGudang({
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
       <header className="flex flex-col gap-3">
         {adaDaftarGudang ? (
-          <Link
-            href="/pengiriman-gudang"
-            className={tautanTombolVariants()}
-          >
+          <Link href="/pengiriman-gudang" className={tautanTombolVariants()}>
             <ArrowLeft aria-hidden strokeWidth={2} className="size-5" />
             Daftar gudang
           </Link>

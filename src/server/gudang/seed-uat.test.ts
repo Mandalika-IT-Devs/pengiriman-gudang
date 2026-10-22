@@ -44,7 +44,12 @@ async function akunUji() {
   return db
     .select({ id: user.id, email: user.email, name: user.name, role: user.role, updatedAt: user.updatedAt })
     .from(user)
-    .where(inArray(user.email, daftarUji.map((g) => g.email)))
+    .where(
+      inArray(
+        user.email,
+        daftarUji.map((g) => g.email),
+      ),
+    )
     .orderBy(asc(user.email));
 }
 

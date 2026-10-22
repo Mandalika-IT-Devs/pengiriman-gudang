@@ -41,7 +41,15 @@ export function workbookRankingUji(baris: Sel[][]) {
 }
 
 /** Unggah lewat presigned URL dan daftarkan ranking langsung di lapisan server (tanpa server action). */
-export async function rankingUji({ isi, idPengguna, bulanRanking = "2026-09" }: { isi: Uint8Array; idPengguna: string; bulanRanking?: string }) {
+export async function rankingUji({
+  isi,
+  idPengguna,
+  bulanRanking = "2026-09",
+}: {
+  isi: Uint8Array;
+  idPengguna: string;
+  bulanRanking?: string;
+}) {
   const kunci = kunciObjekRankingBaru();
   const jawaban = await fetch(await buatUrlUnggah(kunci), { method: "PUT", body: Buffer.from(isi) });
   if (!jawaban.ok) throw new Error(`Unggah uji gagal: ${jawaban.status}`);
@@ -97,7 +105,13 @@ export async function publikasikanRankingUji({
       .returning({ id: versiRanking.id, versi: versiRanking.versi });
     if (keluarga.length > 0) {
       await tx.insert(barisRanking).values(
-        keluarga.map((keluargaAromaId, i) => ({ versiId: versi.id, rank: i + 1, variant: `UJI-${randomUUID()}`, qtySales: 0, keluargaAromaId })),
+        keluarga.map((keluargaAromaId, i) => ({
+          versiId: versi.id,
+          rank: i + 1,
+          variant: `UJI-${randomUUID()}`,
+          qtySales: 0,
+          keluargaAromaId,
+        })),
       );
     }
     return versi.id;

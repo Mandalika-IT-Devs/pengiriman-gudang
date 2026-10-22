@@ -174,7 +174,11 @@ export const penugasanOperator = pgTable(
     gudangId: integer("gudang_id")
       .notNull()
       .references(() => gudang.id),
-    hakTindakan: text("hak_tindakan").array().$type<HakTindakan[]>().notNull().default(sql`'{}'::text[]`),
+    hakTindakan: text("hak_tindakan")
+      .array()
+      .$type<HakTindakan[]>()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     dibuatPada: timestamp("dibuat_pada", { withTimezone: true }).notNull().defaultNow(),
     diubahPada: timestamp("diubah_pada", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -291,10 +295,7 @@ export const produk = pgTable(
     kategori: text("kategori").notNull(),
     klasifikasi: text("klasifikasi").$type<"manual" | "otomatis">().notNull(),
     alasanManual: text("alasan_manual").$type<"display-tester" | "kertas-tester">(),
-    statusKeluargaAroma: text("status_keluarga_aroma")
-      .$type<StatusKeluargaAroma>()
-      .notNull()
-      .default("belum-dipetakan"),
+    statusKeluargaAroma: text("status_keluarga_aroma").$type<StatusKeluargaAroma>().notNull().default("belum-dipetakan"),
     /** Keluarga hasil konfirmasi admin (T45); terisi persis saat status `terpetakan`. */
     keluargaAromaId: integer("keluarga_aroma_id").references((): AnyPgColumn => keluargaAroma.id),
     didaftarkanOlehImporId: integer("didaftarkan_oleh_impor_id").references(() => impor.id),
@@ -306,10 +307,7 @@ export const produk = pgTable(
       "produk_alasan_manual_sesuai",
       sql`(${tabel.klasifikasi} = 'manual' and ${tabel.alasanManual} in ('display-tester', 'kertas-tester')) or (${tabel.klasifikasi} = 'otomatis' and ${tabel.alasanManual} is null)`,
     ),
-    check(
-      "produk_status_keluarga_aroma_dikenal",
-      sql`${tabel.statusKeluargaAroma} in (${daftarSql(daftarStatusKeluargaAroma)})`,
-    ),
+    check("produk_status_keluarga_aroma_dikenal", sql`${tabel.statusKeluargaAroma} in (${daftarSql(daftarStatusKeluargaAroma)})`),
     check(
       "produk_keluarga_aroma_sesuai_status",
       sql`(${tabel.statusKeluargaAroma} = 'terpetakan') = (${tabel.keluargaAromaId} is not null)`,
@@ -422,18 +420,9 @@ export const cacheRataRataBulanan = pgTable(
     kelengkapan: text("kelengkapan").$type<(typeof daftarKelengkapan)[number]>().notNull(),
   },
   (tabel) => [
-    uniqueIndex("cache_rata_rata_bulanan_unik").on(
-      tabel.versiId,
-      tabel.tokoId,
-      tabel.kodeProduk,
-      tabel.bulanLaporan,
-      tabel.kategori,
-    ),
+    uniqueIndex("cache_rata_rata_bulanan_unik").on(tabel.versiId, tabel.tokoId, tabel.kodeProduk, tabel.bulanLaporan, tabel.kategori),
     check("cache_rata_rata_bulanan_kategori_dikenal", sql`${tabel.kategori} in (${daftarSql(daftarKategoriHari)})`),
-    check(
-      "cache_rata_rata_bulanan_kelengkapan_dikenal",
-      sql`${tabel.kelengkapan} in (${daftarSql(daftarKelengkapan)})`,
-    ),
+    check("cache_rata_rata_bulanan_kelengkapan_dikenal", sql`${tabel.kelengkapan} in (${daftarSql(daftarKelengkapan)})`),
   ],
 );
 
@@ -452,14 +441,7 @@ export const cacheTotalPenjualanMentah = pgTable(
     bulanLaporan: text("bulan_laporan").notNull(),
     totalPenjualanMentah: integer("total_penjualan_mentah").notNull(),
   },
-  (tabel) => [
-    uniqueIndex("cache_total_penjualan_mentah_unik").on(
-      tabel.versiId,
-      tabel.tokoId,
-      tabel.kodeProduk,
-      tabel.bulanLaporan,
-    ),
-  ],
+  (tabel) => [uniqueIndex("cache_total_penjualan_mentah_unik").on(tabel.versiId, tabel.tokoId, tabel.kodeProduk, tabel.bulanLaporan)],
 );
 
 // --- Snapshot libur (T40, PRD B2–B3, ADR-0004) ---
@@ -514,12 +496,7 @@ export const entriLibur = pgTable(
 
 /** `persetujuan` = aktivasi pertama snapshot menunggu persetujuan (siapa dan kapan disimpan sekali, PRD B3);
  * `aktivasi-ulang` = aktivasi berikutnya atas snapshot arsip (T41). */
-export const daftarJenisKejadianLibur = [
-  "sinkronisasi-berhasil",
-  "sinkronisasi-gagal",
-  "persetujuan",
-  "aktivasi-ulang",
-] as const;
+export const daftarJenisKejadianLibur = ["sinkronisasi-berhasil", "sinkronisasi-gagal", "persetujuan", "aktivasi-ulang"] as const;
 export type JenisKejadianLibur = (typeof daftarJenisKejadianLibur)[number];
 
 /** Riwayat kejadian libur (PRD B3). Sinkronisasi gagal tidak membuat snapshot; pesannya disimpan di sini. */
@@ -847,14 +824,8 @@ export const usulanJadwal = pgTable(
     check("usulan_jadwal_jenis_dikenal", sql`${tabel.jenis} in (${daftarSql(daftarJenisUsulanJadwal)})`),
     check("usulan_jadwal_status_dikenal", sql`${tabel.status} in (${daftarSql(daftarStatusUsulanJadwal)})`),
     check("usulan_jadwal_pola_dikenal", sql`${tabel.pola} in (${daftarSql(daftarPolaJadwal)})`),
-    check(
-      "usulan_jadwal_isi_sesuai_jenis",
-      sql`(${tabel.jenis} = 'nonaktifkan') = (${tabel.pola} is null and ${tabel.hariKirim} is null)`,
-    ),
-    check(
-      "usulan_jadwal_hari_kirim_array",
-      sql`${tabel.hariKirim} is null or jsonb_typeof(${tabel.hariKirim}) = 'array'`,
-    ),
+    check("usulan_jadwal_isi_sesuai_jenis", sql`(${tabel.jenis} = 'nonaktifkan') = (${tabel.pola} is null and ${tabel.hariKirim} is null)`),
+    check("usulan_jadwal_hari_kirim_array", sql`${tabel.hariKirim} is null or jsonb_typeof(${tabel.hariKirim}) = 'array'`),
     check(
       "usulan_jadwal_jangkar_dua_mingguan",
       sql`(coalesce(${tabel.pola}, '') = 'dua-mingguan') = (${tabel.tanggalJangkar} is not null)`,
@@ -864,10 +835,7 @@ export const usulanJadwal = pgTable(
       "usulan_jadwal_jejak_keputusan",
       sql`(${tabel.status} <> 'menunggu') = (${tabel.diputuskanPada} is not null) and (${tabel.diputuskanOleh} is null or ${tabel.diputuskanPada} is not null)`,
     ),
-    check(
-      "usulan_jadwal_alasan_penolakan",
-      sql`(${tabel.status} = 'ditolak') = (${tabel.alasanPenolakan} is not null)`,
-    ),
+    check("usulan_jadwal_alasan_penolakan", sql`(${tabel.status} = 'ditolak') = (${tabel.alasanPenolakan} is not null)`),
   ],
 );
 
@@ -932,10 +900,7 @@ export const pengirimanDiLuarJadwal = pgTable(
       .where(sql`${tabel.status} in ('menunggu', 'berlaku') and ${tabel.tanggalRutinDipindah} is not null`),
     index("pengiriman_di_luar_jadwal_gudang_id_idx").on(tabel.gudangId, tabel.id),
     check("pengiriman_di_luar_jadwal_jenis_dikenal", sql`${tabel.jenis} in (${daftarSql(daftarJenisPengirimanDiLuarJadwal)})`),
-    check(
-      "pengiriman_di_luar_jadwal_status_dikenal",
-      sql`${tabel.status} in (${daftarSql(daftarStatusPengirimanDiLuarJadwal)})`,
-    ),
+    check("pengiriman_di_luar_jadwal_status_dikenal", sql`${tabel.status} in (${daftarSql(daftarStatusPengirimanDiLuarJadwal)})`),
     check("pengiriman_di_luar_jadwal_persiapan", sql`${tabel.persiapanHari} in (0, 1, 2)`),
     check(
       "pengiriman_di_luar_jadwal_tanggal_rutin_sesuai_jenis",
@@ -996,8 +961,14 @@ export const draftRencana = pgTable(
     versiCacheId: integer("versi_cache_id"),
     /** Id impor aktif (urut naik) pembentuk versi cache laporan yang dipakai. */
     imporAktif: integer("impor_aktif").array(),
-    tokoDikeluarkan: integer("toko_dikeluarkan").array().notNull().default(sql`'{}'::integer[]`),
-    stokTidakDipakai: jsonb("stok_tidak_dipakai").$type<{ tokoId: number; kodeProduk: string; stokAkhir: number }[]>().notNull().default([]),
+    tokoDikeluarkan: integer("toko_dikeluarkan")
+      .array()
+      .notNull()
+      .default(sql`'{}'::integer[]`),
+    stokTidakDipakai: jsonb("stok_tidak_dipakai")
+      .$type<{ tokoId: number; kodeProduk: string; stokAkhir: number }[]>()
+      .notNull()
+      .default([]),
   },
   (tabel) => [uniqueIndex("draft_rencana_gudang_tanggal_unik").on(tabel.gudangId, tabel.tanggalKirim)],
 );
@@ -1091,10 +1062,7 @@ export const barisDraftRencana = pgTable(
   (tabel) => [
     uniqueIndex("baris_draft_rencana_unik").on(tabel.tokoDraftId, tabel.kodeProduk),
     check("baris_draft_rencana_klasifikasi_dikenal", sql`${tabel.klasifikasi} in ('manual', 'otomatis')`),
-    check(
-      "baris_draft_rencana_kebutuhan_atau_tanpa_rata_rata",
-      sql`(${tabel.kebutuhan} is null) = (${tabel.tanpaRataRata} is not null)`,
-    ),
+    check("baris_draft_rencana_kebutuhan_atau_tanpa_rata_rata", sql`(${tabel.kebutuhan} is null) = (${tabel.tanpaRataRata} is not null)`),
     check("baris_draft_rencana_persen_buffer_dikenal", sql`${tabel.persenBuffer} is null or ${tabel.persenBuffer} in (10, 20)`),
     check("baris_draft_rencana_jumlah_kirim", sql`${tabel.jumlahKirim} is null or ${tabel.jumlahKirim} >= 0`),
   ],
@@ -1260,10 +1228,7 @@ export const barisRencanaFinal = pgTable(
       "baris_rencana_final_manual_tanpa_kirim",
       sql`${tabel.status} <> 'manual' or (${tabel.persenBuffer} is null and ${tabel.jumlahKirim} is null)`,
     ),
-    check(
-      "baris_rencana_final_kebutuhan_atau_tanpa_rata_rata",
-      sql`(${tabel.kebutuhan} is null) = (${tabel.tanpaRataRata} is not null)`,
-    ),
+    check("baris_rencana_final_kebutuhan_atau_tanpa_rata_rata", sql`(${tabel.kebutuhan} is null) = (${tabel.tanpaRataRata} is not null)`),
   ],
 );
 

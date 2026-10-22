@@ -130,7 +130,8 @@ describe("admin menyetujui atau menolak", () => {
 
     await expect(setujuiPengiriman({ id: usulan.id })).resolves.toEqual({
       keadaan: "gagal",
-      pesan: "Usulan tidak bisa disetujui. Syarat tidak terpenuhi: tanggal rutin Senin, 19-10-2026 sudah punya rencana final untuk toko ini.",
+      pesan:
+        "Usulan tidak bisa disetujui. Syarat tidak terpenuhi: tanggal rutin Senin, 19-10-2026 sudah punya rencana final untuk toko ini.",
     });
     expect((await baca(usulan.id)).status).toBe("menunggu");
   });
@@ -157,7 +158,12 @@ describe("admin membatalkan pengiriman yang berlaku", () => {
     await expect(batalkanPengiriman({ id: usulan.id, alasan: "" })).resolves.toEqual({ keadaan: "gagal", pesan: "Isi alasan pembatalan." });
     await expect(batalkanPengiriman({ id: usulan.id, alasan: "toko renovasi" })).resolves.toEqual({ keadaan: "berhasil" });
     const p = await baca(usulan.id);
-    expect(p).toMatchObject({ status: "dibatalkan", alasanPembatalan: "toko renovasi", dibatalkanOleh: admin.id, diputuskanOleh: pemutus.id });
+    expect(p).toMatchObject({
+      status: "dibatalkan",
+      alasanPembatalan: "toko renovasi",
+      dibatalkanOleh: admin.id,
+      diputuskanOleh: pemutus.id,
+    });
     expect(p.dibatalkanPada).toBeInstanceOf(Date);
   });
 

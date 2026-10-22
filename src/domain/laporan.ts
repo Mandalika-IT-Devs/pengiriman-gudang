@@ -255,10 +255,7 @@ function pastikanUnik<T>(daftar: readonly T[], kunci: (nilai: T) => string): voi
  * Rata-rata bulanan di luar bulan pilihan diabaikan; bulan pilihan tanpa hasil tidak menambah
  * pembagi. Parsial jika ada rata-rata bulanan pembentuknya yang parsial (OD-08, T04).
  */
-export function hitungRingkasan(
-  rataRataBulanan: readonly MasukanRataRataBulanan[],
-  bulanPilihan: readonly string[],
-): RataRataRingkasan[] {
+export function hitungRingkasan(rataRataBulanan: readonly MasukanRataRataBulanan[], bulanPilihan: readonly string[]): RataRataRingkasan[] {
   const terpilih = saringBulanPilihan(rataRataBulanan, bulanPilihan);
   pastikanUnik(terpilih, (nilai) => `${nilai.bulanLaporan} ${nilai.kategori}`);
   return URUTAN_KATEGORI.flatMap((kategori) => {
@@ -293,9 +290,7 @@ export function hitungPerbandinganMingguSama(
   const daftarMinggu = [...new Set(terpilih.map((nilai) => nilai.mingguLaporan))].sort((a, b) => a - b);
   return URUTAN_KATEGORI.flatMap((kategori) =>
     daftarMinggu.flatMap((mingguLaporan) => {
-      const pembentuk = terpilih.filter(
-        (nilai) => nilai.kategori === kategori && nilai.mingguLaporan === mingguLaporan,
-      );
+      const pembentuk = terpilih.filter((nilai) => nilai.kategori === kategori && nilai.mingguLaporan === mingguLaporan);
       if (pembentuk.length === 0) {
         return [];
       }

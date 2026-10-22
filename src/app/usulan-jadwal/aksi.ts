@@ -85,7 +85,12 @@ export async function usulkanPengiriman(input: unknown): Promise<HasilSimpan> {
   return selesai(
     await usulkanPengirimanDiLuarJadwal({
       idGudang,
-      isian: { ...lain, jenis, persiapanHari: PERSIAPAN_HARI[persiapan], tanggalRutinDipindah: jenis === "pindah" ? tanggalRutinDipindah : null },
+      isian: {
+        ...lain,
+        jenis,
+        persiapanHari: PERSIAPAN_HARI[persiapan],
+        tanggalRutinDipindah: jenis === "pindah" ? tanggalRutinDipindah : null,
+      },
       idPengguna: operator.id,
       hariIni: tanggalWib(new Date()),
     }),
@@ -109,6 +114,12 @@ export async function batalkanPengirimanPusat(input: unknown): Promise<HasilSimp
 
   const { idGudang, id, alasan } = isian.data;
   return selesai(
-    await batalkanPengirimanDiLuarJadwal({ id, alasan, idPengguna: operator.id, hariIni: tanggalWib(new Date()), gudangOperator: idGudang }),
+    await batalkanPengirimanDiLuarJadwal({
+      id,
+      alasan,
+      idPengguna: operator.id,
+      hariIni: tanggalWib(new Date()),
+      gudangOperator: idGudang,
+    }),
   );
 }

@@ -28,7 +28,15 @@ async function imporBelumDiproses() {
       toko: toko.nama,
       bulan: 6,
       hari: HARI,
-      produk: [{ kode: kodeProdukUji(), nama: "15ML GLITTER - UJI", ukuran: "15ML", kategori: "15ML GLITTER/LEATHER", kuantitas: HARI.map(() => 1) }],
+      produk: [
+        {
+          kode: kodeProdukUji(),
+          nama: "15ML GLITTER - UJI",
+          ukuran: "15ML",
+          kategori: "15ML GLITTER/LEATHER",
+          kuantitas: HARI.map(() => 1),
+        },
+      ],
     }),
   });
   return imporUji({ isi, tahunImpor: await tahunUjiBebas(), idPengguna: idAdmin, proses: false });
