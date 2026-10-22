@@ -165,8 +165,8 @@ Jumlah rata-rata sesuai kategori efektif setiap tanggal dalam cakupan.
 Stok toko yang diisi operator. Jika kosong, berarti belum diketahui.
 
 **File stok**:
-Ekspor stok akhir satu toko dari sistem kasir (CSV `;` atau `.xlsx`) dengan kolom `Name - Variant`, `Category`, `Ending`.
-_Avoid_: menganggap nama produk di dalamnya sama dengan nama master
+Ekspor stok akhir satu toko dari sistem kasir: CSV berpemisah koma, titik koma, atau tab (dikenali otomatis), atau `.xlsx`, dengan judul kolom `Name - Variant` dan `Ending`; kolom lain diabaikan.
+_Avoid_: menganggap nama produk di dalamnya sama dengan nama master; menganggap CSV selalu berpemisah `;`
 
 **Alias nama stok**:
 Nama produk di file stok yang dipetakan admin ke tepat satu kode produk. Nama master adalah alias bawaan. Dicocokkan persis setelah normalisasi.
