@@ -60,7 +60,10 @@ export async function hapusAliasStok(input: unknown): Promise<HasilSimpan> {
   return { keadaan: muatUlang() };
 }
 
-/** Unggah tabel alias (CSV `;` atau `.xlsx`) dari FormData field `file`; hasil per baris. */
+/**
+ * Unggah tabel alias (CSV berpemisah koma, titik koma, atau tab, atau `.xlsx`) dari FormData field `file`; hasil per
+ * baris.
+ */
 export async function unggahTabelAlias(form: FormData): Promise<HasilUnggahAlias> {
   const pengguna = await wajibAdmin();
   const file = form.get("file");

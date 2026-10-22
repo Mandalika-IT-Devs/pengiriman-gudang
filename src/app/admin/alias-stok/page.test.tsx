@@ -57,6 +57,8 @@ describe("/admin/alias-stok", () => {
     expect(html).toContain(`aria-label="Hapus alias AA ALIAS ${acak}"`);
     expect(html).toContain("Tambah alias");
     expect(html).toContain("Unggah tabel alias");
+    // T139: kalimat pertama keterangan kartu, persis PRD A6 ▶ Keputusan 2026-10-22.
+    expect(html).toContain("File CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB. Baris pertama");
     expect(html).toContain('type="file"');
     // Zona kerja: judul halaman text-2xl md:text-3xl, tanpa blob.
     expect(html).toContain("text-2xl font-bold md:text-3xl");

@@ -225,6 +225,24 @@ describe("admin mengunggah tabel alias", () => {
     expect(await aliasTersimpan(baru)).toMatchObject({ kodeProduk: PW110P.kode });
   });
 
+  // T139 (PRD A6 ▶ Keputusan 2026-10-22): pemisah dikenali otomatis dari baris pertama.
+  it.each([
+    { nama: "koma", pemisah: "," },
+    { nama: "tab", pemisah: "\t" },
+  ])("CSV berpemisah $nama: hasil per baris sama dengan versi ;", async ({ pemisah }) => {
+    const { baru, baris, diharapkan } = await siapkanLimaBaris();
+    const csv = [["No", "nama di  file stok", "KODE PRODUK"], ...baris.map(([alias, kode], i) => [String(i + 1), alias, kode])]
+      .map((sel) => sel.join(pemisah))
+      .join("\n");
+    const hasil = await kirimFile("alias.csv", csv);
+    expect(hasil).toEqual({
+      keadaan: "berhasil",
+      baris: diharapkan,
+      jumlah: { ditambahkan: 1, sudahAda: 1, ditolak: 3 },
+    });
+    expect(await aliasTersimpan(baru)).toMatchObject({ kodeProduk: PW110P.kode });
+  });
+
   it("workbook .xlsx (sheet pertama)", async () => {
     const { baru, baris, diharapkan } = await siapkanLimaBaris();
     const workbook = buatWorkbookUji({
@@ -271,10 +289,20 @@ describe("admin mengunggah tabel alias", () => {
     expect(await aliasTersimpan(alias)).toBeNull();
   });
 
+  it("baris pertama hanya satu sel berisi pemisah (.xlsx, seluruh isi di kolom A) → pesan judul kolom yang sama, tanpa petunjuk file kasir", async () => {
+    const alias = unik("KOLOM A");
+    const workbook = buatWorkbookUji({ Sheet1: [["Nama di file stok,Kode produk"], [`${alias},${PW110P.kode}`]] });
+    expect(await kirimFile("alias.xlsx", workbook)).toEqual({
+      keadaan: "gagal",
+      pesan: "Baris pertama harus memuat judul kolom Nama di file stok dan Kode produk.",
+    });
+    expect(await aliasTersimpan(alias)).toBeNull();
+  });
+
   it("format selain CSV/.xlsx dan file lebih dari 1 MB ditolak", async () => {
     expect(await kirimFile("alias.txt", "Nama di file stok;Kode produk\n")).toEqual({
       keadaan: "gagal",
-      pesan: "Format file harus CSV berpemisah ; atau .xlsx.",
+      pesan: "Format file harus CSV atau .xlsx.",
     });
     expect(await kirimFile("alias.csv", "x".repeat(1_048_577))).toEqual({
       keadaan: "gagal",

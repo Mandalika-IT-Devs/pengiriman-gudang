@@ -149,3 +149,13 @@ describe("teks bantuan istilah pola dua mingguan (PRD A5 ▶ Revisi 2026-10-19)"
     expect(TEKS_BANTUAN_ISTILAH.tanggalJangkar.penjelasan).toMatch(/^Aturan lama sebelum 19-10-2026/);
   });
 });
+
+// T139 — PRD A6 ▶ Keputusan 2026-10-22: file stok langsung dari ekspor kasir; CSV berpemisah koma, titik koma, atau
+// tab.
+describe("teks bantuan istilah File stok (PRD A6 ▶ Keputusan 2026-10-22)", () => {
+  it("teks persis PRD", () => {
+    expect(TEKS_BANTUAN_ISTILAH.fileStok.penjelasan).toBe(
+      "Ekspor stok akhir kasir untuk toko ini: CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB, dengan judul kolom Name - Variant dan Ending.",
+    );
+  });
+});

@@ -10,7 +10,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { unggahTabelAlias, type HasilUnggahAlias } from "./aksi";
 import { HasilUnggahan } from "./hasil-unggahan";
 
-/** Unggah tabel alias (CSV `;` atau `.xlsx`, maks. 1 MB) langsung ke server action; hasil per baris tampil di bawahnya. */
+/**
+ * Unggah tabel alias (CSV berpemisah koma, titik koma, atau tab, atau `.xlsx`; maks. 1 MB) langsung ke server action;
+ * hasil per baris tampil di bawahnya.
+ */
 export function FormUnggahAlias() {
   const [file, setFile] = useState<File | null>(null);
   const { tampilan, hasil, menunggu, tandaiBerubah, simpan } = usePenyimpanan<HasilUnggahAlias>("daftar alias di bawah");
@@ -30,8 +33,8 @@ export function FormUnggahAlias() {
         <CardHeader>
           <CardTitle level={2}>Unggah tabel alias</CardTitle>
           <CardDescription>
-            File CSV berpemisah titik koma (;) atau Excel (.xlsx, sheet pertama), maksimal 1 MB. Baris pertama berisi
-            judul kolom <span className="font-semibold">Nama di file stok</span> dan{" "}
+            File CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB. Baris
+            pertama berisi judul kolom <span className="font-semibold">Nama di file stok</span> dan{" "}
             <span className="font-semibold">Kode produk</span>; kolom lain diabaikan. Baris yang ditolak tidak menahan
             baris lain.
           </CardDescription>

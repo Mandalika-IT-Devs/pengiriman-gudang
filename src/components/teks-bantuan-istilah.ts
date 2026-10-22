@@ -60,7 +60,7 @@ export const TEKS_BANTUAN_ISTILAH = {
   fileStok: {
     judul: "File stok",
     penjelasan:
-      "Ekspor stok akhir kasir untuk toko ini: CSV berpemisah titik koma (;) atau Excel (.xlsx, sheet pertama), maksimal 1 MB, dengan judul kolom Name - Variant dan Ending.",
+      "Ekspor stok akhir kasir untuk toko ini: CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB, dengan judul kolom Name - Variant dan Ending.",
   },
   mingguLaporan: {
     judul: "Minggu dan bulan laporan",

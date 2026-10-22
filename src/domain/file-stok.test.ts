@@ -46,6 +46,33 @@ describe("bacaFileStok: judul kolom", () => {
   });
 });
 
+// T139 (PRD A6 ▶ Keputusan 2026-10-22): file kasir yang dibuka di Excel lalu disimpan ulang tanpa Text to Columns,
+// sehingga seluruh isi baris menumpuk di satu sel. Isi sel sintetis.
+describe("bacaFileStok: petunjuk file kasir yang disimpan ulang di Excel", () => {
+  const PESAN_PETUNJUK =
+    "Judul kolom Name - Variant dan Ending tidak ditemukan di baris pertama. Unggah file CSV asli dari kasir, tanpa disimpan ulang di Excel.";
+  const PESAN_TANPA_PETUNJUK = "Judul kolom Name - Variant dan Ending tidak ditemukan di baris pertama.";
+
+  it("baris pertama hanya satu sel terisi yang memuat koma, titik koma, atau tab → pesan dengan petunjuk", () => {
+    const kasus = [
+      ["Name - Variant,Category,Beginning,Purchase Order,Sales,Transfer,Adjustment,Ending", "NO1 - 10ML ATOMIZER,PARFUM PRIA,7,0,0,0,0,7"],
+      ["Name - Variant;Category;Ending", "NO1 - 10ML ATOMIZER;PARFUM PRIA;7"],
+      ["Name - Variant\tCategory\tEnding", "NO1 - 10ML ATOMIZER\tPARFUM PRIA\t7"],
+    ];
+    for (const [judul, isi] of kasus) {
+      expect(bacaFileStok([[judul], [isi]]), judul).toEqual({ ok: false, pesan: PESAN_PETUNJUK });
+    }
+    // Sel lain di baris pertama yang kosong tidak dihitung sebagai sel terisi.
+    expect(bacaFileStok([["Name - Variant,Category,Ending", null, " "]])).toEqual({ ok: false, pesan: PESAN_PETUNJUK });
+  });
+
+  it("baris pertama dengan beberapa sel terisi, atau satu sel tanpa pemisah → pesan tanpa petunjuk", () => {
+    expect(bacaFileStok([["Nama, varian", "Stok;akhir"], ["A", "1"]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
+    expect(bacaFileStok([["Name - Variant Category Ending"], ["A B 1"]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
+    expect(bacaFileStok([[null, "Inventory Summary", ""]])).toEqual({ ok: false, pesan: PESAN_TANPA_PETUNJUK });
+  });
+});
+
 describe("bacaFileStok: nilai Ending", () => {
   it("contoh literal: bilangan bulat → stok, kosong → belum diketahui (null), abc → tidak valid; nomor = nomor baris file", () => {
     expect(bacaFileStok(CONTOH)).toEqual({

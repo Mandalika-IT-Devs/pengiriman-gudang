@@ -78,8 +78,8 @@ const skemaUnggah = z.object({ idGudang: z.coerce.number().int(), tanggalKirim: 
 export type { HasilUnggahStok };
 
 /**
- * Membaca file stok (FormData: `idGudang`, `tanggalKirim`, `tokoId`, `file` CSV `;` atau `.xlsx` ≤ 1 MB) untuk satu toko
- * di draft. Mengembalikan hasil pembacaan tanpa menyimpan stok.
+ * Membaca file stok (FormData: `idGudang`, `tanggalKirim`, `tokoId`, `file` CSV berpemisah koma, titik koma, atau tab,
+ * atau `.xlsx`; ≤ 1 MB) untuk satu toko di draft. Mengembalikan hasil pembacaan tanpa menyimpan stok.
  */
 export async function unggahStok(form: FormData): Promise<HasilUnggahStok> {
   const gudang = skemaGudang.safeParse({ idGudang: Number(form.get("idGudang")) });

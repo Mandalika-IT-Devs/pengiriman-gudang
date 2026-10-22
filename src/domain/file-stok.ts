@@ -57,14 +57,31 @@ function posisiKolom(judul: readonly SelMentah[]): { nama: number; ending: numbe
   return kurang.length > 0 ? { kurang: kurang.join(" dan ") } : { nama, ending };
 }
 
+/** Kalimat kedua pesan judul kolom untuk file kasir yang disimpan ulang di Excel (PRD A6 ▶ Keputusan 2026-10-22). */
+const PETUNJUK_FILE_KASIR = "Unggah file CSV asli dari kasir, tanpa disimpan ulang di Excel.";
+
+/**
+ * Baris pertama hanya berisi satu sel terisi yang memuat koma, titik koma, atau tab: tanda file kasir yang dibuka di
+ * Excel lalu disimpan ulang tanpa Text to Columns, sehingga seluruh isi baris menumpuk di satu sel.
+ */
+function isiBarisMenumpukDiSatuSel(judul: readonly SelMentah[]): boolean {
+  const terisi = judul.map(teksSel).filter((teks) => teks !== "");
+  return terisi.length === 1 && /[,;\t]/.test(terisi[0]);
+}
+
 /**
  * Membaca baris sel mentah file stok. Baris pertama = judul kolom `Name - Variant` dan `Ending` (wajib, dicocokkan
- * setelah normalisasi); kolom lain diabaikan. Baris kosong dilewati. Nama yang muncul lebih dari sekali (setelah
- * normalisasi) menjadikan semua barisnya tidak valid.
+ * setelah normalisasi); kolom lain diabaikan. Jika judul kolom tidak ditemukan dan seluruh baris pertama menumpuk di
+ * satu sel, pesannya mendapat petunjuk untuk mengunggah file CSV asli dari kasir. Baris kosong dilewati. Nama yang
+ * muncul lebih dari sekali (setelah normalisasi) menjadikan semua barisnya tidak valid.
  */
 export function bacaFileStok(semuaBaris: readonly (readonly SelMentah[])[]): HasilBacaFileStok {
-  const kolom = posisiKolom(semuaBaris[0] ?? []);
-  if ("kurang" in kolom) return { ok: false, pesan: `Judul kolom ${kolom.kurang} tidak ditemukan di baris pertama.` };
+  const judul = semuaBaris[0] ?? [];
+  const kolom = posisiKolom(judul);
+  if ("kurang" in kolom) {
+    const pesan = `Judul kolom ${kolom.kurang} tidak ditemukan di baris pertama.`;
+    return { ok: false, pesan: isiBarisMenumpukDiSatuSel(judul) ? `${pesan} ${PETUNJUK_FILE_KASIR}` : pesan };
+  }
 
   const baris: BarisFileStok[] = [];
   semuaBaris.slice(1).forEach((sel, i) => {

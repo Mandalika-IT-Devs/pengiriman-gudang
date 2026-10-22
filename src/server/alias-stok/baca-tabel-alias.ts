@@ -1,7 +1,8 @@
-// Pembaca tabel alias nama stok yang diunggah admin (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT): CSV berpemisah `;`
-// atau workbook `.xlsx` (sheet pertama, lewat `bacaTabel`) → baris {nomor, alias, kodeProduk}. Baris pertama = judul
-// kolom `Nama di file stok` dan `Kode produk`, dicocokkan setelah normalisasi; kolom lain diabaikan. Nomor baris = nomor
-// baris file (judul kolom = baris 1), supaya admin bisa mencari barisnya di Excel.
+// Pembaca tabel alias nama stok yang diunggah admin (T82, PRD A6 ▶ Keputusan 2026-10-12 UAT): CSV berpemisah koma,
+// titik koma, atau tab (dikenali otomatis; ▶ Keputusan 2026-10-22, T139) atau workbook `.xlsx` (sheet pertama), lewat
+// `bacaTabel` → baris {nomor, alias, kodeProduk}. Baris pertama = judul kolom `Nama di file stok` dan `Kode produk`,
+// dicocokkan setelah normalisasi; kolom lain diabaikan. Nomor baris = nomor baris file (judul kolom = baris 1), supaya
+// admin bisa mencari barisnya di Excel.
 
 import { normalisasiNamaStok } from "@/domain/alias-stok";
 import type { SelMentah } from "@/domain/ranking";

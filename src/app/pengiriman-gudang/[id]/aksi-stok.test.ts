@@ -61,6 +61,19 @@ const FILE_CONTOH = [
   `${NAMA.a10mNo1};PARFUM PRIA;7`,
   "HOLY SWEET - 2ML EDP;PARFUM WANITA;abc",
 ].join("\r\n");
+// T139 (PRD A6 ▶ Keputusan 2026-10-22): isi yang sama dengan FILE_CONTOH dalam bentuk ekspor asli kasir ("Inventory
+// Summary"): pemisah koma, delapan judul kolom, akhir baris LF, tanpa BOM. Angka Beginning–Adjustment sintetis dan
+// sengaja berbeda dari Ending, supaya terlihat bahwa stok diambil dari Ending.
+const FILE_CONTOH_KASIR = [
+  "Name - Variant,Category,Beginning,Purchase Order,Sales,Transfer,Adjustment,Ending",
+  `${ALIAS},PARFUM WANITA,25,0,5,0,0,20`,
+  `${NAMA.a10mGor},PARFUM WANITA,4,0,1,0,0,`,
+  "BACCARAT ELIXIR - 2ML EDP,PARFUM WANITA,6,0,3,0,0,3",
+  `${NAMA.a10mNo1},PARFUM PRIA,9,0,2,0,0,7`,
+  "HOLY SWEET - 2ML EDP,PARFUM WANITA,1,0,0,0,0,abc",
+].join("\n");
+const PESAN_PETUNJUK_FILE_KASIR =
+  "Judul kolom Name - Variant dan Ending tidak ditemukan di baris pertama. Unggah file CSV asli dari kasir, tanpa disimpan ulang di Excel.";
 const HASIL_CONTOH = {
   keadaan: "berhasil",
   terisi: [
@@ -206,12 +219,30 @@ describe("operator berhak mengunggah file stok", () => {
     expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
   });
 
+  it("ekspor asli kasir (CSV koma, delapan judul kolom): nama dari Name - Variant, stok dari Ending → kelompok sama dengan contoh CSV ;", async () => {
+    expect(await kirim("Inventory Summary - 22-10-2026 - TOKO UJI.csv", FILE_CONTOH_KASIR)).toEqual(HASIL_CONTOH);
+    expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
+  });
+
+  it("CSV tab: kelompok sama dengan contoh CSV ;", async () => {
+    expect(await kirim("stok.csv", FILE_CONTOH.replaceAll(";", "\t"))).toEqual(HASIL_CONTOH);
+  });
+
+  it("file kasir yang disimpan ulang di Excel (.xlsx, seluruh isi di kolom A) ditolak dengan petunjuk; stok tidak berubah", async () => {
+    const workbook = buatWorkbookUji({ "Inventory Summary": FILE_CONTOH_KASIR.split("\n").map((baris) => [baris]) });
+    expect(await kirim("Inventory Summary - 22-10-2026 - TOKO UJI.xlsx", workbook)).toEqual({
+      keadaan: "gagal",
+      pesan: PESAN_PETUNJUK_FILE_KASIR,
+    });
+    expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
+  });
+
   it("judul kolom kurang, format lain, file lebih dari 1 MB, dan tanpa file → gagal", async () => {
     expect(await kirim("stok.csv", "Name - Variant;Category\nA;B\n")).toEqual({
       keadaan: "gagal",
       pesan: "Judul kolom Ending tidak ditemukan di baris pertama.",
     });
-    expect(await kirim("stok.txt", FILE_CONTOH)).toEqual({ keadaan: "gagal", pesan: "Format file harus CSV berpemisah ; atau .xlsx." });
+    expect(await kirim("stok.txt", FILE_CONTOH)).toEqual({ keadaan: "gagal", pesan: "Format file harus CSV atau .xlsx." });
     expect(await kirim("stok.csv", "x".repeat(1_048_577))).toEqual({ keadaan: "gagal", pesan: "File melebihi 1 MB." });
 
     const tanpaFile = new FormData();

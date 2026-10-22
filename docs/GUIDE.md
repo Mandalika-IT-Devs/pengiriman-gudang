@@ -211,7 +211,7 @@ Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**
   - Filter hanya menyaring tampilan. Isian di baris yang sedang tersembunyi tetap ikut tersimpan.
   - "Isi 0" dan aturan finalisasi tetap berlaku untuk seluruh toko.
   - Tautan "Tampilkan baris tertahan" di samping "Belum bisa difinalisasi: …" langsung memasang filter Tertahan.
-- Isi stok dengan "Unggah file stok" (file dari kasir) atau ketik langsung. "Isi 0 untuk N stok yang kosong" hanya mengisi produk otomatis yang masih kosong.
+- Isi stok dengan "Unggah file stok" (file dari kasir) atau ketik langsung. File CSV dari kasir diunggah apa adanya, tanpa dibuka atau disimpan ulang di Excel. "Isi 0 untuk N stok yang kosong" hanya mengisi produk otomatis yang masih kosong.
 - Bar di bawah layar selalu terlihat. Isinya status simpan (misalnya "Ada perubahan yang belum disimpan"), jumlah isian yang berubah, dan tombol "Simpan stok".
 - Jika Anda meninggalkan halaman dengan isian yang belum disimpan, browser bertanya dulu.
 
