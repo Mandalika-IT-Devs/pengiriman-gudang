@@ -1,6 +1,6 @@
 # Standar Kode
 
-Dibaca oleh agen saat menulis kode dan oleh skill `code-review` (sumbu Standards). Aturan yang ditegakkan tooling tidak perlu diulang dalam review.
+Dibaca oleh subagent `tiket:pelaksana` saat menulis kode dan oleh `tiket:peninjau` pada sumbu Standards. Aturan yang ditegakkan tooling lewat `pnpm verify` tidak perlu diulang dalam review.
 
 ## Bahasa dan penamaan
 
@@ -43,3 +43,18 @@ Dibaca oleh agen saat menulis kode dan oleh skill `code-review` (sumbu Standards
 
 - Dependency baru memerlukan persetujuan pemilik di PR (`package.json` dilindungi CODEOWNERS).
 - Knip harus bersih: tidak ada berkas, export, atau dependency yang tidak dipakai.
+
+## Daftar periksa peninjau (review checklist)
+
+<!-- Aturan khusus proyek ini, yang diperiksa tiket:peninjau di setiap tiket. Satu butir per baris, dan setiap butir
+harus bisa dicek lulus/gagal. Butir bisa ditambah lewat keputusan pemilik atau dari hasil /retro. -->
+
+- Setiap server action dan route handler memeriksa peran dan hak tindakan di server sebelum membaca atau menulis data.
+- Rumus dengan pembagian, pembulatan, atau buffer memakai modul angka domain dengan bilangan bulat (ADR-0008).
+- Tanggal bisnis bertipe `TanggalBisnis` (`YYYY-MM-DD`), tidak dibuat dengan `new Date(...)`.
+- Setiap form menampilkan lima keadaan simpan: belum disimpan, sedang menyimpan, berhasil, gagal, dan "tersimpan, tetapi gagal memuat ulang tampilan".
+- Tulis data yang hasilnya belum pasti tidak diulang otomatis; tampilan menunjukkan status "belum pasti" dan cara memeriksanya.
+- Tampilan mengikuti zona `docs/DESIGN.md` (zona suasana dan zona kerja).
+- Warna memakai token `docs/DESIGN.md`, tanpa kode hex di komponen.
+- Status ditampilkan dengan ikon dan teks, tidak dengan warna saja.
+- Angka di tabel rata kanan.

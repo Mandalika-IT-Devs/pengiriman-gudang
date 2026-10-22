@@ -36,30 +36,50 @@ jobs:
           if [ "$TOTAL" -gt 400 ]; then
             echo "::warning::PR mengubah $TOTAL baris (>400). Pastikan isinya hanya satu tiket."
           fi
-      - name: Berkas terlindungi butuh label disetujui-pemilik
+      # Daftar berkas terlindungi dan nama label diambil dari branch tujuan, supaya PR tidak bisa melonggarkan
+      # pemeriksaan untuk dirinya sendiri. Branch tujuan yang belum punya berkasnya memakai berkas dari PR.
+      - name: Berkas terlindungi butuh label persetujuan pemilik
         env:
           BASE: ${{ github.base_ref }}
         run: |
+          CONFIG=$(git show "origin/$BASE:.github/jalankan-tiket.json" 2>/dev/null || cat .github/jalankan-tiket.json)
+          LABEL=$(printf '%s' "$CONFIG" | jq -r '.labels.ownerApproved')
+          PATTERNS=$(git show "origin/$BASE:.github/protected-paths.txt" 2>/dev/null || cat .github/protected-paths.txt)
           CHANGED=$(git diff --name-only "origin/$BASE...HEAD")
-          PROTECTED=$(printf '%s\n' "$CHANGED" | grep -E '^(docs/PRD\.md|docs/DESIGN\.md|docs/adr/|docs/OPEN-DECISIONS\.md|GLOSSARY\.md|AGENTS\.md|CLAUDE\.md|CODING_STANDARDS\.md|src/domain/AGENTS\.md|tests/golden/|\.github/|\.claude/)' || true)
+          PROTECTED=""
+          while IFS= read -r p; do
+            case "$p" in ''|'#'*) continue;; esac
+            while IFS= read -r f; do
+              case "$f" in "$p"*) PROTECTED="$PROTECTED$f"$'\n';; esac
+            done <<< "$CHANGED"
+          done <<< "$PATTERNS"
           if [ -n "$PROTECTED" ]; then
-            LABELS=$(jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH")
-            if ! printf '%s\n' "$LABELS" | grep -qx 'disetujui-pemilik'; then
-              echo "::error::PR mengubah berkas terlindungi tanpa label 'disetujui-pemilik':"
-              printf '%s\n' "$PROTECTED"
+            if ! jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep -qxF "$LABEL"; then
+              echo "::error::PR mengubah berkas terlindungi tanpa label '$LABEL':"
+              printf '%s' "$PROTECTED"
               exit 1
             fi
           fi
+      # Tanpa label persetujuan pemilik, daftar izin diambil dari branch tujuan. Dengan label itu, daftar milik PR yang berlaku.
       - name: Dependency harus ada di daftar izin
+        env:
+          BASE: ${{ github.base_ref }}
         run: |
           [ -f package.json ] || exit 0
+          CONFIG=$(git show "origin/$BASE:.github/jalankan-tiket.json" 2>/dev/null || cat .github/jalankan-tiket.json)
+          LABEL=$(printf '%s' "$CONFIG" | jq -r '.labels.ownerApproved')
+          if jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH" | grep -qxF "$LABEL"; then
+            ALLOW=$(cat .github/dependency-allowlist.txt)
+          else
+            ALLOW=$(git show "origin/$BASE:.github/dependency-allowlist.txt" 2>/dev/null || cat .github/dependency-allowlist.txt)
+          fi
           FAIL=0
           for dep in $(jq -r '((.dependencies // {}) + (.devDependencies // {})) | keys[]' package.json); do
             OK=0
             while IFS= read -r pat; do
               case "$pat" in ''|'#'*) continue;; esac
               case "$dep" in $pat) OK=1; break;; esac
-            done < .github/dependency-allowlist.txt
+            done <<< "$ALLOW"
             if [ "$OK" -eq 0 ]; then echo "::error::Dependency di luar daftar izin: $dep"; FAIL=1; fi
           done
           exit $FAIL
@@ -93,7 +113,12 @@ jobs:
       - name: Muat variabel lingkungan test dari .env.ci
         if: steps.cek.outputs.ada == '1'
         run: |
-          if [ -f .env.ci ]; then grep -Ev '^\s*(#|$)' .env.ci >> "$GITHUB_ENV"; fi
+          # .env.ci menunjuk port PostgreSQL dan MinIO lokal proyek ini. Di CI harus menunjuk layanan di atas.
+          if [ -f .env.ci ]; then
+            sed -i -E -e "s#@localhost:[0-9]+/#@localhost:5432/#" \
+              -e "s#^S3_ENDPOINT=http://localhost:[0-9]+#S3_ENDPOINT=http://localhost:9000#" .env.ci
+            grep -Ev '^\s*(#|$)' .env.ci >> "$GITHUB_ENV"
+          fi
       - if: steps.cek.outputs.ada == '1'
         uses: pnpm/action-setup@v4
       - if: steps.cek.outputs.ada == '1'

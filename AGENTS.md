@@ -1,22 +1,30 @@
 # AGENTS.md — Dashboard Penjualan MANDALIKA
 
-Aplikasi web internal: impor penjualan Excel → laporan rata-rata bertahap → rencana jumlah kirim gudang ke toko. Antarmuka berbahasa Indonesia.
+Aplikasi web internal untuk admin dan operator gudang MANDALIKA: impor penjualan Excel → laporan rata-rata bertahap → rencana jumlah kirim dari gudang ke toko. Tidak mencakup konfirmasi pengiriman fisik dan penerimaan barang, model safety stock, maupun pendaftaran akun mandiri. Antarmuka berbahasa Indonesia.
 
 ## Sumber kebenaran
 
-- Ketika menyentuh aturan bisnis atau rumus: `docs/PRD.md` adalah satu-satunya sumber. Blok `▶ Revisi` dan `▶ Keputusan` mengalahkan teks di atasnya.
-- Ketika menamai sesuatu (kode, test, issue, PR): pakai istilah `GLOSSARY.md`.
-- Ketika bekerja di sebuah area: baca ADR terkait di `docs/adr/`.
-- Ketika tiket menyentuh hal yang belum diputuskan: lihat `docs/OPEN-DECISIONS.md`.
-- Ketika menulis kode: ikuti `CODING_STANDARDS.md`.
+- Ketika menyentuh aturan bisnis atau rumus: `docs/PRD.md` adalah satu-satunya sumber. Blok `▶ Revisi` dan `▶ Keputusan` mengalahkan teks di atasnya. Bahan di `docs/input/` bukan aturan.
+- Ketika menamai sesuatu (kode, test, issue, PR): pakai istilah `GLOSSARY.md`, termasuk daftar _Avoid_-nya.
+- Ketika bekerja di sebuah area: baca ADR terkait di `docs/adr/`. Stack dicatat di ADR-0001. Aturan bisnis hanya boleh ada di modul domain murni (ADR-0011).
+- Ketika tiket menyentuh hal yang belum diputuskan: lihat `docs/OPEN-DECISIONS.md`. Nilai contohnya dipakai di seed dan test dengan tanda `[CONTOH]`, bukan sebagai aturan.
+- Ketika menulis kode: ikuti `CODING_STANDARDS.md`. Modul domain punya aturannya sendiri di `src/domain/AGENTS.md`.
 - Ketika membuat atau mengubah tampilan: ikuti `docs/DESIGN.md`.
 - Contoh hitungan yang benar: `tests/golden/` (hanya-baca).
+- Skenario penerimaan per bagian PRD: `docs/UAT.md`.
+- Konfigurasi kit jalankan-tiket: `.github/jalankan-tiket.json`.
 
 ## Cara kerja: otomatis
 
-Tiket dikerjakan tanpa menunggu manusia, lewat skill proyek `jalankan-tiket`: koordinator → subagent `pelaksana` → subagent `peninjau` → PR → CI → merge. Pemilik produk melakukan UAT di akhir.
+Tiket dikerjakan tanpa menunggu manusia oleh plugin `tiket` dari kit jalankan-tiket, dengan urutan ini:
 
-Satu tiket selesai = semua kriteria penerimaan tercentang, `pnpm verify` hijau, `peninjau` memberi `LULUS`, dan CI hijau. Tidak ada tambahan setelah itu.
+```
+/tiket:jalankan → subagent tiket:pelaksana → subagent tiket:peninjau → PR → CI → merge
+```
+
+Pemilik produk menjawab tiket yang diparkir dan melakukan UAT di akhir. Panduan pemilik ada di `docs/GUIDE.md`.
+
+Satu tiket selesai = semua kriteria penerimaan tercentang, `pnpm verify` hijau, `tiket:peninjau` memberi `PASS`, dan CI hijau. Tidak ada tambahan setelah itu.
 
 ### Ketidakjelasan
 
@@ -24,6 +32,8 @@ Satu tiket selesai = semua kriteria penerimaan tercentang, `pnpm verify` hijau, 
 - **Bisnis** (rumus, angka, kewenangan, apa yang dilihat pengguna, perilaku di luar issue/PRD) atau aturan yang tidak jelas/bertentangan: **jangan diputuskan.** Menebak dianggap gagal. Parkir tiket dengan label `needs-info` dan pertanyaan untuk pemilik, lalu lanjut ke tiket lain.
 - **Detail visual kecil** yang tidak diatur `docs/DESIGN.md` (warna, ikon, atau jarak untuk satu elemen) adalah keputusan **teknis**. Putuskan dengan token dan ikon yang sudah ada, lalu catat sebagai keputusan teknis. Tetap parkir jika menyangkut kontras di bawah standar `docs/DESIGN.md` atau menambah elemen/perilaku baru.
 - **Urutan tampil item dalam sebuah daftar** (status, masalah, kolom) yang tidak diatur PRD adalah keputusan **teknis**, selama semua item tetap ditampilkan. Putuskan, lalu catat sebagai keputusan teknis.
+
+Nilai di `docs/OPEN-DECISIONS.md` adalah pertanyaan bisnis yang sudah punya nilai contoh, jadi tiket tidak perlu diparkir. Pakai nilai contohnya dengan tanda `[CONTOH]`, sebut OD-nya di PR, lalu lanjutkan.
 
 ## Batas scope (pagar keras)
 
@@ -33,19 +43,26 @@ Hasil kerja = persis isi "Dalam scope" issue:
 - Dependency hanya dari `.github/dependency-allowlist.txt`. Di luar daftar itu → parkir tiket.
 - Refactor terbatas pada berkas yang memang diperlukan issue.
 - Rumus diimplementasikan persis seperti PRD, termasuk pembulatan per tahap, walaupun terlihat bisa disederhanakan.
-- Berkas terlindungi hanya diubah atas instruksi eksplisit pemilik: `docs/PRD.md`, `docs/DESIGN.md`, `docs/adr/`, `docs/OPEN-DECISIONS.md`, `GLOSSARY.md`, `AGENTS.md`, `CLAUDE.md`, `CODING_STANDARDS.md`, `src/domain/AGENTS.md`, `tests/golden/`, `.github/`, `.claude/`.
 - Test yang merah diperbaiki di kode, bukan di fixture golden.
-- Perubahan masuk ke `main` hanya lewat PR dengan CI hijau. Label `disetujui-pemilik` adalah milik pemilik. Force-push adalah tindakan manusia.
+- Perubahan masuk ke `main` hanya lewat PR dengan CI hijau. Force-push adalah tindakan manusia.
+
+### Berkas terlindungi
+
+Daftar berkas terlindungi ada di `.github/protected-paths.txt`. Aturannya:
+- Berkas itu hanya diubah atas instruksi eksplisit pemilik, di issue atau di komentar.
+- PR yang mengubahnya wajib berlabel `disetujui-pemilik`, dan CI menolak PR tanpa label itu.
+- Hanya pemilik yang memasang label itu.
 
 ## Lingkungan
 
-- Lokal: `docker compose up -d` (PostgreSQL + MinIO). Docker Desktop harus menyala.
-- CI menyediakan PostgreSQL di `localhost:5432` (user `mandalika`, sandi `mandalika`, db `mandalika_test`) dan MinIO di `localhost:9000` (`minioadmin` / `minioadmin`). Variabel lingkungan untuk test ditulis di `.env.ci` (tanpa rahasia asli); CI memuatnya otomatis.
+- Lokal: salin `.env.example` menjadi `.env`, lalu `docker compose up -d` untuk menyalakan PostgreSQL di port 55432 dan MinIO di port 59000. Docker Desktop harus menyala.
+- Test: vitest dan playwright memuat `.env.ci`, yang menunjuk PostgreSQL (database `mandalika_test`) dan MinIO lokal proyek ini. `pnpm verify` dan `pnpm test:e2e` berjalan tanpa override, dan database pengembangan `mandalika` tidak tersentuh. Database test dibuat ulang setiap putaran test.
+- CI menyediakan PostgreSQL di `localhost:5432` (user `mandalika`, sandi `mandalika`, db `mandalika_test`) dan MinIO di `localhost:9000` (`minioadmin` / `minioadmin`). CI mengganti port di `.env.ci` ke layanan miliknya, lalu memuat variabelnya. `.env.ci` tidak berisi rahasia asli.
 - CI menjalankan `pnpm verify`, lalu `pnpm test:e2e` jika skripnya ada.
 
 ## Perintah
 
-`pnpm verify` adalah gerbang wajib. Perintah lain: lihat `package.json`.
+`pnpm verify` adalah gerbang wajib sebelum commit dan di CI. Perintah lain: lihat `package.json`.
 
 ## Agent skills
 

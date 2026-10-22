@@ -18,3 +18,9 @@ test-results/
 data-lokal/
 *.tsbuildinfo
 next-env.d.ts
+
+# Ditambahkan kit jalankan-tiket
+out/
+blob-report/
+.claude/settings.local.json
+*.swp

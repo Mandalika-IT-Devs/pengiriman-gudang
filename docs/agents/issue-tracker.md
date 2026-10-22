@@ -5,13 +5,33 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 ## Conventions
 
 - **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
-- **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
+- **Read an issue**: `gh issue view <number> --json title,body,comments,labels`. With `--comments` alone, `gh` prints the comments without the ticket body.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`
 - **Close**: `gh issue close <number> --comment "..."`
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
+
+## Konvensi kit jalankan-tiket
+
+- **Daftar tiket siap:** `gh issue list --state open --label ready-for-agent --json number,title,body,labels`.
+- **Membuat tiket:** `gh issue create --title "[Txx] ..." --label ready-for-agent --milestone <tahap> --body-file <berkas>`, dengan isi yang mengikuti `.github/ISSUE_TEMPLATE/ticket.md`.
+- **Menutup issue:** issue ditutup oleh `Closes #n` di PR yang di-merge, bukan dengan `gh issue close`.
+
+### Ketergantungan antar-tiket
+
+Ketergantungan ditulis di bagian "Blocked by" di isi tiket, sebagai `- #12`, atau "Tidak ada" bila tiket tidak bergantung pada tiket lain. Koordinator `/tiket:jalankan` membaca bagian teks itu, jadi tiket tidak memakai fitur dependensi bawaan GitHub maupun sub-issue.
+
+### Bentuk tiket
+
+Satu tiket dikerjakan dalam satu PR. Bagian wajibnya: Yang dibangun, Dalam scope, Di luar scope, Kriteria penerimaan (setiap butir bisa dicek lulus atau gagal), Rujukan (PRD §, ADR, golden, UAT), dan Blocked by. Kriteria yang menyebut angka mengutip `tests/golden/` atau PRD.
+
+### Pull request
+
+- **Membuat:** `gh pr create --title "T<nn>: <ringkasan>" --body-file <berkas>`, dengan isi yang mengikuti `.github/pull_request_template.md`.
+- **Pembaruan** ditulis sebagai komentar PR. Deskripsi PR tidak diedit setelah dibuat.
+- **Permintaan fitur** dari manusia selalu dibuat sebagai issue, tidak pernah lewat PR.
 
 ## Pull requests as a triage surface
 
@@ -31,7 +51,7 @@ Create a GitHub issue.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Run `gh issue view <number> --json title,body,comments`.
 
 ## Wayfinding operations
 

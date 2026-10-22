@@ -10,8 +10,11 @@ Closes #
 ## Keputusan teknis
 <!-- "Keputusan teknis: <apa> — <alasan> — <risiko jika salah>", atau "tidak ada". -->
 
+## OD yang nilai contohnya dipakai
+<!-- Tulis "OD-xx: <nilai contoh>", atau "tidak ada". -->
+
 ## Hasil peninjau
-<!-- Putusan dan ringkasan temuan subagent peninjau. -->
+<!-- Putusan dan ringkasan temuan subagent tiket:peninjau. -->
 
 ## Yang sengaja TIDAK dikerjakan
 <!-- Tulis "tidak ada" jika kosong. -->

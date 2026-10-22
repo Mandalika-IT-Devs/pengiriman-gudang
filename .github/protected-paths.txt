@@ -1,0 +1,17 @@
+# Berkas terlindungi (kit jalankan-tiket). Satu awalan path per baris; awalan yang diakhiri / berarti seluruh isi folder itu.
+# Berkas-berkas ini hanya diubah atas instruksi eksplisit pemilik. PR yang mengubahnya wajib berlabel persetujuan pemilik.
+# CI membaca daftar ini dari branch tujuan PR, dan .github/CODEOWNERS dibuat dari daftar ini.
+docs/PRD.md
+docs/OPEN-DECISIONS.md
+docs/UAT.md
+docs/DESIGN.md
+docs/adr/
+docs/agents/
+GLOSSARY.md
+AGENTS.md
+CLAUDE.md
+CODING_STANDARDS.md
+src/domain/AGENTS.md
+tests/golden/
+.github/
+.claude/

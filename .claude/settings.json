@@ -1,4 +1,16 @@
 {
+  "extraKnownMarketplaces": {
+    "jalankan-tiket": {
+      "source": {
+        "source": "github",
+        "repo": "mandalikadev/jalankan-tiket"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "tiket@jalankan-tiket": true
+  },
   "permissions": {
     "allow": [
       "Bash(gh pr create:*)",
@@ -16,7 +28,10 @@
       "Bash(gh run view:*)",
       "Bash(git push:*)",
       "Bash(pnpm:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(gh pr diff *)",
+      "Bash(gh run list *)",
+      "Bash(gh run rerun *)"
     ],
     "deny": [
       "Bash(git push --force:*)",
@@ -28,7 +43,9 @@
       "Bash(gh label:*)",
       "Bash(gh api:*)",
       "Bash(gh repo edit:*)",
-      "Bash(gh repo delete:*)"
+      "Bash(gh repo delete:*)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(*disetujui-pemilik*)"
     ]
   }
 }

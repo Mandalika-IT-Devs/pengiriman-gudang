@@ -1,0 +1,20 @@
+{
+  "kitVersion": "0.1.9",
+  "language": "id",
+  "verifyCommand": "pnpm verify",
+  "domainModulePath": "src/domain/",
+  "e2eCommand": "pnpm test:e2e",
+  "ticketPrefix": "T",
+  "exampleMarker": "[CONTOH]",
+  "labels": {
+    "needsTriage": "needs-triage",
+    "needsInfo": "needs-info",
+    "readyForAgent": "ready-for-agent",
+    "readyForHuman": "ready-for-human",
+    "wontfix": "wontfix",
+    "ownerApproved": "disetujui-pemilik"
+  },
+  "stack": "nextjs-postgres",
+  "runner": "github-hosted",
+  "ports": { "devPostgres": 55432, "ciPostgres": null, "ciE2e": null }
+}

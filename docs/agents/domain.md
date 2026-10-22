@@ -49,3 +49,9 @@ If the concept you need isn't in the glossary yet, that's a signal: either you'r
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
 > _Contradicts ADR-0007 (event-sourced orders), but worth reopening because…_
+
+## Aturan tambahan proyek ini (kit jalankan-tiket)
+
+- Selain `GLOSSARY.md` dan `docs/adr/`, baca juga bagian `docs/PRD.md` yang dirujuk tiket. Blok `▶ Revisi` dan `▶ Keputusan` mengalahkan teks di atasnya.
+- `GLOSSARY.md` adalah berkas terlindungi. Celah istilah dicatat sebagai usulan istilah di komentar issue untuk pemilik, bukan ditulis langsung ke glosarium.
+- Hasil kerja yang bertentangan dengan sebuah ADR: sebut pertentangannya secara eksplisit, lalu parkir tiketnya. ADR tidak ditimpa diam-diam.

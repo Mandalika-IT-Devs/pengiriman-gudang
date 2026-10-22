@@ -1,56 +1,52 @@
-# Panduan Kerja (otomatis, Claude Code)
+# Panduan Pemilik Produk
 
-Peran Anda: **pemilik produk**. Claude Code mengerjakan, meninjau, dan me-merge tiket sendiri. Anda menjawab pertanyaan bisnis saat diminta dan melakukan UAT di akhir.
+Peran Anda adalah pemilik produk. Claude Code mengerjakan, meninjau, dan me-merge tiket sendiri lewat plugin `tiket` dari kit jalankan-tiket. Tugas Anda ada empat:
+- merencanakan produk dan setiap tahap;
+- menjawab pertanyaan bisnis saat ada tiket yang diparkir;
+- memasang label `disetujui-pemilik` pada PR yang mengubah berkas terlindungi;
+- melakukan UAT.
 
 Cara memakai aplikasi untuk setiap peran (admin, operator, viewer) ada di bagian akhir: [Memakai aplikasi: panduan per peran](#memakai-aplikasi-panduan-per-peran).
 
-## Menjalankan
+## Aturan satu koordinator
 
-1. Nyalakan Docker Desktop. Colokkan laptop ke listrik dan matikan mode tidur otomatis selama berjalan.
-2. Di Claude Code (tab Code di Claude Desktop), buka sesi baru di folder repo.
-3. Pilih mode izin **Auto** jika tersedia. Jika tidak, pilih **Bypass permissions** ("Menerima semua izin").
-4. Ketik: `/jalankan-tiket`
-5. Biarkan berjalan. Satu tiket = satu putaran: pelaksana → peninjau → PR → CI → merge.
+Hanya satu orang yang boleh menjalankan `/tiket:jalankan` di repo ini pada satu waktu. Kalau ada dua koordinator berjalan bersamaan, keduanya akan mengambil tiket yang sama dan saling menimpa `main`.
 
-Jika berhenti karena kuota atau laptop mati: buka sesi baru dan ketik `/jalankan-tiket` lagi. Pekerjaan berlanjut dari keadaan di GitHub.
+## Menjalankan tiket
 
-## Saat berhenti dengan laporan akhir
+1. Siapkan laptop:
+   - nyalakan Docker Desktop (PostgreSQL dan MinIO proyek ini berjalan lewat `docker compose up -d`);
+   - colokkan laptop ke listrik;
+   - matikan mode tidur otomatis.
+2. Buka sesi Claude Code (tab Code di Claude Desktop) di folder repo, lalu pilih mode izin **Auto**.
+3. Ketik `/tiket:jalankan`, lalu biarkan berjalan. Setiap putaran mengerjakan satu tiket: pelaksana → peninjau → PR → CI → merge.
 
-- **Ada tiket yang diparkir (`needs-info`)**: laporan berisi pertanyaannya. Jawab di sesi Claude Code:
+Kalau sesi terputus, misalnya karena kuota habis atau laptop mati, buka sesi baru dan ketik `/tiket:jalankan` lagi. Pekerjaan berlanjut dari keadaan terakhir di GitHub.
 
-  ```
-  Ini jawaban saya sebagai pemilik produk untuk tiket yang diparkir:
-  [Txx]: ...
-  Catat sebagai keputusan di docs/OPEN-DECISIONS.md (Selesai) dan docs/PRD.md (▶ Keputusan),
-  perbarui issue-nya, hapus label needs-info, commit lewat PR dengan label disetujui-pemilik
-  (instruksi eksplisit saya), lalu jalankan /jalankan-tiket.
-  ```
+## Saat koordinator berhenti dengan laporan akhir
 
-- **Semua tiket tahap ini tertutup**: rencanakan tahap berikutnya (bagian bawah), lalu jalankan `/jalankan-tiket` lagi.
+- **Ada tiket yang diparkir (`needs-info`).** Laporan memuat pertanyaan bernomor, dan setiap pertanyaan punya satu pilihan rekomendasi.
+  1. Jalankan `/tiket:catat-keputusan`.
+  2. Jawab, misalnya "setuju semua" atau "setuju semua kecuali 2: pilih c".
+  3. Jalankan `/tiket:jalankan` lagi.
+- **Keputusan Anda mengubah berkas terlindungi**, misalnya PRD. PR-nya membutuhkan label `disetujui-pemilik`, dan label itu Anda pasang sendiri di GitHub.
+- **Semua tiket di tahap ini sudah tertutup.** Lanjutkan dengan merencanakan tahap berikutnya.
 
-## Merencanakan tahap berikutnya (interaktif, sekali per tahap)
+## Merencanakan
 
-Ini satu-satunya sesi yang membutuhkan Anda aktif menjawab:
+Ada dua sesi yang membutuhkan Anda aktif menjawab:
+- `/tiket:rencanakan-produk`: saat produk berubah besar. Sesi ini memperbarui PRD, glosarium, ADR, keputusan terbuka, skenario UAT, dan contoh hitungan dari bahan di `docs/input/`.
+- `/tiket:rencanakan-tahap`: sekali per tahap. Sesi ini menanyakan keputusan yang dibutuhkan tahap itu, lalu membuat tiket di milestone-nya. Tahap M0–M3 tercatat sebagai label; tahap berikutnya dimulai dari milestone GitHub `M4`.
 
-```
-/to-tickets Baca docs/PRD.md, docs/OPEN-DECISIONS.md, dan kode yang sudah ada. Buat tiket untuk
-SISA seluruh aplikasi (M2 dan M3):
-- M2: cache hasil hitung + hitung ulang, halaman Ringkasan (filter, Terapkan, periode aktif),
-  penelusuran angka sampai sel, ekspor seluruh hasil filter, kalender, sinkronisasi snapshot libur,
-  perubahan kategori, pemetaan keluarga aroma.
-- M3: periode sumber gudang, jadwal tetap + pengiriman di luar jadwal + persetujuan, ranking pusat,
-  input stok, draft + hitung ulang, finalisasi + snapshot, ekspor rencana.
-- Tiket terakhir [T99] Paket UAT lokal: satu perintah `pnpm uat` (docker compose up, migrasi,
-  seed admin + 5 gudang + 25 toko), dan docs/UAT.md berisi skenario uji per bagian PRD dalam
-  bahasa sederhana. Blocked by semua tiket lain.
-Tanyakan saya untuk setiap butir OPEN-DECISIONS yang masih terbuka sebelum membuat tiket yang
-bergantung padanya. Setiap tiket memakai format issue yang sudah ada (Dalam scope, Di luar scope,
-Kriteria penerimaan, Rujukan, Blocked by) dan label ready-for-agent.
-```
+Setelah satu tahap selesai, jalankan `/retro` dari mattpocock-skills. Perintah ini memperbaiki aturan dan CI berdasarkan pengalaman di tahap itu.
 
-## UAT di akhir
+## Memeriksa kesehatan proyek
 
-Setelah T99 selesai: `pnpm uat`, buka `http://localhost:3100`, lalu ikuti `docs/UAT.md`. Temuan UAT dilaporkan ke Claude Code sebagai tiket perbaikan baru.
+`/tiket:cek-proyek` memeriksa berkas kit, label, milestone, CI, dan versi plugin, lalu menyebut langkah berikutnya. Jalankan kapan saja Anda ragu.
+
+## UAT
+
+Jalankan `pnpm uat`, buka `http://localhost:3100`, lalu ikuti `docs/UAT.md`. Setiap temuan dilaporkan sebagai tiket perbaikan baru.
 
 ## Memakai aplikasi: panduan per peran
 

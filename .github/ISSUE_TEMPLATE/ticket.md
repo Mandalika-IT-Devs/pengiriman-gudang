@@ -17,7 +17,7 @@ labels: ready-for-agent
 - [ ]
 
 ## Rujukan
-<!-- PRD §, ADR, fixture golden -->
+<!-- PRD §, ADR, GLOSSARY, fixture tests/golden/, UAT-xx. Sebut juga OD yang nilai contohnya dipakai. -->
 
 ## Blocked by
 - None (can start immediately)

@@ -1,6 +1,7 @@
 # Layanan pengembangan lokal: PostgreSQL 16 dan MinIO (storage S3).
 # Port host khusus proyek (T74) agar tidak bentrok dengan proyek lain: PostgreSQL 55432, MinIO 59000 (API) dan
-# 59001 (konsol). Port di dalam container tetap bawaan. CI memakai layanannya sendiri di 5432 dan 9000 (.env.ci).
+# 59001 (konsol). Port di dalam container tetap bawaan. .env.ci menunjuk kedua port ini untuk test lokal; CI memakai
+# layanannya sendiri di 5432 dan 9000 dan mengganti port di .env.ci sebelum memuatnya.
 # Image resmi minio/minio sudah tidak tersedia di Docker Hub; dipakai build fork komunitas pgsty/minio.
 services:
   postgres:

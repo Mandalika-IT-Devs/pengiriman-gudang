@@ -1,13 +1,15 @@
-# Berkas terlindungi: PR yang mengubahnya wajib disetujui pemilik.
-/docs/PRD.md               @mandalikadev
-/docs/adr/                 @mandalikadev
-/docs/OPEN-DECISIONS.md    @mandalikadev
-/GLOSSARY.md               @mandalikadev
-/AGENTS.md                 @mandalikadev
-/CLAUDE.md                 @mandalikadev
-/CODING_STANDARDS.md       @mandalikadev
-/docs/DESIGN.md           @mandalikadev
-/src/domain/AGENTS.md      @mandalikadev
-/tests/golden/             @mandalikadev
-/.github/                  @mandalikadev
-/.claude/                  @mandalikadev
+# Generated from .github/protected-paths.txt by the jalankan-tiket kit. Edit that file, then run buat-codeowners.sh again.
+/docs/PRD.md @mandalikadev
+/docs/OPEN-DECISIONS.md @mandalikadev
+/docs/UAT.md @mandalikadev
+/docs/DESIGN.md @mandalikadev
+/docs/adr/ @mandalikadev
+/docs/agents/ @mandalikadev
+/GLOSSARY.md @mandalikadev
+/AGENTS.md @mandalikadev
+/CLAUDE.md @mandalikadev
+/CODING_STANDARDS.md @mandalikadev
+/src/domain/AGENTS.md @mandalikadev
+/tests/golden/ @mandalikadev
+/.github/ @mandalikadev
+/.claude/ @mandalikadev
