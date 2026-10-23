@@ -33,7 +33,7 @@ export function FormUnggahAlias() {
         <CardHeader>
           <CardTitle level={2}>Unggah tabel alias</CardTitle>
           <CardDescription>
-            File CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB. Baris pertama berisi judul kolom{" "}
+            File CSV (pemisah koma, titik koma, atau tab) atau Excel (.xlsx, sheet pertama), maksimal 1 MB, dengan judul kolom{" "}
             <span className="font-semibold">Nama di file stok</span> dan <span className="font-semibold">Kode produk</span>; kolom lain
             diabaikan. Baris yang ditolak tidak menahan baris lain.
           </CardDescription>
