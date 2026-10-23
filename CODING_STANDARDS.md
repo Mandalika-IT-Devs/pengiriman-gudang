@@ -41,7 +41,7 @@ Dibaca oleh subagent `tiket:pelaksana` saat menulis kode dan oleh `tiket:peninja
 
 ## Dependency
 
-- Dependency baru memerlukan persetujuan pemilik di PR (`package.json` dilindungi CODEOWNERS).
+- Dependency baru hanya dari `.github/dependency-allowlist.txt`. Job CI `kebersihan-pr` menolak dependency di luar daftar itu, dan daftar itu hanya berubah lewat PR berlabel `disetujui-pemilik`.
 - Knip harus bersih: tidak ada berkas, export, atau dependency yang tidak dipakai.
 
 ## Daftar periksa peninjau (review checklist)
