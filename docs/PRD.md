@@ -335,6 +335,60 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 >
 >   Alasannya "Tanggal itu sudah menjadi tanggal kirim rutin". Jika jenisnya pindah, tanggal rutinnya kembali.
 
+> ▶ Keputusan (2026-10-27, pemilik): **pilihan "Tambah 3 hari cakupan" pada jadwal tetap.** Jika dicentang, cakupan setiap pengiriman toko itu diperpanjang 3 hari sesudah hari terakhirnya. Pola, hari kirim, persiapan, tanggal kirim toko, dan cara menghitung L tidak berubah.
+>
+> **Pengaturan**
+> - Form jadwal tetap punya checkbox **"Tambah 3 hari cakupan"**, tepat di bawah Pola. Pilihan ini berlaku untuk seluruh jadwal tetap toko itu (semua hari kirimnya), bukan per hari kirim. Hanya admin yang mengaturnya, sama seperti pola dan hari kirim.
+> - Tambahannya selalu 3 hari. Tidak ada isian angka.
+> - Di bawah checkbox selalu tampil keterangan: "Cakupan setiap pengiriman toko ini diperpanjang 3 hari sesudah hari terakhirnya."
+> - Pilihan ini boleh dipakai di semua pola: mingguan, 2× seminggu, 3× seminggu, dua mingguan, dan 1× sebulan.
+> - Form **Salin jadwal ke beberapa toko** punya checkbox dan keterangan yang sama, dan menerapkan pilihannya ke setiap toko terpilih.
+>
+> **Cakupan (A6)**
+> - Cakupan = H−p sampai H+L−1+3, inklusif, sehingga jumlah harinya p + L + 3. L dihitung seperti biasa (A6 ▶ Revisi 2026-10-12, 2026-10-13, dan 2026-10-19), lalu 3 hari ditambahkan di ujung cakupan.
+> - Berlaku untuk **setiap pengiriman** toko itu, rutin maupun di luar jadwal.
+> - Kebutuhan barang = jumlah rata-rata sesuai kategori efektif setiap tanggal dalam cakupan, termasuk 3 hari tambahan. Rata-rata, kategori efektif, buffer, dan rumus stok target tidak berubah.
+> - Ketiga hari tambahan bertumpang tindih dengan cakupan pengiriman berikutnya. Kebutuhannya tidak terhitung dua kali, karena jumlah kirim = stok target − stok akhir (A6 ▶ Revisi 2026-10-14) dan sisa kiriman sebelumnya sudah ada di stok akhir.
+> - Peringatan "kiriman sebelumnya belum sampai" (A6 ▶ Keputusan 2026-10-12) dan nilai awal "Dikirim pekan ini" (▶ Revisi 2026-10-19) tidak berubah.
+> - **Contoh pemilik** (mingguan, Kamis H−1). Kirim Kamis 29-10-2026:
+>   - Cakupannya Rabu 28-10 sampai Sabtu 07-11-2026, 11 hari: persiapan 1 hari + 7 hari + tambahan 3 hari (Kamis, Jumat, Sabtu). Tanpa centang, cakupan berakhir Rabu 04-11-2026 (8 hari).
+>   - Dengan rata-rata PW110P-GOR Senin–Kamis 5, Jumat 5, Sabtu 8, Minggu 7 (contoh SMB di A6), kebutuhannya 63 (6 × 5 + 2 × 5 + 2 × 8 + 1 × 7). Tanpa centang 45.
+>   - Untuk produk tujuh besar dengan stok akhir 20: 63 × 120% − 20 = 55,6 → dibulatkan ke atas **56**. Tanpa centang: 45 × 120% − 20 = **34**.
+> - **Contoh pola lain** (dicentang):
+>   - 2× seminggu, Senin (H) dan Kamis (H−1). Senin 26-10-2026 → Senin 26-10 sampai Sabtu 31-10, 6 hari (L = 3). Kamis 29-10 → Rabu 28-10 sampai Rabu 04-11, 8 hari (L = 4).
+>   - Dua mingguan, Rabu (H−1). Rabu 28-10-2026 → Selasa 27-10 sampai Jumat 13-11-2026, 18 hari (L = 14).
+>   - 1× sebulan, Selasa (H−1). Selasa 03-11-2026 → Senin 02-11 sampai Sabtu 05-12-2026, 34 hari (L = 30).
+> - **Contoh pengiriman di luar jadwal** (BOTANI di ▶ Revisi 2026-10-13, dicentang; tambahan Selasa 20-10-2026 dengan persiapan H−1):
+>   - Senin 19-10 → Senin 19-10 sampai Kamis 22-10, 4 hari (L = 1).
+>   - Selasa 20-10 → Senin 19-10 sampai Sabtu 24-10, 6 hari (L = 2). Peringatan "Kiriman Senin, 19-10-2026 belum sampai saat persiapan" tetap tampil.
+>   - Kamis 22-10 → Rabu 21-10 sampai Rabu 28-10, 8 hari (L = 4).
+> - Golden: `tests/golden/tambah-3-hari-cakupan.json`.
+>
+> **Tampilan**
+> - **Teks cakupan** di draft, rincian baris, dan rincian rencana final mendapat bagian di ujung kalimatnya:
+>   - mingguan: "Cakupan 11 hari: persiapan 1 hari + 7 hari sampai sebelum kiriman berikutnya + tambahan 3 hari";
+>   - dua mingguan: "Cakupan 18 hari: persiapan 1 hari + 14 hari (dua minggu) + tambahan 3 hari".
+>
+>   Teks toko tanpa centang tidak berubah.
+> - "tambahan 3 hari" diberi bantuan istilah (DESIGN §11.6): "Jadwal tetap toko ini memakai Tambah 3 hari cakupan: cakupan diperpanjang 3 hari sesudah hari terakhirnya, dan kebutuhan ikut menghitung 3 hari itu."
+> - Daftar "Tanggal cakupan" di panel rincian berisi semua tanggal, termasuk 3 tanggal tambahan, tanpa penanda khusus.
+> - **Pola** ditulis "<pola> · +3 hari cakupan", misalnya "Mingguan · +3 hari cakupan", di tempat berikut. Tidak ada kolom baru.
+>   - tabel Jadwal toko (admin);
+>   - bagian Jadwal toko di Pengiriman Gudang;
+>   - riwayat jadwal tetap;
+>   - jadwal tetap pembanding di halaman Persetujuan jadwal;
+>   - rincian rencana final.
+> - File ekspor (packing list satu rencana final dan ekspor Riwayat) tidak berubah.
+>
+> **Perubahan dan peralihan**
+> - Jadwal tetap yang sudah ada awalnya tidak dicentang.
+> - Mencentang atau melepas centang adalah perubahan jadwal tetap:
+>   - menjadi versi jadwal baru dan tercatat di riwayat jadwal tetap;
+>   - draft yang belum final ditandai perlu dihitung ulang, dengan stok yang sudah diisi tetap dipertahankan (A7);
+>   - pengiriman di luar jadwal tidak dibatalkan, karena tanggal kirim toko tidak berubah.
+> - Menyimpan ulang dengan pola, hari kirim, persiapan, dan pilihan ini yang sama tidak membuat versi jadwal baru.
+> - Rencana final menyimpan pilihan ini di snapshotnya. Rencana final yang sudah ada tidak berubah.
+
 
 Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
 
@@ -366,6 +420,8 @@ Kebutuhan barang adalah penjumlahan rata-rata penjualan sesuai kategori efektif 
 > ▶ Revisi (2026-10-13, pemilik): "tanggal kirim berikutnya" (L) dan "tanggal kirim sebelumnya" (peringatan) di dua blok di atas dibaca dari **tanggal kirim toko**, yaitu jadwal tetap ditambah pengiriman di luar jadwal yang berlaku, bukan dari jadwal tetap saja. Rinciannya dan contoh BOTANI ada di A5 ▶ Revisi 2026-10-13.
 
 > ▶ Revisi (2026-10-19, pemilik bersama admin): **pola dua mingguan selalu memakai L = 14**, untuk pengiriman rutin maupun di luar jadwal, kapan pun kiriman berikutnya. Kalimat "dua mingguan dengan satu hari kirim L = 14 … Dua mingguan dengan lebih dari satu hari kirim mengikuti aturan yang sama" di ▶ Revisi 2026-10-12, dan aturan "pengiriman tambahan memendekkan cakupan pengiriman sebelumnya", tidak berlaku untuk toko dua mingguan. Rinciannya dan contoh tumpang tindih cakupan ada di A5 ▶ Revisi 2026-10-19.
+
+> ▶ Keputusan (2026-10-27, pemilik): jika jadwal tetap toko memakai **"Tambah 3 hari cakupan"**, cakupan setiap pengiriman toko itu, rutin maupun di luar jadwal, adalah H−p sampai H+L−1+3 (p + L + 3 hari). L tetap dihitung seperti di atas. Rincian dan contohnya ada di A5 ▶ Keputusan 2026-10-27.
 
 Jumlah kirim = nilai terbesar antara 0 dan pembulatan ke atas dari:
 (Kebutuhan barang − Stok akhir) × (1 + Buffer).

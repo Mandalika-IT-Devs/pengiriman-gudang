@@ -137,7 +137,11 @@ Daftar tanggal kirim satu toko: tanggal menurut jadwal tetap, dikurangi tanggal 
 0, 1, atau 2 hari sebelum H.
 
 **Cakupan**:
-Rentang tanggal H−p sampai H+L−1, inklusif.
+Rentang tanggal H−p sampai H+L−1, inklusif. Jika jadwal tetap toko memakai **tambah 3 hari cakupan**: H−p sampai H+L−1+3.
+
+**Tambah 3 hari cakupan**:
+Pilihan pada jadwal tetap satu toko: cakupan setiap pengiriman toko itu, rutin maupun di luar jadwal, diperpanjang 3 hari sesudah hari terakhirnya (p + L + 3 hari). L tidak berubah. Diatur admin. Di layar, pola toko itu ditulis "<pola> · +3 hari cakupan".
+_Avoid_: buffer (istilah itu untuk persen ranking), safety stock, menambahkan 3 ke L
 
 **Panjang cakupan (L)**:
 Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya menurut tanggal kirim toko (1× seminggu 7, 2×/3× seminggu selisih ke hari kirim berikutnya); khusus 1× sebulan 30, tetapi berakhir lebih awal jika ada pengiriman di luar jadwal sebelum hari ke-30. Dua mingguan selalu 14, kapan pun kiriman berikutnya.
