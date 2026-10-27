@@ -1,7 +1,8 @@
 // Mesin kebutuhan barang dan jumlah kirim untuk satu toko–varian dan satu tanggal kirim
 // (PRD A6 termasuk ▶ Keputusan 2026-10-09 T05; ADR-0007, ADR-0008).
-// Cakupan H−p sampai H+L−1 → kategori efektif tiap tanggal → kebutuhan = Σ rata-rata kategori →
-// jumlah kirim lewat modul angka, atau daftar masalah yang menahan finalisasi.
+// Cakupan H−p sampai H+L−1 (H+L−1+3 untuk toko bertanda "Tambah 3 hari cakupan", PRD A6 ▶ Keputusan 2026-10-27) →
+// kategori efektif tiap tanggal → kebutuhan = Σ rata-rata kategori → jumlah kirim lewat modul angka, atau daftar masalah
+// yang menahan finalisasi.
 
 import { hitungJumlahKirim } from "./angka";
 import { geserHari, type KategoriDasar, type TanggalBisnis } from "./kalender";
@@ -9,6 +10,9 @@ import { kategoriEfektif, type PerubahanKategori } from "./kategori";
 import { klasifikasiProduk } from "./produk";
 
 const URUTAN_KATEGORI: readonly KategoriDasar[] = ["Senin–Kamis", "Jumat", "Sabtu", "Minggu"];
+
+/** Hari tambahan sesudah H+L−1 untuk toko bertanda "Tambah 3 hari cakupan"; selalu 3 (PRD A5 ▶ Keputusan 2026-10-27). */
+export const TAMBAHAN_HARI_CAKUPAN = 3;
 
 /** Urutan tampilan masalah produk otomatis (PRD A6 ▶ Keputusan 2026-10-09). */
 export type MasalahKirim = "kebutuhan-tidak-tersedia" | "stok-negatif" | "stok-belum-diisi";
@@ -23,6 +27,11 @@ export type MasukanKebutuhanKirim = {
    * (PRD A6 ▶ Revisi 2026-10-12; `tanggalKirimMenurutJadwal`).
    */
   panjangCakupan: number;
+  /**
+   * Jadwal tetap toko bertanda "Tambah 3 hari cakupan" (`tanggalKirimMenurutToko`): cakupan ditambah 3 hari sesudah
+   * H+L−1, dan kebutuhan ikut menghitung 3 hari itu (PRD A6 ▶ Keputusan 2026-10-27). Tidak ada = tidak bertanda.
+   */
+  tambah3HariCakupan?: boolean;
   toko: string;
   /** Perubahan kategori manual; kategori efektif dihitung lewat `kategoriEfektif` (PRD B4). */
   daftarPerubahan: readonly PerubahanKategori[];
@@ -69,7 +78,7 @@ type StatusKirim =
 type HasilKebutuhanKirim = {
   tanggalKirim: TanggalBisnis;
   klasifikasi: "manual" | "otomatis";
-  /** Tanggal H−p sampai H+L−1, urut naik; panjangnya L+p. */
+  /** Tanggal H−p sampai H+L−1 (H+L−1+3 bila bertanda), urut naik; panjangnya L+p (+3). */
   cakupan: TanggalCakupan[];
   kebutuhan: Kebutuhan;
   stokAkhir: number | null;
@@ -86,21 +95,24 @@ function pastikanRataRata(rataRata: MasukanKebutuhanKirim["rataRata"]): void {
 
 /**
  * Tanggal cakupan H−p sampai H+L−1 (urut naik, panjangnya L+p) beserta kategori efektif dan sumbernya untuk satu toko
- * (PRD A6, B4). Sama untuk semua varian toko itu.
+ * (PRD A6, B4). Toko bertanda "Tambah 3 hari cakupan": H−p sampai H+L−1+3, panjangnya p + L + 3 (PRD A6 ▶ Keputusan
+ * 2026-10-27). Sama untuk semua varian toko itu.
  */
 export function cakupanPengiriman({
   tanggalKirim,
   persiapanHari,
   panjangCakupan,
+  tambah3HariCakupan = false,
   toko,
   daftarPerubahan,
 }: Pick<
   MasukanKebutuhanKirim,
-  "tanggalKirim" | "persiapanHari" | "panjangCakupan" | "toko" | "daftarPerubahan"
+  "tanggalKirim" | "persiapanHari" | "panjangCakupan" | "tambah3HariCakupan" | "toko" | "daftarPerubahan"
 >): KategoriTanggalCakupan[] {
   const awal = geserHari(tanggalKirim, -persiapanHari);
+  const jumlahHari = persiapanHari + panjangCakupan + (tambah3HariCakupan ? TAMBAHAN_HARI_CAKUPAN : 0);
   const cakupan: KategoriTanggalCakupan[] = [];
-  for (let i = 0; i < panjangCakupan + persiapanHari; i++) {
+  for (let i = 0; i < jumlahHari; i++) {
     const tanggal = geserHari(awal, i);
     cakupan.push({ tanggal, ...kategoriEfektif(tanggal, toko, daftarPerubahan) });
   }

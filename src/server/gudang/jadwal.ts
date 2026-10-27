@@ -37,6 +37,7 @@ export async function jadwalTokoGudang(idGudang: number, klien: typeof db | Tx =
       versi: jadwalToko.id,
       pola: jadwalToko.pola,
       hariKirim: jadwalToko.hariKirim,
+      tambah3HariCakupan: jadwalToko.tambah3HariCakupan,
       diaturOleh: user.name,
       diaturPada: jadwalToko.dibuatPada,
     })
@@ -52,12 +53,18 @@ export async function jadwalTokoGudang(idGudang: number, klien: typeof db | Tx =
     nama: b.nama,
     aktif: b.aktif,
     jadwal:
-      b.versi === null || b.pola === null || b.hariKirim === null || b.diaturOleh === null || b.diaturPada === null
+      b.versi === null ||
+      b.pola === null ||
+      b.hariKirim === null ||
+      b.tambah3HariCakupan === null ||
+      b.diaturOleh === null ||
+      b.diaturPada === null
         ? null
         : {
             versi: b.versi,
             pola: b.pola,
             hariKirim: b.hariKirim,
+            tambah3HariCakupan: b.tambah3HariCakupan,
             diaturOleh: b.diaturOleh,
             diaturPada: b.diaturPada,
           },

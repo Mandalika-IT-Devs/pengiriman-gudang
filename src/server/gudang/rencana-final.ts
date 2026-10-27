@@ -260,7 +260,13 @@ export async function finalisasiRencanaToko({
         versiRanking: ranking.versi,
         versiJadwal: tokoDraft.versiJadwal,
         // Tanggal jangkar dihapus (PRD A5 ▶ Revisi 2026-10-19, T135): snapshot baru selalu `null`; snapshot lama tetap.
-        jadwal: { pola: jadwal.pola, hariKirim: jadwal.hariKirim, tanggalJangkar: null },
+        // Tanda "Tambah 3 hari cakupan" = tanda yang dipakai draft untuk cakupan ini (PRD A5 ▶ Keputusan 2026-10-27, T143).
+        jadwal: {
+          pola: jadwal.pola,
+          hariKirim: jadwal.hariKirim,
+          tanggalJangkar: null,
+          tambah3HariCakupan: tokoDraft.tambah3HariCakupan,
+        },
         persiapanHari: tokoDraft.persiapanHari,
         panjangCakupan: tokoDraft.panjangCakupan,
         jenisPengiriman: diLuarJadwal?.jenis ?? "rutin",
@@ -310,6 +316,7 @@ export type RencanaFinal = {
   difinalisasiPada: Date;
   sumber: { bulanSumber: string[]; versiPeriodeSumber: number; impor: ImporRencanaFinal[] };
   ranking: { id: number; bulanRanking: string; versi: number };
+  /** `tambah3HariCakupan` tidak ada di snapshot sebelum T143 (= tidak bertanda). */
   jadwal: JadwalRencanaFinal & { versi: number; persiapanHari: 0 | 1 | 2; panjangCakupan: number };
   /** Pengiriman di luar jadwal yang menjadi dasar rencana ini (snapshot, T114); `null` = pengiriman rutin. */
   diLuarJadwal: KeteranganDiLuarJadwal | null;

@@ -22,6 +22,11 @@ export type MasukanJadwal = {
 export type Jadwal = {
   pola: PolaJadwal;
   hariKirim: readonly { hari: NamaHari; persiapanHari: 0 | 1 | 2 }[];
+  /**
+   * Tanda "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27): berlaku untuk seluruh jadwal tetap toko, semua hari
+   * kirim dan semua pola. Tidak ada = tidak dicentang.
+   */
+  tambah3HariCakupan?: boolean;
 };
 
 type HasilPeriksaJadwal = { keadaan: "valid"; jadwal: Jadwal } | { keadaan: "tidakValid"; pesan: string[] };
@@ -173,6 +178,11 @@ type HasilTanggalKirimToko<P> =
       panjangCakupan: number;
       /** Pengiriman di luar jadwal pada tanggal itu; `null` = pengiriman rutin. */
       diLuarJadwal: P | null;
+      /**
+       * Tanda "Tambah 3 hari cakupan" jadwal tetap toko: cakupan pengiriman ini, rutin maupun di luar jadwal, ditambah 3
+       * hari sesudah H+L−1 (PRD A6 ▶ Keputusan 2026-10-27). L tidak berubah. Tidak ada = tidak bertanda.
+       */
+      tambah3HariCakupan?: boolean;
     };
 
 const dipindah = (toko: JadwalKirimToko, tanggal: TanggalBisnis) => toko.diLuarJadwal.some((p) => p.tanggalRutinDipindah === tanggal);
@@ -248,7 +258,8 @@ export function tanggalKirimTokoSebelumnya(toko: JadwalKirimToko, tanggal: Tangg
  * Pengiriman di luar jadwal toko 1× sebulan memakai jarak ke tanggal kirim berikutnya (issue T114: tambahan 2026-11-17 →
  * L = 14), paling lama 30 hari. Setiap pengiriman toko dua mingguan, rutin maupun di luar jadwal, memakai L = 14, kapan pun
  * kiriman berikutnya; pengiriman di luar jadwal tidak memendekkan L pengiriman dua mingguan sebelumnya (PRD A5 ▶ Revisi
- * 2026-10-19).
+ * 2026-10-19). Tanda "Tambah 3 hari cakupan" jadwal tetap ikut dikembalikan untuk setiap pengiriman toko itu, rutin maupun
+ * di luar jadwal (PRD A6 ▶ Keputusan 2026-10-27).
  */
 export function tanggalKirimMenurutToko<P extends PengirimanDiLuarJadwalBerlaku>(
   toko: JadwalKirimToko<P>,
@@ -267,7 +278,13 @@ export function tanggalKirimMenurutToko<P extends PengirimanDiLuarJadwalBerlaku>
     const jarak = selisihHari(tanggal, tanggalKirimTokoBerikutnya(toko, tanggal));
     panjangCakupan = sebulan ? Math.min(PANJANG_CAKUPAN_SEBULAN, jarak) : jarak;
   }
-  return { kirim: true, persiapanHari: pengiriman.persiapanHari, panjangCakupan, diLuarJadwal: pengiriman.diLuarJadwal };
+  return {
+    kirim: true,
+    persiapanHari: pengiriman.persiapanHari,
+    panjangCakupan,
+    diLuarJadwal: pengiriman.diLuarJadwal,
+    tambah3HariCakupan: toko.jadwal?.tambah3HariCakupan,
+  };
 }
 
 /**

@@ -244,6 +244,7 @@ async function hitungBaris(
             tanggalKirim,
             persiapanHari: tokoKirim.persiapanHari,
             panjangCakupan: tokoKirim.panjangCakupan,
+            tambah3HariCakupan: tokoKirim.tambah3HariCakupan,
             toko: String(tokoId),
             daftarPerubahan,
             rataRata,
@@ -424,6 +425,12 @@ export type TokoDraft = {
   polaJadwal: PolaJadwal;
   persiapanHari: 0 | 1 | 2;
   panjangCakupan: number;
+  /**
+   * Tanda "Tambah 3 hari cakupan" jadwal tetap toko saat draft dihitung (PRD A5 ▶ Keputusan 2026-10-27, T143): cakupan
+   * berisi 3 hari tambahan, dan teks cakupannya diakhiri "+ tambahan 3 hari". Hanya ada untuk toko bertanda, sehingga isi
+   * toko tanpa tanda tidak berubah.
+   */
+  tambah3HariCakupan?: true;
   /** Tanggal cakupan beserta kategori efektif dan sumbernya; `null` = draft dihitung sebelum T60. */
   cakupan: (Omit<TanggalCakupanDraft, "tanggal"> & { tanggal: TanggalBisnis })[] | null;
   /**
@@ -536,6 +543,7 @@ type TokoTersimpan = {
   nama: string;
   persiapanHari: 0 | 1 | 2;
   panjangCakupan: number;
+  tambah3HariCakupan: boolean;
   cakupan: TanggalCakupanDraft[] | null;
   /** Kosong = draft dihitung sebelum T114 (rutin, peringatan dari jadwal versi draft). */
   jenisPengiriman: typeof tokoDraftRencana.$inferSelect.jenisPengiriman;
@@ -587,6 +595,7 @@ async function bacaKepalaDraft(idGudang: number, tanggalKirim: TanggalBisnis | u
       nama: toko.nama,
       persiapanHari: tokoDraftRencana.persiapanHari,
       panjangCakupan: tokoDraftRencana.panjangCakupan,
+      tambah3HariCakupan: tokoDraftRencana.tambah3HariCakupan,
       cakupan: tokoDraftRencana.cakupan,
       jenisPengiriman: tokoDraftRencana.jenisPengiriman,
       pengirimanDiLuarJadwalId: tokoDraftRencana.pengirimanDiLuarJadwalId,
@@ -678,6 +687,7 @@ function susunTokoDraft(kepala: KepalaDraft, t: TokoTersimpan, barisToko: BarisD
     polaJadwal: t.jadwal.pola,
     persiapanHari: t.persiapanHari,
     panjangCakupan: t.panjangCakupan,
+    ...(t.tambah3HariCakupan ? { tambah3HariCakupan: true } : {}),
     cakupan: cakupan?.map((c) => ({ ...c, tanggal: parseTanggalBisnis(c.tanggal) })) ?? null,
     kirimanSebelumnyaBelumSampai:
       t.jenisPengiriman === null

@@ -19,7 +19,7 @@ import { tautanTombolVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatTanggal, parseTanggalBisnis } from "@/domain/kalender";
-import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
+import { labelHariKirim, labelPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 import type { RincianRencanaFinal } from "@/server/gudang/rencana-final";
 
 import { urlEksporRencanaFinal, urlRincianRencanaFinal, urlRiwayat } from "../../alamat";
@@ -114,7 +114,7 @@ function DasarPerhitungan({ rencana }: { rencana: RincianRencanaFinal }) {
         <BagianDasar nama="jadwal" judul="Jadwal toko">
           <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-[auto_1fr]">
             <dt className="text-muted-foreground">Pola</dt>
-            <dd>{labelPola[jadwal.pola]}</dd>
+            <dd>{labelPolaJadwal(jadwal.pola, jadwal.tambah3HariCakupan === true)}</dd>
             <dt className="text-muted-foreground">Hari kirim</dt>
             <dd>{labelHariKirim(jadwal.hariKirim)}</dd>
             {jadwal.tanggalJangkar === null ? null : (
@@ -128,7 +128,12 @@ function DasarPerhitungan({ rencana }: { rencana: RincianRencanaFinal }) {
             )}
             <dt className="text-muted-foreground">Dipakai untuk tanggal kirim ini</dt>
             <dd>
-              <TeksCakupan persiapanHari={jadwal.persiapanHari} panjangCakupan={jadwal.panjangCakupan} polaJadwal={jadwal.pola} />
+              <TeksCakupan
+                persiapanHari={jadwal.persiapanHari}
+                panjangCakupan={jadwal.panjangCakupan}
+                polaJadwal={jadwal.pola}
+                tambah3HariCakupan={jadwal.tambah3HariCakupan}
+              />
             </dd>
             <dt className="text-muted-foreground">Versi jadwal</dt>
             <dd>{`#${jadwal.versi}`}</dd>
@@ -234,6 +239,7 @@ function PanelRincianBaris({ rencana, terbuka }: { rencana: RincianRencanaFinal;
     polaJadwal: rencana.jadwal.pola,
     persiapanHari: rencana.jadwal.persiapanHari,
     panjangCakupan: rencana.jadwal.panjangCakupan,
+    ...(rencana.jadwal.tambah3HariCakupan === true ? { tambah3HariCakupan: true as const } : {}),
     cakupan: rencana.kalender.cakupan,
   };
   const dasar = { bulanSumber: rencana.sumber.bulanSumber, ranking: rencana.ranking };
