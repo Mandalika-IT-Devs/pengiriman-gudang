@@ -46,16 +46,21 @@ export function labelHariKirim(hariKirim: Jadwal["hariKirim"]) {
   return hariKirim.map((h) => `${h.hari} (${labelPersiapan[persiapanDariHari[h.persiapanHari]]})`).join(", ");
 }
 
-/** Isian satu form jadwal (pola, hari kirim beserta persiapan `H` / `H-1` / `H-2`). Tanpa tanggal jangkar (T135). */
+/**
+ * Isian satu form jadwal (pola, hari kirim beserta persiapan `H` / `H-1` / `H-2`, dan pilihan "Tambah 3 hari cakupan",
+ * T144). Tanpa tanggal jangkar (T135).
+ */
 export type IsianJadwal = {
   pola: PolaJadwal;
   hariKirim: { hari: HariKirim; persiapan: Persiapan }[];
+  tambah3HariCakupan: boolean;
 };
 
-/** Jadwal tersimpan → isian form (persiapan dalam hari → `H` / `H-1` / `H-2`). */
+/** Jadwal tersimpan → isian form (persiapan dalam hari → `H` / `H-1` / `H-2`; tanpa tanda = tidak dicentang). */
 export function isianDariJadwal(jadwal: Jadwal): IsianJadwal {
   return {
     pola: jadwal.pola,
     hariKirim: jadwal.hariKirim.map((h) => ({ hari: h.hari, persiapan: persiapanDariHari[h.persiapanHari] })),
+    tambah3HariCakupan: jadwal.tambah3HariCakupan === true,
   };
 }

@@ -20,6 +20,8 @@ export const isianJadwal = {
     }),
     { error: "Pilih hari kirim." },
   ),
+  /** "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27, T144); tidak dikirim = tidak dicentang. */
+  tambah3HariCakupan: z.boolean({ error: "Pilihan Tambah 3 hari cakupan tidak dikenal." }).default(false),
 };
 
 export const skemaJadwal = skemaToko.extend(isianJadwal);

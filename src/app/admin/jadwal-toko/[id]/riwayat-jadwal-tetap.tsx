@@ -4,7 +4,7 @@ import { formatWaktu } from "@/app/admin/impor/format";
 import { BadgeStatus } from "@/components/badge-status";
 import { Badge } from "@/components/ui/badge";
 import type { EntriRiwayatJadwal } from "@/server/gudang/jadwal";
-import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
+import { labelHariKirim, labelPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 // T112 (PRD A5 ▶ Revisi 2026-10-13): riwayat jadwal tetap satu toko, terbaru di atas. DESIGN §7: status selalu ikon +
 // teks. Jadwal yang diganti atau dinonaktifkan memakai token muted dan ikon Archive, sama dengan status nonaktif lain.
@@ -21,7 +21,10 @@ function BadgeRiwayat({ berakhir }: { berakhir: EntriRiwayatJadwal["berakhir"] }
   );
 }
 
-/** Daftar riwayat jadwal tetap: pola dan hari, diatur oleh dan kapan, diganti/dinonaktifkan oleh dan kapan. */
+/**
+ * Daftar riwayat jadwal tetap: pola (dengan penanda "+3 hari cakupan", T144) dan hari, diatur oleh dan kapan,
+ * diganti/dinonaktifkan oleh dan kapan.
+ */
 export function RiwayatJadwalTetap({ riwayat }: { riwayat: EntriRiwayatJadwal[] }) {
   return (
     <section aria-labelledby="riwayat-jadwal-judul" className="flex flex-col gap-3 border-t border-border/60 pt-4">
@@ -37,7 +40,7 @@ export function RiwayatJadwalTetap({ riwayat }: { riwayat: EntriRiwayatJadwal[] 
             <li key={r.id} data-riwayat-jadwal={r.id} className="flex flex-col gap-1 rounded-2xl border border-border/60 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <BadgeRiwayat berakhir={r.berakhir} />
-                <span className="font-semibold">{labelPola[r.pola]}</span>
+                <span className="font-semibold">{labelPolaJadwal(r.pola, r.tambah3HariCakupan)}</span>
               </div>
               <span>{labelHariKirim(r.hariKirim)}</span>
               <span className="text-muted-foreground">

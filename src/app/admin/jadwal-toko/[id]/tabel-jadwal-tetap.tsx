@@ -12,7 +12,7 @@ import { Dialog, DialogIsi } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatTanggal } from "@/domain/kalender";
 import type { EntriRiwayatJadwal, TokoDenganJadwal } from "@/server/gudang/jadwal";
-import { isianDariJadwal, labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
+import { isianDariJadwal, labelHariKirim, labelPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 import { FormJadwalTetap } from "./form-jadwal-tetap";
 import { FormSalinJadwal, JUDUL_SALIN_JADWAL } from "./form-salin-jadwal";
@@ -96,7 +96,7 @@ export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; d
                 <BadgeStatusToko aktif={t.aktif} />
               </TableCell>
               <TableCell>{t.jadwal ? <BadgeStatus status="aktif" /> : <BadgeTanpaJadwal />}</TableCell>
-              <TableCell>{t.jadwal ? labelPola[t.jadwal.pola] : "—"}</TableCell>
+              <TableCell>{t.jadwal ? labelPolaJadwal(t.jadwal.pola, t.jadwal.tambah3HariCakupan === true) : "—"}</TableCell>
               <TableCell className="whitespace-normal">{t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}</TableCell>
               <TableCell className="whitespace-normal text-muted-foreground">
                 {t.jadwal ? (

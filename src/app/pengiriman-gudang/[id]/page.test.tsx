@@ -311,6 +311,32 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(baris).toMatch(/1× sebulan<\/td><td[^>]*>Selasa \(H−1\)<\/td>/);
   });
 
+  // T144 — PRD A5 ▶ Keputusan 2026-10-27 (Tampilan): Pola toko bertanda ditulis "<pola> · +3 hari cakupan", tanpa kolom baru.
+  it('jadwal bertanda Tambah 3 hari cakupan tampil "Mingguan · +3 hari cakupan"; toko tanpa tanda tetap "Mingguan"', async () => {
+    const pembuat = await buatPenggunaUji("viewer");
+    const [bertanda, biasa] = [await buatTokoUji(), await buatTokoUji()];
+    await db.insert(hubunganTokoGudang).values([
+      { tokoId: bertanda.id, gudangId: pusat },
+      { tokoId: biasa.id, gudangId: pusat },
+    ]);
+    await db.insert(jadwalToko).values([
+      {
+        tokoId: bertanda.id,
+        pola: "mingguan",
+        hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+        tambah3HariCakupan: true,
+        dibuatOleh: pembuat.id,
+      },
+      { tokoId: biasa.id, pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapanHari: 2 }], dibuatOleh: pembuat.id },
+    ]);
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const html = await buka(pusat);
+    expect(barisJadwal(html, bertanda.id)).toMatch(/<td[^>]*>Mingguan · \+3 hari cakupan<\/td><td[^>]*>Kamis \(H−1\)<\/td>/);
+    expect(barisJadwal(html, biasa.id)).toMatch(/<td[^>]*>Mingguan<\/td><td[^>]*>Kamis \(H−2\)<\/td>/);
+    expect(tabelJadwal(html).match(/<th\b/g)).toHaveLength(7);
+  });
+
   it("jadwal dengan hari Minggu tampil dengan urutan hari Senin–Minggu (T106)", async () => {
     const pembuat = await buatPenggunaUji("viewer");
     const t = await buatTokoUji();

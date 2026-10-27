@@ -22,6 +22,7 @@ export type { IsianJadwal };
 export const ISIAN_KOSONG: IsianJadwal = {
   pola: "mingguan",
   hariKirim: [],
+  tambah3HariCakupan: false,
 };
 
 export const kelasLabel = "flex flex-col gap-2 font-semibold";
@@ -33,13 +34,14 @@ export function isianTerkirim(isian: IsianJadwal): IsianJadwal {
     const persiapan = persiapanHari.get(hari);
     return persiapan ? [{ hari, persiapan }] : [];
   });
-  return { pola: isian.pola, hariKirim };
+  return { pola: isian.pola, hariKirim, tambah3HariCakupan: isian.tambah3HariCakupan };
 }
 
 /**
  * Bidang pola dan hari kirim beserta persiapannya (PRD A5). Dipakai form jadwal satu toko (T55, T56) dan form salin jadwal
  * (T57). `bidangAwal` tampil di baris yang sama dengan pola (mis. pilihan toko). Tanpa tanggal jangkar; pola dua mingguan
- * menampilkan keterangan pemilihan pekannya (PRD A5 ▶ Revisi 2026-10-19, T135).
+ * menampilkan keterangan pemilihan pekannya (PRD A5 ▶ Revisi 2026-10-19, T135). Tepat di bawah Pola, checkbox "Tambah 3
+ * hari cakupan" untuk semua pola dengan keterangan yang selalu tampil (PRD A5 ▶ Keputusan 2026-10-27, T144).
  */
 export function BidangJadwal({
   isian,
@@ -84,6 +86,21 @@ export function BidangJadwal({
               ))}
             </SelectContent>
           </Select>
+          <label className={`${kelasChip} w-fit`}>
+            <input
+              type="checkbox"
+              name="tambah3HariCakupan"
+              checked={isian.tambah3HariCakupan}
+              onChange={(e) => ubah({ tambah3HariCakupan: e.target.checked })}
+              disabled={nonaktif}
+              aria-describedby={`${id}-tambah-3-hari`}
+              className="size-4 accent-primary outline-none"
+            />
+            Tambah 3 hari cakupan
+          </label>
+          <p id={`${id}-tambah-3-hari`} data-keterangan-tambah-3-hari className="font-normal text-muted-foreground">
+            Cakupan setiap pengiriman toko ini diperpanjang 3 hari sesudah hari terakhirnya.
+          </p>
         </div>
       </div>
 
