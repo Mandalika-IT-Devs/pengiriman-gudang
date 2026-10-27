@@ -67,7 +67,7 @@ Jangan mengubah `/opt/proxy/Caddyfile` atau berkas situs milik aplikasi lain.
 1. **DNS**: A record `drp.mandalika.web.id` ke IP VPS. Port 80 dan 443 harus terbuka dari internet agar Let's Encrypt bisa menerbitkan sertifikat.
 2. **Bootstrap** di VPS, sebagai user deploy (anggota grup `docker`, bukan root):
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/mandalikadev/pengiriman-gudang/main/deploy/bootstrap-vps.sh -o bootstrap-vps.sh
+   curl -fsSL https://raw.githubusercontent.com/Mandalika-IT-Devs/pengiriman-gudang/main/deploy/bootstrap-vps.sh -o bootstrap-vps.sh
    bash bootstrap-vps.sh
    ```
    Skrip ini membuat `/opt/drp` (clone repo, folder backup, `.env` dengan rahasia acak) dan, jika belum ada, `/opt/proxy` beserta network `proxy` dan container Caddy. Aman dijalankan ulang: `.env`, repo, dan `/opt/proxy` yang sudah ada tidak ditimpa. Firewall, user sistem, dan paket tidak disentuh. `sudo` hanya dipakai untuk membuat folder di `/opt` jika `/opt` tidak bisa ditulis.

@@ -9,11 +9,11 @@
 # Tidak menyentuh firewall (ufw/iptables), user sistem, paket, atau layanan sistem.
 #
 # Pemakaian (di VPS):
-#   curl -fsSL https://raw.githubusercontent.com/mandalikadev/pengiriman-gudang/main/deploy/bootstrap-vps.sh -o bootstrap-vps.sh
+#   curl -fsSL https://raw.githubusercontent.com/Mandalika-IT-Devs/pengiriman-gudang/main/deploy/bootstrap-vps.sh -o bootstrap-vps.sh
 #   bash bootstrap-vps.sh
 set -euo pipefail
 
-URL_REPO=https://github.com/mandalikadev/pengiriman-gudang.git
+URL_REPO=https://github.com/Mandalika-IT-Devs/pengiriman-gudang.git
 DIR_DRP=/opt/drp
 DIR_REPO="$DIR_DRP/repo"
 BERKAS_ENV="$DIR_DRP/.env"
