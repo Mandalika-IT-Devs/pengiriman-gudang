@@ -14,6 +14,7 @@ import {
   rencanaFinal,
   toko,
   versiRanking,
+  type JadwalRencanaFinal,
 } from "@/server/db/schema";
 import { tahunRankingUjiBebas } from "@/server/ranking/uji-bantu";
 
@@ -192,6 +193,30 @@ export async function salinRencanaFinalBerjangkar({
       jadwal: { ...asal.jadwal, pola: "dua-mingguan", tanggalJangkar },
       panjangCakupan: 14,
     })
+    .returning({ id: rencanaFinal.id });
+  const baris = await db.select().from(barisRencanaFinal).where(eq(barisRencanaFinal.rencanaFinalId, idRencana));
+  await db.insert(barisRencanaFinal).values(baris.map((b) => ({ ...tanpaId(b), rencanaFinalId: salinan.id })));
+  return salinan.id;
+}
+
+/**
+ * Salinan rencana final `idRencana` (beserta barisnya) dengan snapshot jadwal `ubahJadwal(jadwal asal)` dan tanggal kirim
+ * `tanggalKirim`, mis. snapshot bertanda "Tambah 3 hari cakupan" atau snapshot dari sebelum T143 tanpa tanda itu (PRD A5
+ * ▶ Keputusan 2026-10-27). Mengembalikan id salinannya.
+ */
+export async function salinRencanaFinalDenganJadwal({
+  idRencana,
+  tanggalKirim,
+  ubahJadwal,
+}: {
+  idRencana: number;
+  tanggalKirim: string;
+  ubahJadwal: (jadwal: JadwalRencanaFinal) => JadwalRencanaFinal;
+}) {
+  const [asal] = await db.select().from(rencanaFinal).where(eq(rencanaFinal.id, idRencana));
+  const [salinan] = await db
+    .insert(rencanaFinal)
+    .values({ ...tanpaId(asal), tanggalKirim, jadwal: ubahJadwal(asal.jadwal) })
     .returning({ id: rencanaFinal.id });
   const baris = await db.select().from(barisRencanaFinal).where(eq(barisRencanaFinal.rencanaFinalId, idRencana));
   await db.insert(barisRencanaFinal).values(baris.map((b) => ({ ...tanpaId(b), rencanaFinalId: salinan.id })));

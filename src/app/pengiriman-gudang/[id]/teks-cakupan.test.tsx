@@ -1,5 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+
+import { TEKS_BANTUAN_ISTILAH } from "@/components/teks-bantuan-istilah";
+import type { PolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 import { TeksCakupan, teksCakupan } from "./teks-cakupan";
 
@@ -52,5 +58,53 @@ describe("teks cakupan toko dua mingguan", () => {
 
   it("rencana final dua mingguan lama dengan L selain 14 (aturan sebelum 19-10-2026) tetap sampai sebelum kiriman berikutnya", () => {
     expect(teksCakupan(0, 3, "dua-mingguan")).toBe("Cakupan 3 hari: 3 hari sampai sebelum kiriman berikutnya");
+  });
+});
+
+// T143 — PRD A5 ▶ Keputusan 2026-10-27 (Tampilan): teks cakupan toko yang jadwal tetapnya bertanda "Tambah 3 hari cakupan"
+// mendapat ujung " + tambahan 3 hari" dengan bantuan istilah; teks toko lain tidak berubah. Teks persis dari golden.
+type KasusTeks = { jadwal: { pola: PolaJadwal }; persiapanHari: number; panjangCakupan: number; teksCakupan: string };
+
+const golden = JSON.parse(readFileSync(join(import.meta.dirname, "../../../../tests/golden/tambah-3-hari-cakupan.json"), "utf8")) as {
+  kasusContohPemilik: KasusTeks & { tanpaTambahan: { teksCakupan: string } };
+  kasusCakupan: (KasusTeks & { nama: string })[];
+};
+
+describe("teks cakupan toko bertanda Tambah 3 hari cakupan (golden tambah-3-hari-cakupan)", () => {
+  const contoh = golden.kasusContohPemilik;
+  const semuaKasus = [{ ...contoh, nama: "contoh pemilik, mingguan Kamis (H−1)" }, ...golden.kasusCakupan];
+
+  for (const kasus of semuaKasus) {
+    it(`${kasus.nama} → ${kasus.teksCakupan}`, () => {
+      const { persiapanHari, panjangCakupan, jadwal } = kasus;
+      expect(teksCakupan(persiapanHari, panjangCakupan, jadwal.pola, true)).toBe(kasus.teksCakupan);
+      const html = renderToStaticMarkup(
+        <TeksCakupan persiapanHari={persiapanHari} panjangCakupan={panjangCakupan} polaJadwal={jadwal.pola} tambah3HariCakupan />,
+      );
+      expect(teksTerbaca(html)).toBe(kasus.teksCakupan);
+      expect(html).toContain(`data-teks-cakupan="${kasus.teksCakupan}"`);
+    });
+  }
+
+  it(`tanpa tanda → ${contoh.tanpaTambahan.teksCakupan}`, () => {
+    expect(teksCakupan(contoh.persiapanHari, contoh.panjangCakupan, contoh.jadwal.pola, false)).toBe(contoh.tanpaTambahan.teksCakupan);
+    const html = renderToStaticMarkup(
+      <TeksCakupan persiapanHari={1} panjangCakupan={7} polaJadwal="mingguan" tambah3HariCakupan={false} />,
+    );
+    expect(teksTerbaca(html)).toBe(contoh.tanpaTambahan.teksCakupan);
+    expect(html).not.toContain("tambahan");
+  });
+
+  it('"tambahan 3 hari" diberi bantuan istilah dengan teks dari PRD A5 ▶ Keputusan 2026-10-27', () => {
+    const html = renderToStaticMarkup(<TeksCakupan persiapanHari={1} panjangCakupan={7} polaJadwal="mingguan" tambah3HariCakupan />);
+    expect([...html.matchAll(/data-bantuan-istilah="([^"]+)"/g)].map((m) => m[1])).toEqual([
+      "cakupan",
+      "persiapan",
+      "panjangCakupan",
+      "tambah3HariCakupan",
+    ]);
+    expect(TEKS_BANTUAN_ISTILAH.tambah3HariCakupan.penjelasan).toBe(
+      "Jadwal tetap toko ini memakai Tambah 3 hari cakupan: cakupan diperpanjang 3 hari sesudah hari terakhirnya, dan kebutuhan ikut menghitung 3 hari itu.",
+    );
   });
 });

@@ -26,7 +26,13 @@ import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
 import { finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 import { simpanStokToko } from "@/server/gudang/stok-draft";
-import { buatTokoUji, idGudangUji, salinRencanaFinalBerjangkar, salinRencanaFinalRumusLama } from "@/server/gudang/uji-bantu";
+import {
+  buatTokoUji,
+  idGudangUji,
+  salinRencanaFinalBerjangkar,
+  salinRencanaFinalDenganJadwal,
+  salinRencanaFinalRumusLama,
+} from "@/server/gudang/uji-bantu";
 import { kodeProdukUji, tahunUjiBebas } from "@/server/impor/uji-bantu";
 import { buatPerubahanKategori } from "@/server/kalender/perubahan-kategori";
 import { terapkanPemetaan } from "@/server/keluarga-aroma/pemetaan";
@@ -441,6 +447,50 @@ describe("rincian rencana final", () => {
       expect(jadwal).toContain("Dua mingguan");
       expect(jadwal).toMatch(/<dt[^>]*>Tanggal jangkar.*?data-bantuan-istilah="tanggalJangkar".*?<\/dt><dd>Senin, 08-06-2026<\/dd>/);
       expect(jadwal).toContain('data-teks-cakupan="Cakupan 16 hari: persiapan 2 hari + 14 hari (dua minggu)"');
+    } finally {
+      await db.delete(rencanaFinal).where(eq(rencanaFinal.id, idLama));
+    }
+  });
+
+  // T143 — PRD A5 ▶ Keputusan 2026-10-27 (Tampilan): rincian rencana final toko bertanda menulis Pola "<pola> · +3 hari
+  // cakupan" dan teks cakupan dengan tambahannya. Rencana final yang dibuat sebelum T143 (snapshot tanpa tanda) tampil
+  // seperti sekarang.
+  it("rencana final toko bertanda Tambah 3 hari cakupan: Pola Mingguan · +3 hari cakupan dan teks cakupan dengan tambahannya", async () => {
+    const idBertanda = await salinRencanaFinalDenganJadwal({
+      idRencana: rencana.a1v1,
+      tanggalKirim: "2026-05-18",
+      ubahJadwal: (jadwal) => ({ ...jadwal, tambah3HariCakupan: true }),
+    });
+    try {
+      await masukOperator(cibubur, []);
+      const html = await bukaRincian(idBertanda, { rincian: kode.contoh });
+      const jadwal = bagianDasar(html, "jadwal");
+      expect(jadwal).toMatch(/<dt[^>]*>Pola<\/dt><dd>Mingguan · \+3 hari cakupan<\/dd>/);
+      const teks = "Cakupan 12 hari: persiapan 2 hari + 7 hari sampai sebelum kiriman berikutnya + tambahan 3 hari";
+      expect(jadwal).toContain(`data-teks-cakupan="${teks}"`);
+      expect(jadwal).toContain('data-bantuan-istilah="tambah3HariCakupan"');
+      // Panel rincian baris memakai teks cakupan yang sama.
+      const rincian = new RegExp(`<section[^>]*data-rincian-baris="${tokoA.id}\\|${kode.contoh}".*?</section>`).exec(html)?.[0] ?? "";
+      expect(rincian).toContain(`data-teks-cakupan="${teks}"`);
+    } finally {
+      await db.delete(rencanaFinal).where(eq(rencanaFinal.id, idBertanda));
+    }
+  });
+
+  it("rencana final dari sebelum T143 (snapshot jadwal tanpa tanda) tampil tanpa perubahan", async () => {
+    const idLama = await salinRencanaFinalDenganJadwal({
+      idRencana: rencana.a1v1,
+      tanggalKirim: "2026-05-11",
+      ubahJadwal: ({ pola, hariKirim, tanggalJangkar }) => ({ pola, hariKirim, tanggalJangkar }),
+    });
+    try {
+      await masukOperator(cibubur, []);
+      const html = await bukaRincian(idLama, { rincian: kode.contoh });
+      const jadwal = bagianDasar(html, "jadwal");
+      expect(jadwal).toMatch(/<dt[^>]*>Pola<\/dt><dd>Mingguan<\/dd>/);
+      expect(jadwal).toContain('data-teks-cakupan="Cakupan 9 hari: persiapan 2 hari + 7 hari sampai sebelum kiriman berikutnya"');
+      expect(html).not.toContain("+3 hari cakupan");
+      expect(html).not.toContain("tambahan 3 hari");
     } finally {
       await db.delete(rencanaFinal).where(eq(rencanaFinal.id, idLama));
     }

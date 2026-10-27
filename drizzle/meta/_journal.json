@@ -225,6 +225,13 @@
       "when": 1792518885613,
       "tag": "0031_catatan_kata_sandi",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793087792725,
+      "tag": "0032_tambah_3_hari_cakupan",
+      "breakpoints": true
     }
   ]
 }

@@ -744,7 +744,9 @@ export type StatusJadwal = (typeof daftarStatusJadwal)[number];
  * `tanggal_jangkar` hanya tersisa di baris lama dua mingguan (aturan lama, PRD A5 ▶ Revisi 2026-10-19, T135): tidak dibaca
  * dan baris baru tidak mengisinya. Paling banyak satu baris `aktif` per toko, ditegakkan unique index parsial.
  * Mengubah = baris baru; baris aktif sebelumnya menjadi `nonaktif` (riwayat tidak dihapus). Menonaktifkan mencatat siapa
- * dan kapan. Id baris aktif menjadi versi jadwal toko itu (sinyal perubahan jadwal).
+ * dan kapan. Id baris aktif menjadi versi jadwal toko itu (sinyal perubahan jadwal). `tambah_3_hari_cakupan` = tanda
+ * "Tambah 3 hari cakupan" untuk seluruh jadwal tetap itu (PRD A5 ▶ Keputusan 2026-10-27, T143); jadwal yang sudah ada
+ * tidak dicentang.
  */
 export const jadwalToko = pgTable(
   "jadwal_toko",
@@ -756,6 +758,7 @@ export const jadwalToko = pgTable(
     pola: text("pola").$type<PolaJadwal>().notNull(),
     hariKirim: jsonb("hari_kirim").$type<{ hari: HariKirim; persiapanHari: 0 | 1 | 2 }[]>().notNull(),
     tanggalJangkar: date("tanggal_jangkar", { mode: "string" }),
+    tambah3HariCakupan: boolean("tambah_3_hari_cakupan").notNull().default(false),
     status: text("status").$type<StatusJadwal>().notNull().default("aktif"),
     dibuatOleh: text("dibuat_oleh")
       .notNull()
@@ -1009,6 +1012,12 @@ export const tokoDraftRencana = pgTable(
      * menyimpannya; peringatannya dibaca dari jadwal versi draft.
      */
     kirimanSebelumnyaBelumSampai: date("kiriman_sebelumnya_belum_sampai", { mode: "string" }),
+    /**
+     * Tanda "Tambah 3 hari cakupan" jadwal tetap toko saat dihitung (PRD A5 ▶ Keputusan 2026-10-27, T143): cakupan berisi
+     * 3 hari tambahan sesudah H+L−1. Tanda yang berbeda dari jadwal tetap sekarang menandai draft perlu dihitung ulang.
+     * Draft sebelum T143 = tidak bertanda.
+     */
+    tambah3HariCakupan: boolean("tambah_3_hari_cakupan").notNull().default(false),
     /** Tanggal cakupan beserta kategori efektif dan sumbernya (T60). Kosong = draft dihitung sebelum T60. */
     cakupan: jsonb("cakupan").$type<TanggalCakupanDraft[]>(),
     /**
@@ -1099,12 +1108,14 @@ export type DiLuarJadwalRencanaFinal = {
 
 /**
  * Isi jadwal aktif toko saat difinalisasi (PRD A7). `tanggalJangkar` hanya terisi di snapshot dua mingguan lama (sebelum
- * PRD A5 ▶ Revisi 2026-10-19); snapshot baru selalu `null` (T135).
+ * PRD A5 ▶ Revisi 2026-10-19); snapshot baru selalu `null` (T135). `tambah3HariCakupan` = tanda "Tambah 3 hari cakupan"
+ * yang dipakai draft (PRD A5 ▶ Keputusan 2026-10-27, T143); tidak ada di snapshot sebelum T143 (= tidak bertanda).
  */
 export type JadwalRencanaFinal = {
   pola: PolaJadwal;
   hariKirim: { hari: HariKirim; persiapanHari: 0 | 1 | 2 }[];
   tanggalJangkar: string | null;
+  tambah3HariCakupan?: boolean;
 };
 
 /**

@@ -27,6 +27,14 @@ export const labelPola: Record<PolaJadwal, string> = {
   "1x-sebulan": "1× sebulan",
 };
 
+/**
+ * Teks pola beserta penanda "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27), mis. `Mingguan · +3 hari cakupan`;
+ * pola tanpa tanda tetap `labelPola`.
+ */
+export function labelPolaJadwal(pola: PolaJadwal, tambah3HariCakupan: boolean) {
+  return tambah3HariCakupan ? `${labelPola[pola]} · +3 hari cakupan` : labelPola[pola];
+}
+
 /** Persiapan tersimpan (jumlah hari) → pilihan form `H` / `H-1` / `H-2`. */
 export const persiapanDariHari: Record<0 | 1 | 2, Persiapan> = { 0: "H", 1: "H-1", 2: "H-2" };
 

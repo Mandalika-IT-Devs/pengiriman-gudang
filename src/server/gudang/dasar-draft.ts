@@ -32,6 +32,8 @@ export type TokoKirim = {
   versiJadwal: number;
   persiapanHari: 0 | 1 | 2;
   panjangCakupan: number;
+  /** Tanda "Tambah 3 hari cakupan" jadwal tetap toko (PRD A5 ▶ Keputusan 2026-10-27, T143): cakupan + 3 hari. */
+  tambah3HariCakupan: boolean;
   /** Rutin, atau di luar jadwal dengan acuannya `pengirimanDiLuarJadwalId` (T114). */
   jenisPengiriman: JenisPengiriman;
   pengirimanDiLuarJadwalId: number | null;
@@ -54,6 +56,7 @@ async function pengirimanGudangPada(idGudang: number, tanggalKirim: TanggalBisni
       versiJadwal: jadwal.versi,
       persiapanHari: hasil.persiapanHari,
       panjangCakupan: hasil.panjangCakupan,
+      tambah3HariCakupan: hasil.tambah3HariCakupan === true,
       jenisPengiriman: hasil.diLuarJadwal?.jenis ?? "rutin",
       pengirimanDiLuarJadwalId: hasil.diLuarJadwal?.id ?? null,
       kirimanSebelumnyaBelumSampai: kirimanSebelumnyaBelumSampaiToko(sumber, tanggalKirim),
@@ -90,6 +93,7 @@ type TokoTersimpan = Pick<
   | "versiJadwal"
   | "persiapanHari"
   | "panjangCakupan"
+  | "tambah3HariCakupan"
   | "jenisPengiriman"
   | "pengirimanDiLuarJadwalId"
   | "kirimanSebelumnyaBelumSampai"
@@ -99,11 +103,11 @@ type TokoTersimpan = Pick<
 
 /**
  * Toko di draft yang tanggal kirim tokonya berubah (T61, T114): versi jadwal aktifnya berbeda, tidak lagi mengirim pada
- * tanggal itu, atau p, L, pengiriman di luar jadwal acuannya, maupun peringatan "kiriman sebelumnya belum sampai"-nya
- * berbeda dari saat dihitung. Versi jadwal tetap saja tidak cukup: pengiriman di luar jadwal yang mulai berlaku atau
- * dibatalkan mengubah draft tanggal kirimnya, draft tanggal rutin yang dipindah, draft pengiriman sebelumnya (L), dan
- * draft pengiriman berikutnya (peringatan). `adaTokoBaru` = ada toko yang kini mengirim tetapi belum ada di draft (draft
- * perlu dihitung ulang, tanpa menahan toko yang sudah ada di draft).
+ * tanggal itu, atau p, L, tanda "Tambah 3 hari cakupan" (T143), pengiriman di luar jadwal acuannya, maupun peringatan
+ * "kiriman sebelumnya belum sampai"-nya berbeda dari saat dihitung. Versi jadwal tetap saja tidak cukup: pengiriman di
+ * luar jadwal yang mulai berlaku atau dibatalkan mengubah draft tanggal kirimnya, draft tanggal rutin yang dipindah, draft
+ * pengiriman sebelumnya (L), dan draft pengiriman berikutnya (peringatan). `adaTokoBaru` = ada toko yang kini mengirim
+ * tetapi belum ada di draft (draft perlu dihitung ulang, tanpa menahan toko yang sudah ada di draft).
  */
 async function jadwalBerubah({ idGudang, tanggalKirim }: DasarTersimpan, tersimpan: readonly TokoTersimpan[], klien: Klien) {
   const berlaku = new Map((await pengirimanGudangPada(idGudang, tanggalKirim, klien)).map((p) => [p.toko.tokoId, p]));
@@ -118,6 +122,7 @@ async function jadwalBerubah({ idGudang, tanggalKirim }: DasarTersimpan, tersimp
       toko.pengirimanDiLuarJadwalId !== t.pengirimanDiLuarJadwalId ||
       toko.persiapanHari !== t.persiapanHari ||
       toko.panjangCakupan !== t.panjangCakupan ||
+      toko.tambah3HariCakupan !== t.tambah3HariCakupan ||
       toko.kirimanSebelumnyaBelumSampai !== peringatanTersimpan
     );
   };
@@ -225,6 +230,7 @@ export async function periksaHitungUlang(dasar: DasarTersimpan, klien: Klien = d
       versiJadwal: tokoDraftRencana.versiJadwal,
       persiapanHari: tokoDraftRencana.persiapanHari,
       panjangCakupan: tokoDraftRencana.panjangCakupan,
+      tambah3HariCakupan: tokoDraftRencana.tambah3HariCakupan,
       jenisPengiriman: tokoDraftRencana.jenisPengiriman,
       pengirimanDiLuarJadwalId: tokoDraftRencana.pengirimanDiLuarJadwalId,
       kirimanSebelumnyaBelumSampai: tokoDraftRencana.kirimanSebelumnyaBelumSampai,

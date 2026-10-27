@@ -17,6 +17,11 @@ export const TEKS_BANTUAN_ISTILAH = {
     penjelasan:
       "Jumlah hari dari tanggal kirim sampai sehari sebelum tanggal kirim berikutnya toko ini, misalnya 7 hari untuk kiriman sekali seminggu. Toko dua mingguan selalu 14 hari, kapan pun kiriman berikutnya.",
   },
+  tambah3HariCakupan: {
+    judul: "Tambah 3 hari cakupan",
+    penjelasan:
+      "Jadwal tetap toko ini memakai Tambah 3 hari cakupan: cakupan diperpanjang 3 hari sesudah hari terakhirnya, dan kebutuhan ikut menghitung 3 hari itu.",
+  },
   dikirimPekanIni: {
     judul: "Dikirim pekan ini",
     penjelasan:
