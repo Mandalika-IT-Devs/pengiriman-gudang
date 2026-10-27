@@ -87,6 +87,7 @@ describe("hari kirim Senin–Minggu di form jadwal tetap", () => {
           { hari: "Minggu", persiapan: "H-1" },
           { hari: "Kamis", persiapan: "H" },
         ],
+        tambah3HariCakupan: true,
       }),
     ).toEqual({
       pola: "2x-seminggu",
@@ -94,6 +95,7 @@ describe("hari kirim Senin–Minggu di form jadwal tetap", () => {
         { hari: "Kamis", persiapan: "H" },
         { hari: "Minggu", persiapan: "H-1" },
       ],
+      tambah3HariCakupan: true,
     });
   });
 });
@@ -115,7 +117,11 @@ function pilihPola(wadah: HTMLElement, pola: string) {
 const bxc = {
   id: 7,
   nama: "BXC",
-  jadwal: { pola: "dua-mingguan" as const, hariKirim: [{ hari: "Rabu" as const, persiapan: "H-1" as const }] },
+  jadwal: {
+    pola: "dua-mingguan" as const,
+    hariKirim: [{ hari: "Rabu" as const, persiapan: "H-1" as const }],
+    tambah3HariCakupan: false,
+  },
 };
 
 describe("form jadwal tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19)", () => {
@@ -144,7 +150,7 @@ describe("form jadwal tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19)", () 
     expect(wadah.textContent).not.toMatch(/jangkar/i);
   });
 
-  it("menyimpan jadwal dua mingguan Rabu (H−1) mengirim pola dan hari kirim saja, tanpa tanggal jangkar", async () => {
+  it("menyimpan jadwal dua mingguan Rabu (H−1) mengirim pola, hari kirim, dan pilihan Tambah 3 hari cakupan, tanpa tanggal jangkar", async () => {
     const wadah = tampilkan(<FormJadwalTetap idGudang={1} toko={bxc} />);
     const form = wadah.querySelector("form");
     if (form === null) throw new Error("Form tidak ada.");
@@ -156,6 +162,100 @@ describe("form jadwal tanpa tanggal jangkar (PRD A5 ▶ Revisi 2026-10-19)", () 
       idToko: 7,
       pola: "dua-mingguan",
       hariKirim: [{ hari: "Rabu", persiapan: "H-1" }],
+      tambah3HariCakupan: false,
+    });
+  });
+});
+
+// T144 — PRD A5 ▶ Keputusan 2026-10-27 (Pengaturan): checkbox "Tambah 3 hari cakupan" tepat di bawah Pola di form jadwal
+// tetap dan form Salin jadwal, untuk semua pola, dengan keterangan yang selalu tampil.
+const KETERANGAN_TAMBAH_3_HARI = "Cakupan setiap pengiriman toko ini diperpanjang 3 hari sesudah hari terakhirnya.";
+
+function kotakTambah3Hari(wadah: HTMLElement) {
+  const kotak = wadah.querySelector<HTMLInputElement>('input[type="checkbox"][name="tambah3HariCakupan"]');
+  if (kotak === null) throw new Error('Checkbox "Tambah 3 hari cakupan" tidak ada.');
+  return kotak;
+}
+
+/** Kontrol yang bisa dioperasikan di form, dalam urutan tampil (tanpa select tersembunyi bawaan Radix). */
+function urutanKontrol(wadah: HTMLElement) {
+  return [...wadah.querySelectorAll<HTMLElement>("form button, form input")];
+}
+
+function kontrolPola(wadah: HTMLElement) {
+  const tombol = [...wadah.querySelectorAll<HTMLElement>("button[aria-labelledby]")].find(
+    (b) => document.getElementById(b.getAttribute("aria-labelledby") ?? "")?.textContent === "Pola",
+  );
+  if (tombol === undefined) throw new Error("Kontrol Pola tidak ada.");
+  return tombol;
+}
+
+describe("checkbox Tambah 3 hari cakupan (PRD A5 ▶ Keputusan 2026-10-27)", () => {
+  const formulir = [
+    ["form jadwal tetap", () => <FormJadwalTetap idGudang={1} toko={toko} />],
+    ["form Salin jadwal", () => <FormSalinJadwal idGudang={1} daftarToko={[{ id: 7, nama: "BXC" }]} />],
+  ] as const;
+
+  for (const [nama, buat] of formulir) {
+    it(`${nama}: tepat di bawah Pola, berlabel "Tambah 3 hari cakupan", dengan keterangan PRD yang selalu tampil untuk setiap pola`, () => {
+      const wadah = tampilkan(buat());
+      for (const [pola] of SEMUA_POLA) {
+        pilihPola(wadah, pola);
+        const kotak = kotakTambah3Hari(wadah);
+        expect(kotak.closest("label")?.textContent).toBe("Tambah 3 hari cakupan");
+        const kontrol = urutanKontrol(wadah);
+        expect(kontrol.indexOf(kotak)).toBe(kontrol.indexOf(kontrolPola(wadah)) + 1);
+        const keterangan = document.getElementById(kotak.getAttribute("aria-describedby") ?? "");
+        expect(keterangan?.textContent).toBe(KETERANGAN_TAMBAH_3_HARI);
+        expect(wadah.textContent).toContain(KETERANGAN_TAMBAH_3_HARI);
+      }
+    });
+  }
+
+  it("form jadwal tetap: nilai awal mengikuti jadwal tetap aktif; toko tanpa jadwal mulai tidak dicentang", () => {
+    expect(kotakTambah3Hari(tampilkan(<FormJadwalTetap idGudang={1} toko={toko} />)).checked).toBe(false);
+    act(() => terpasang?.akar.unmount());
+    terpasang?.wadah.remove();
+    terpasang = null;
+
+    const bertanda = { ...bxc, jadwal: { ...bxc.jadwal, tambah3HariCakupan: true } };
+    expect(kotakTambah3Hari(tampilkan(<FormJadwalTetap idGudang={1} toko={bertanda} />)).checked).toBe(true);
+  });
+
+  it("form jadwal tetap: jadwal tanpa tanda mulai tidak dicentang; mencentang lalu menyimpan mengirim pilihannya", async () => {
+    const wadah = tampilkan(<FormJadwalTetap idGudang={1} toko={bxc} />);
+    const kotak = kotakTambah3Hari(wadah);
+    expect(kotak.checked).toBe(false);
+    act(() => kotak.click());
+    await act(async () => {
+      wadah.querySelector("form")?.requestSubmit();
+    });
+    expect(aksi.aturJadwalTetapToko).toHaveBeenLastCalledWith({
+      idGudang: 1,
+      idToko: 7,
+      pola: "dua-mingguan",
+      hariKirim: [{ hari: "Rabu", persiapan: "H-1" }],
+      tambah3HariCakupan: true,
+    });
+  });
+
+  it("form Salin jadwal: mulai tidak dicentang; mencentang lalu menerapkan mengirim pilihannya untuk toko terpilih", async () => {
+    aksi.salinJadwalTetap.mockResolvedValue({ keadaan: "berhasil", hasil: [{ idToko: 7, status: "berhasil" }] });
+    const wadah = tampilkan(<FormSalinJadwal idGudang={1} daftarToko={[{ id: 7, nama: "BXC" }]} />);
+    const kotak = kotakTambah3Hari(wadah);
+    expect(kotak.checked).toBe(false);
+    act(() => wadah.querySelector<HTMLInputElement>('input[name="toko"][value="7"]')?.click());
+    act(() => wadah.querySelector<HTMLInputElement>('input[name="hariKirim"][value="Kamis"]')?.click());
+    act(() => kotak.click());
+    await act(async () => {
+      wadah.querySelector("form")?.requestSubmit();
+    });
+    expect(aksi.salinJadwalTetap).toHaveBeenCalledWith({
+      idGudang: 1,
+      daftarIdToko: [7],
+      pola: "mingguan",
+      hariKirim: [{ hari: "Kamis", persiapan: "H" }],
+      tambah3HariCakupan: true,
     });
   });
 });

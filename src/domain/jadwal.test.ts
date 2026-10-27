@@ -328,6 +328,40 @@ describe("periksaJadwal — validasi", () => {
       pesan: ["Hari Senin dipilih lebih dari sekali.", "Hari Kamis dipilih lebih dari sekali."],
     });
   });
+
+  // T144 — PRD A5 ▶ Keputusan 2026-10-27 (Pengaturan): pilihan "Tambah 3 hari cakupan" boleh dipakai di semua pola dan
+  // ikut menjadi bagian jadwal tetap.
+  it("membawa pilihan Tambah 3 hari cakupan ke jadwal, untuk setiap pola", () => {
+    for (const masukan of [
+      { pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapan: "H-1" }] },
+      {
+        pola: "2x-seminggu",
+        hariKirim: [
+          { hari: "Senin", persiapan: "H" },
+          { hari: "Kamis", persiapan: "H-1" },
+        ],
+      },
+      {
+        pola: "3x-seminggu",
+        hariKirim: [
+          { hari: "Senin", persiapan: "H-1" },
+          { hari: "Rabu", persiapan: "H-1" },
+          { hari: "Jumat", persiapan: "H-1" },
+        ],
+      },
+      { pola: "dua-mingguan", hariKirim: [{ hari: "Rabu", persiapan: "H-1" }] },
+      { pola: "1x-sebulan", hariKirim: [{ hari: "Selasa", persiapan: "H-1" }] },
+    ] as const) {
+      expect(periksaJadwal({ ...masukan, tambah3HariCakupan: true })).toMatchObject({
+        keadaan: "valid",
+        jadwal: { pola: masukan.pola, tambah3HariCakupan: true },
+      });
+      expect(periksaJadwal({ ...masukan, tambah3HariCakupan: false })).toMatchObject({
+        keadaan: "valid",
+        jadwal: { pola: masukan.pola, tambah3HariCakupan: false },
+      });
+    }
+  });
 });
 
 describe("pola 1× sebulan (PRD A5 ▶ Keputusan 2026-10-12, A6 ▶ Revisi: L = 30)", () => {

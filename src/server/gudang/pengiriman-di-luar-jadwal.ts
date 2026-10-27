@@ -482,7 +482,7 @@ export async function riwayatKeputusanPengirimanDiLuarJadwal() {
   return bacaEntri(ne(pengirimanDiLuarJadwal.status, "menunggu"), [sql`${waktuTerakhir} desc`, desc(pengirimanDiLuarJadwal.id)]);
 }
 
-/** Usulan menunggu beserta jadwal tetap toko saat ini sebagai pembanding. */
+/** Usulan menunggu beserta jadwal tetap toko saat ini (dengan pilihan "Tambah 3 hari cakupan", T144) sebagai pembanding. */
 export type UsulanMenungguPersetujuan = EntriPengirimanDiLuarJadwal & { jadwalTetap: Jadwal | null };
 
 /** Semua usulan menunggu (semua gudang), yang terlama dulu. Hanya admin. */
@@ -493,7 +493,12 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
   ]);
   if (daftar.length === 0) return [];
   const jadwal = await db
-    .select({ idToko: jadwalToko.tokoId, pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim })
+    .select({
+      idToko: jadwalToko.tokoId,
+      pola: jadwalToko.pola,
+      hariKirim: jadwalToko.hariKirim,
+      tambah3HariCakupan: jadwalToko.tambah3HariCakupan,
+    })
     .from(jadwalToko)
     .where(
       and(
@@ -504,7 +509,9 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
         ),
       ),
     );
-  const perToko = new Map(jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim }]));
+  const perToko = new Map(
+    jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim, tambah3HariCakupan: j.tambah3HariCakupan }]),
+  );
   return daftar.map((d) => ({ ...d, jadwalTetap: perToko.get(d.idToko) ?? null }));
 }
 

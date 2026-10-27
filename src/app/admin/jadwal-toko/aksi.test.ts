@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { asc, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -9,7 +12,9 @@ import { hubunganTokoGudang, jadwalToko, pengirimanDiLuarJadwal, usulanJadwal } 
 import { bacaDraftRencana, hitungDraftRencana } from "@/server/gudang/draft-rencana";
 import { jadwalTokoGudang, riwayatJadwalTetapGudang } from "@/server/gudang/jadwal";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
+import { bacaRencanaFinal, finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 import { salinJadwalKeToko } from "@/server/gudang/salin-jadwal";
+import { simpanStokToko } from "@/server/gudang/stok-draft";
 import { bersihkanTokoSmbUji, siapkanTokoSmbUji } from "@/server/gudang/uji-bantu-cakupan";
 import { buatTokoUji, idGudangUji, rencanaFinalUji } from "@/server/gudang/uji-bantu";
 
@@ -110,6 +115,7 @@ describe("admin mengatur jadwal tetap", () => {
           id: baru.id,
           pola: "2x-seminggu",
           hariKirim: hariKirimTersimpan,
+          tambah3HariCakupan: false,
           diaturOleh: "Uji admin",
           diaturPada: baru.dibuatPada,
           berakhir: null,
@@ -118,6 +124,7 @@ describe("admin mengatur jadwal tetap", () => {
           id: lama.id,
           pola: "mingguan",
           hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
+          tambah3HariCakupan: false,
           diaturOleh: "Uji admin",
           diaturPada: lama.dibuatPada,
           berakhir: { jenis: "diganti", oleh: "Uji admin", pada: baru.dibuatPada },
@@ -219,6 +226,168 @@ describe("admin mengatur jadwal tetap", () => {
   });
 });
 
+// T144 — PRD A5 ▶ Keputusan 2026-10-27 (Pengaturan; Perubahan dan peralihan): mencentang atau melepas "Tambah 3 hari
+// cakupan" adalah perubahan jadwal tetap. Menyimpan ulang dengan pola, hari kirim, persiapan, dan pilihan yang sama tidak
+// membuat versi baru.
+describe("admin mengatur Tambah 3 hari cakupan", () => {
+  /** DELTAMAS di UAT A5.16: mingguan, Kamis (H−1). */
+  const deltamas = { pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapan: "H-1" }] } as const;
+
+  it("mencentang lalu menyimpan → jadwal tetap aktif bertanda dan satu entri riwayat baru bertanda; simpan ulang tanpa perubahan tidak menambah versi", async () => {
+    const t = await tokoDiGudang(cibubur);
+    await masukAdmin();
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas })).resolves.toEqual({ keadaan: "berhasil" });
+    const [awal] = await riwayatJadwal(t.id);
+    expect(awal).toMatchObject({ status: "aktif", tambah3HariCakupan: false });
+
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas, tambah3HariCakupan: true })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    const [lama, baru] = await riwayatJadwal(t.id);
+    expect(lama).toMatchObject({ id: awal.id, status: "nonaktif", tambah3HariCakupan: false });
+    expect(baru).toMatchObject({
+      status: "aktif",
+      pola: "mingguan",
+      hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+      tambah3HariCakupan: true,
+    });
+    expect((await jadwalTokoGudang(cibubur)).find((x) => x.id === t.id)?.jadwal).toMatchObject({
+      versi: baru.id,
+      tambah3HariCakupan: true,
+    });
+    expect((await riwayatJadwalTetapGudang(cibubur)).get(t.id)).toMatchObject([
+      { id: baru.id, tambah3HariCakupan: true, berakhir: null },
+      { id: lama.id, tambah3HariCakupan: false, berakhir: { jenis: "diganti" } },
+    ]);
+
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas, tambah3HariCakupan: true })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    expect(await riwayatJadwal(t.id)).toEqual([lama, baru]);
+  });
+
+  it("melepas centang → versi baru tanpa tanda; simpan ulang tanpa centang tidak menambah versi", async () => {
+    const t = await tokoDiGudang(cibubur);
+    await masukAdmin();
+    await aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas, tambah3HariCakupan: true });
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas, tambah3HariCakupan: false })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    expect(await riwayatJadwal(t.id)).toMatchObject([
+      { status: "nonaktif", tambah3HariCakupan: true },
+      { status: "aktif", tambah3HariCakupan: false },
+    ]);
+    await aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...deltamas, tambah3HariCakupan: false });
+    expect(await riwayatJadwal(t.id)).toHaveLength(2);
+  });
+});
+
+// T144 — UAT A5.16, A6.25, dan A6.27 (PRD A5 ▶ Keputusan 2026-10-27, Perubahan dan peralihan): pilihan yang dicentang atau
+// dilepas admin menandai draft belum final perlu dihitung ulang dengan stok tetap ada; setelah dihitung ulang cakupannya
+// mengikuti pilihan baru, dan rencana final yang sudah ada tidak berubah. Angka dari golden tambah-3-hari-cakupan.json
+// (contoh pemilik, mingguan Kamis H−1) dan UAT A6.27.
+describe("Tambah 3 hari cakupan dari form admin: draft dan rencana final (mingguan Kamis H−1)", () => {
+  const contoh = (
+    JSON.parse(readFileSync(join(import.meta.dirname, "../../../../tests/golden/tambah-3-hari-cakupan.json"), "utf8")) as {
+      kasusContohPemilik: {
+        tanggalKirim: string;
+        tanggalCakupan: { tanggal: string }[];
+        kebutuhan: number;
+        jumlahKirim: { stokAkhir: number; jumlahKirim: number };
+        tanpaTambahan: { akhirCakupan: string; jumlahHari: number };
+      };
+    }
+  ).kasusContohPemilik;
+  const KAMIS = parseTanggalBisnis(contoh.tanggalKirim);
+  /** UAT A6.27: Kamis berikutnya. */
+  const KAMIS_BERIKUTNYA = parseTanggalBisnis("2026-11-05");
+  const deltamas = { pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapan: "H-1" }] } as const;
+
+  let bandung: number;
+  let toko: { id: number; nama: string };
+  let kodeProduk: string;
+  let idOperator: string;
+
+  beforeAll(async () => {
+    bandung = await idGudangUji("Gudang Bandung");
+    idOperator = (await buatPenggunaUji("viewer")).id;
+    ({ toko, kodeProduk } = await siapkanTokoSmbUji({ idGudang: bandung, idAdmin: (await buatPenggunaUji("admin")).id }));
+  }, 120_000);
+
+  afterAll(async () => {
+    await bersihkanTokoSmbUji({ idGudang: bandung, idToko: toko.id });
+  });
+
+  const hitung = async (tanggalKirim: typeof KAMIS) =>
+    expect(await hitungDraftRencana({ idGudang: bandung, tanggalKirim, idPengguna: idOperator })).toMatchObject({ keadaan: "berhasil" });
+  const tokoDi = async (tanggalKirim: typeof KAMIS) => (await bacaDraftRencana(bandung, tanggalKirim))?.toko.find((t) => t.id === toko.id);
+  const barisProduk = async (tanggalKirim: typeof KAMIS) => (await tokoDi(tanggalKirim))?.baris.find((b) => b.kodeProduk === kodeProduk);
+  const tanggalCakupan = async (tanggalKirim: typeof KAMIS) => (await tokoDi(tanggalKirim))?.cakupan?.map((c) => c.tanggal);
+  const isiStok = async (tanggalKirim: typeof KAMIS) =>
+    expect(
+      await simpanStokToko({
+        idGudang: bandung,
+        tanggalKirim,
+        tokoId: toko.id,
+        stok: [{ kodeProduk, stokAkhir: contoh.jumlahKirim.stokAkhir }],
+      }),
+    ).toEqual({ keadaan: "berhasil" });
+
+  it("mencentang → draft belum final perlu dihitung ulang, stok tetap; setelah dihitung ulang berisi 3 tanggal tambahan (UAT A6.25)", async () => {
+    await masukAdmin();
+    await expect(aturJadwalTetapToko({ idGudang: bandung, idToko: toko.id, ...deltamas })).resolves.toEqual({ keadaan: "berhasil" });
+    await hitung(KAMIS);
+    await isiStok(KAMIS);
+    expect(await tanggalCakupan(KAMIS)).toHaveLength(contoh.tanpaTambahan.jumlahHari);
+
+    await expect(aturJadwalTetapToko({ idGudang: bandung, idToko: toko.id, ...deltamas, tambah3HariCakupan: true })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    expect((await bacaDraftRencana(bandung, KAMIS))?.perluDihitungUlang).toContain("jadwal");
+    expect(await barisProduk(KAMIS)).toMatchObject({ stokAkhir: contoh.jumlahKirim.stokAkhir });
+
+    await hitung(KAMIS);
+    expect(await tokoDi(KAMIS)).toMatchObject({ perluDihitungUlang: [], tambah3HariCakupan: true });
+    expect(await tanggalCakupan(KAMIS)).toEqual(contoh.tanggalCakupan.map((c) => c.tanggal));
+    expect(await barisProduk(KAMIS)).toMatchObject({
+      kebutuhan: contoh.kebutuhan,
+      stokAkhir: contoh.jumlahKirim.stokAkhir,
+      jumlahKirim: contoh.jumlahKirim.jumlahKirim,
+    });
+  });
+
+  it("melepas centang → versi baru tanpa tanda; draft belum final perlu dihitung ulang dengan stok tetap; rencana final tidak berubah (UAT A6.27)", async () => {
+    const final = await finalisasiRencanaToko({
+      idGudang: bandung,
+      tanggalKirim: KAMIS,
+      tokoId: toko.id,
+      idPengguna: idOperator,
+      versiDilihat: (await tokoDi(KAMIS))?.versi ?? "",
+    });
+    if (final.keadaan !== "berhasil") throw new Error(final.pesan);
+    const rencanaSebelum = await bacaRencanaFinal(bandung, final.idRencana);
+    expect(rencanaSebelum?.jadwal).toMatchObject({ tambah3HariCakupan: true });
+
+    await hitung(KAMIS_BERIKUTNYA);
+    await isiStok(KAMIS_BERIKUTNYA);
+    expect(await tanggalCakupan(KAMIS_BERIKUTNYA)).toHaveLength(11);
+
+    await masukAdmin();
+    await expect(aturJadwalTetapToko({ idGudang: bandung, idToko: toko.id, ...deltamas, tambah3HariCakupan: false })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    expect((await riwayatJadwal(toko.id)).at(-1)).toMatchObject({ status: "aktif", tambah3HariCakupan: false });
+    expect((await bacaDraftRencana(bandung, KAMIS_BERIKUTNYA))?.perluDihitungUlang).toContain("jadwal");
+    expect(await barisProduk(KAMIS_BERIKUTNYA)).toMatchObject({ stokAkhir: contoh.jumlahKirim.stokAkhir });
+    expect(await bacaRencanaFinal(bandung, final.idRencana)).toEqual(rencanaSebelum);
+
+    await hitung(KAMIS_BERIKUTNYA);
+    const cakupan = await tanggalCakupan(KAMIS_BERIKUTNYA);
+    expect([cakupan?.length, cakupan?.[0], cakupan?.at(-1)]).toEqual([8, "2026-11-04", "2026-11-11"]);
+    expect(await tokoDi(KAMIS_BERIKUTNYA)).not.toHaveProperty("tambah3HariCakupan");
+  });
+});
+
 describe("admin menonaktifkan jadwal tetap", () => {
   const SENIN = parseTanggalBisnis("2026-10-19");
   let bandung: number;
@@ -293,6 +462,31 @@ describe("salin jadwal admin ke beberapa toko", () => {
     ]);
   });
 
+  // T144 — PRD A5 ▶ Keputusan 2026-10-27: Salin jadwal menerapkan pilihan Tambah 3 hari cakupan ke setiap toko terpilih,
+  // dengan aturan versi yang sama.
+  it("dengan Tambah 3 hari cakupan dicentang → setiap toko terpilih bertanda; toko yang jadwalnya sudah sama tidak mendapat versi baru", async () => {
+    await masukAdmin();
+    const [a, b] = [await tokoDiGudang(cibubur), await tokoDiGudang(cibubur)];
+    await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: b.id, ...pengaturan, tambah3HariCakupan: true })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    const [jadwalB] = await riwayatJadwal(b.id);
+
+    await expect(
+      salinJadwalTetap({ idGudang: cibubur, daftarIdToko: [a.id, b.id], ...pengaturan, tambah3HariCakupan: true }),
+    ).resolves.toEqual({
+      keadaan: "berhasil",
+      hasil: [
+        { idToko: a.id, status: "berhasil" },
+        { idToko: b.id, status: "berhasil" },
+      ],
+    });
+    expect(await riwayatJadwal(a.id)).toMatchObject([{ status: "aktif", pola: "2x-seminggu", tambah3HariCakupan: true }]);
+    expect(await riwayatJadwal(b.id)).toEqual([jadwalB]);
+    const aktif = new Map((await jadwalTokoGudang(cibubur)).map((t) => [t.id, t.jadwal]));
+    expect([aktif.get(a.id)?.tambah3HariCakupan, aktif.get(b.id)?.tambah3HariCakupan]).toEqual([true, true]);
+  });
+
   it("tanpa toko terpilih → gagal tanpa menulis", async () => {
     await masukAdmin();
     await expect(salinJadwalTetap({ idGudang: cibubur, daftarIdToko: [], ...pengaturan })).resolves.toEqual({
@@ -349,6 +543,13 @@ describe("kewenangan: hanya admin", () => {
       await expect(aturJadwalTetapToko({ idGudang: pusat, idToko: t.id, ...pengaturan })).rejects.toBeInstanceOf(AksesDitolakError);
       await expect(nonaktifkanJadwalTetapToko({ idGudang: pusat, idToko: t.id })).rejects.toBeInstanceOf(AksesDitolakError);
       await expect(salinJadwalTetap({ idGudang: pusat, daftarIdToko: [t.id], ...pengaturan })).rejects.toBeInstanceOf(AksesDitolakError);
+      // T144: mencentang Tambah 3 hari cakupan juga hanya untuk admin.
+      await expect(aturJadwalTetapToko({ idGudang: pusat, idToko: t.id, ...pengaturan, tambah3HariCakupan: true })).rejects.toBeInstanceOf(
+        AksesDitolakError,
+      );
+      await expect(
+        salinJadwalTetap({ idGudang: pusat, daftarIdToko: [t.id], ...pengaturan, tambah3HariCakupan: true }),
+      ).rejects.toBeInstanceOf(AksesDitolakError);
     }
     expect(await riwayatJadwal(t.id)).toEqual([]);
   });
@@ -470,5 +671,35 @@ describe("pembatalan otomatis pengiriman di luar jadwal", () => {
       alasanPembatalan: "Tanggal itu sudah menjadi tanggal kirim rutin",
       dibatalkanOleh: null,
     });
+  });
+
+  // T144 — PRD A5 ▶ Keputusan 2026-10-27 (Perubahan dan peralihan): tanggal kirim toko tidak berubah, jadi tidak ada yang
+  // dibatalkan.
+  it("hanya Tambah 3 hari cakupan yang dicentang lalu dilepas → pengiriman di luar jadwal tetap Menunggu atau Berlaku", async () => {
+    const { toko: t, admin } = await tokoBotani();
+    const berlaku = await pengiriman(t.id, admin.id, {});
+    const menunggu = await pengiriman(t.id, admin.id, {
+      tanggalKirim: "2026-10-21",
+      status: "menunggu",
+      diputuskanOleh: null,
+      diputuskanPada: null,
+    });
+    const pindah = await pengiriman(t.id, admin.id, {
+      jenis: "pindah",
+      tanggalRutinDipindah: "2026-10-22",
+      tanggalKirim: "2026-10-23",
+    });
+
+    for (const tambah3HariCakupan of [true, false]) {
+      await expect(aturJadwalTetapToko({ idGudang: cibubur, idToko: t.id, ...botani, tambah3HariCakupan })).resolves.toEqual({
+        keadaan: "berhasil",
+      });
+      expect(await riwayatJadwal(t.id)).toHaveLength(tambah3HariCakupan ? 2 : 3);
+      expect([(await baca(berlaku)).status, (await baca(menunggu)).status, (await baca(pindah)).status]).toEqual([
+        "berlaku",
+        "menunggu",
+        "berlaku",
+      ]);
+    }
   });
 });

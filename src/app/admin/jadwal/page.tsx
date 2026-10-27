@@ -14,7 +14,7 @@ import {
   riwayatKeputusanPengirimanDiLuarJadwal,
   type UsulanMenungguPersetujuan,
 } from "@/server/gudang/pengiriman-di-luar-jadwal";
-import { labelHariKirim, labelPola } from "@/server/gudang/pilihan-jadwal";
+import { labelHariKirim, labelPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 import { TindakanUsulan } from "./tindakan-usulan";
 
@@ -22,13 +22,17 @@ export const metadata: Metadata = {
   title: "Persetujuan jadwal — Dashboard Penjualan MANDALIKA",
 };
 
-/** Jadwal tetap toko saat ini sebagai pembanding usulan. */
+/** Jadwal tetap toko saat ini sebagai pembanding usulan; Pola toko bertanda ditulis "<pola> · +3 hari cakupan" (T144). */
 function JadwalTetap({ usulan }: { usulan: UsulanMenungguPersetujuan }) {
   const j = usulan.jadwalTetap;
   return (
     <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[max-content_1fr]" aria-label={`Jadwal tetap ${usulan.toko}`}>
       <dt className="font-semibold">Jadwal tetap</dt>
-      <dd>{j === null ? "Tidak ada jadwal tetap aktif" : `${labelPola[j.pola]}: ${labelHariKirim(j.hariKirim)}`}</dd>
+      <dd>
+        {j === null
+          ? "Tidak ada jadwal tetap aktif"
+          : `${labelPolaJadwal(j.pola, j.tambah3HariCakupan === true)}: ${labelHariKirim(j.hariKirim)}`}
+      </dd>
       <dt className="font-semibold">Usulan</dt>
       <dd>
         {teksJenis(usulan)} → {teksTanggalKirim(usulan)}

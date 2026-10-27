@@ -160,6 +160,41 @@ describe("/admin/jadwal", () => {
     expect(k).not.toContain("14-10-2026");
   });
 
+  // T144 — PRD A5 ▶ Keputusan 2026-10-27 (Tampilan): jadwal tetap pembanding toko bertanda menulis "<pola> · +3 hari
+  // cakupan"; toko tanpa tanda tetap menulis pola saja.
+  it('jadwal tetap pembanding bertanda Tambah 3 hari cakupan: "Mingguan · +3 hari cakupan"; tanpa tanda "Mingguan"', async () => {
+    const [bertanda, biasa] = [await tokoDiBandung(), await tokoDiBandung()];
+    const operator = await buatPenggunaUji("viewer");
+    const admin = await buatPenggunaUji("admin");
+    await db.insert(jadwalToko).values([
+      {
+        tokoId: bertanda.id,
+        pola: "mingguan",
+        hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+        tambah3HariCakupan: true,
+        dibuatOleh: admin.id,
+      },
+      { tokoId: biasa.id, pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapanHari: 2 }], dibuatOleh: admin.id },
+    ]);
+    const usulan = {
+      gudangId: bandung,
+      jenis: "tambahan" as const,
+      persiapanHari: 1 as const,
+      alasan: "uji T144",
+      diusulkanOleh: operator.id,
+    };
+    await db.insert(pengirimanDiLuarJadwal).values([
+      { ...usulan, tokoId: bertanda.id, tanggalKirim: "2099-01-09" },
+      { ...usulan, tokoId: biasa.id, tanggalKirim: "2099-01-09" },
+    ]);
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const html = await buka();
+    expect(kartu(html, bertanda.nama)).toContain("Mingguan · +3 hari cakupan: Kamis (H−1)");
+    expect(kartu(html, biasa.nama)).toContain("Mingguan: Kamis (H−2)");
+    expect(kartu(html, biasa.nama)).not.toContain("+3 hari cakupan");
+  });
+
   it("riwayat keputusan gudang nonaktif tanpa penanda Nonaktif (penanda hanya di halaman Riwayat, T128)", async () => {
     const nonaktif = await buatGudangUji({ aktif: false });
     try {

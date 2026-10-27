@@ -16,6 +16,8 @@ export type MasukanJadwal = {
   pola: PolaJadwal;
   /** Hari kirim yang dipilih, Senin–Minggu (PRD A5 ▶ Revisi 2026-10-13). */
   hariKirim: readonly { hari: NamaHari; persiapan: Persiapan }[];
+  /** Pilihan "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27), untuk semua pola. Tidak ada = tidak dicentang. */
+  tambah3HariCakupan?: boolean;
 };
 
 /** Jadwal yang sudah lolos periksaJadwal. */
@@ -67,7 +69,10 @@ function pesanJumlahHari(pola: PolaJadwal, jumlah: number): string | null {
   return jumlah >= 1 ? null : `Pola ${LABEL_POLA[pola]} membutuhkan minimal 1 hari kirim, dipilih ${jumlah}.`;
 }
 
-/** Memvalidasi jadwal satu toko (PRD A5) dan mengembalikan semua pesan kesalahan sekaligus. */
+/**
+ * Memvalidasi jadwal satu toko (PRD A5) dan mengembalikan semua pesan kesalahan sekaligus. Pilihan "Tambah 3 hari
+ * cakupan" dibawa apa adanya ke jadwal (PRD A5 ▶ Keputusan 2026-10-27, T144).
+ */
 export function periksaJadwal(masukan: MasukanJadwal): HasilPeriksaJadwal {
   const pesan: string[] = [];
   const hariKirim: { hari: NamaHari; persiapanHari: 0 | 1 | 2 }[] = [];
@@ -90,7 +95,11 @@ export function periksaJadwal(masukan: MasukanJadwal): HasilPeriksaJadwal {
   if (pesan.length > 0) {
     return { keadaan: "tidakValid", pesan };
   }
-  return { keadaan: "valid", jadwal: { pola: masukan.pola, hariKirim } };
+  const { tambah3HariCakupan } = masukan;
+  return {
+    keadaan: "valid",
+    jadwal: { pola: masukan.pola, hariKirim, ...(tambah3HariCakupan === undefined ? {} : { tambah3HariCakupan }) },
+  };
 }
 
 /**

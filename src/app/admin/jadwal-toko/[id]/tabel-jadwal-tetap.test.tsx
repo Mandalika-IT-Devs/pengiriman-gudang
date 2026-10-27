@@ -55,6 +55,7 @@ const botani: TokoJadwalTetap = {
         { hari: "Senin", persiapanHari: 0 },
         { hari: "Kamis", persiapanHari: 1 },
       ],
+      tambah3HariCakupan: false,
       diaturOleh: "Admin Uji",
       diaturPada: DIGANTI,
       berakhir: null,
@@ -63,6 +64,7 @@ const botani: TokoJadwalTetap = {
       id: 30,
       pola: "dua-mingguan",
       hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
+      tambah3HariCakupan: false,
       diaturOleh: "Admin Lama",
       diaturPada: DIATUR,
       berakhir: { jenis: "diganti", oleh: "Admin Uji", pada: DIGANTI },
@@ -137,6 +139,7 @@ describe("TabelJadwalTetap", () => {
         { hari: "Senin", persiapan: "H" },
         { hari: "Kamis", persiapan: "H-1" },
       ],
+      tambah3HariCakupan: false,
     });
     expect(panel()?.textContent).toContain("Berhasil disimpan");
   });
@@ -207,6 +210,7 @@ describe("TabelJadwalTetap", () => {
       daftarIdToko: [11, 12],
       pola: "mingguan",
       hariKirim: [{ hari: "Selasa", persiapan: "H" }],
+      tambah3HariCakupan: false,
     });
     expect(panel()?.textContent).toContain("1 dari 2 toko berhasil.");
     expect(panel()?.querySelector('[data-hasil-salin-toko="12"]')?.textContent).toContain("Ditolak");
@@ -216,6 +220,84 @@ describe("TabelJadwalTetap", () => {
     const wadah = pasangUntukUji(<TabelJadwalTetap idGudang={2} daftarToko={[]} />);
     expect(wadah.textContent).toContain("Belum ada toko yang terhubung ke gudang ini.");
     expect(wadah.querySelector("[data-buka-salin-jadwal]")).toBeNull();
+  });
+});
+
+// T144 — PRD A5 ▶ Keputusan 2026-10-27 (Tampilan): Pola toko bertanda ditulis "<pola> · +3 hari cakupan" di tabel Jadwal
+// toko dan riwayat jadwal tetap, tanpa kolom baru. Toko tanpa tanda tetap menulis pola saja.
+describe("penanda Pola Tambah 3 hari cakupan", () => {
+  const deltamas: TokoJadwalTetap = {
+    id: 21,
+    nama: "DELTAMAS",
+    aktif: true,
+    jadwal: {
+      versi: 41,
+      pola: "mingguan",
+      hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+      tambah3HariCakupan: true,
+      diaturOleh: "Admin Uji",
+      diaturPada: DIGANTI,
+    },
+    riwayat: [
+      {
+        id: 41,
+        pola: "mingguan",
+        hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+        tambah3HariCakupan: true,
+        diaturOleh: "Admin Uji",
+        diaturPada: DIGANTI,
+        berakhir: null,
+      },
+      {
+        id: 40,
+        pola: "mingguan",
+        hariKirim: [{ hari: "Kamis", persiapanHari: 1 }],
+        tambah3HariCakupan: false,
+        diaturOleh: "Admin Lama",
+        diaturPada: DIATUR,
+        berakhir: { jenis: "diganti", oleh: "Admin Uji", pada: DIGANTI },
+      },
+    ],
+  };
+  const pmb: TokoJadwalTetap = {
+    id: 22,
+    nama: "PMB",
+    aktif: true,
+    jadwal: { ...deltamas.jadwal!, versi: 42, hariKirim: [{ hari: "Kamis", persiapanHari: 2 }], tambah3HariCakupan: false },
+    riwayat: [],
+  };
+
+  /** Isi sel kolom Pola satu baris tabel. */
+  function selPola(wadah: HTMLElement, idToko: number) {
+    const kolom = [...wadah.querySelectorAll("thead th")].findIndex((th) => th.textContent === "Pola");
+    return wadah.querySelector(`tr[data-jadwal-toko="${idToko}"]`)?.querySelectorAll("td")[kolom]?.textContent;
+  }
+
+  it('tabel Jadwal toko: "Mingguan · +3 hari cakupan" untuk toko bertanda, "Mingguan" untuk toko tanpa tanda, tanpa kolom baru', () => {
+    const wadah = pasangUntukUji(<TabelJadwalTetap idGudang={2} daftarToko={[deltamas, pmb]} />);
+    expect([...wadah.querySelectorAll("thead th")].map((th) => th.textContent)).toEqual([
+      "Toko",
+      "Status toko",
+      "Jadwal tetap",
+      "Pola",
+      "Hari kirim (persiapan)",
+      "Diatur",
+      "Tindakan",
+    ]);
+    expect(selPola(wadah, 21)).toBe("Mingguan · +3 hari cakupan");
+    expect(selPola(wadah, 22)).toBe("Mingguan");
+  });
+
+  it('riwayat jadwal tetap: entri bertanda menulis "Mingguan · +3 hari cakupan", entri tanpa tanda "Mingguan"', () => {
+    const html = renderToStaticMarkup(<RiwayatJadwalTetap riwayat={deltamas.riwayat} />);
+    const pola = [...html.matchAll(/<li[^>]*data-riwayat-jadwal="(\d+)"[^>]*>.*?<span class="font-semibold">(.*?)<\/span>/g)].map((m) => [
+      m[1],
+      m[2],
+    ]);
+    expect(pola).toEqual([
+      ["41", "Mingguan · +3 hari cakupan"],
+      ["40", "Mingguan"],
+    ]);
   });
 });
 

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { eq } from "drizzle-orm";
 
 import { tanggalWib } from "../../src/app/admin/impor/format";
 import { geserHari, namaHari } from "../../src/domain/kalender";
@@ -154,4 +155,64 @@ test("Admin: Jadwal toko dari sidebar → atur jadwal satu toko di panel, lalu s
   await expect(salin.getByText("1 dari 1 toko berhasil.")).toBeVisible();
   await salin.getByRole("button", { name: "Tutup" }).click();
   await expect(page.locator(`tr[data-jadwal-toko="${b.id}"]`)).toContainText("Kamis (H)");
+});
+
+// T144 — UAT A5.16 (PRD A5 ▶ Keputusan 2026-10-27): admin mencentang "Tambah 3 hari cakupan" untuk satu toko, juga lewat
+// Salin jadwal. Pola toko itu menjadi "<pola> · +3 hari cakupan"; menyimpan ulang tanpa perubahan tidak menambah riwayat.
+test("Admin: centang Tambah 3 hari cakupan di Jadwal toko dan Salin jadwal → Pola bertanda, simpan ulang tanpa entri riwayat baru", async ({
+  page,
+}) => {
+  const idGudang = await idGudangUji("Gudang Cibubur");
+  const [deltamas, lain] = [await buatTokoUji(), await buatTokoUji()];
+  await db.insert(hubunganTokoGudang).values([deltamas, lain].map((t) => ({ tokoId: t.id, gudangId: idGudang })));
+  const admin = await buatPenggunaUji("admin");
+  await db
+    .insert(jadwalToko)
+    .values({ tokoId: deltamas.id, pola: "mingguan", hariKirim: [{ hari: "Kamis", persiapanHari: 1 }], dibuatOleh: admin.id });
+  await masuk(page, admin.email);
+  await page.goto(`/admin/jadwal-toko/${idGudang}`);
+
+  const keterangan = "Cakupan setiap pengiriman toko ini diperpanjang 3 hari sesudah hari terakhirnya.";
+  await page.getByRole("button", { name: `Atur jadwal ${deltamas.nama}` }).click();
+  const panel = page.getByRole("dialog", { name: `Jadwal tetap ${deltamas.nama}` });
+  const centang = panel.getByRole("checkbox", { name: "Tambah 3 hari cakupan" });
+  await expect(centang).not.toBeChecked();
+  await expect(centang).toHaveAccessibleDescription(keterangan);
+  await centang.check();
+  await panel.getByRole("button", { name: "Simpan jadwal" }).click();
+  await expect(panel.getByText("Berhasil disimpan")).toBeVisible();
+  const riwayat = panel.locator("[data-riwayat-jadwal]");
+  await expect(riwayat).toHaveCount(2);
+  await expect(riwayat.first()).toContainText("Mingguan · +3 hari cakupan");
+  await expect(riwayat.first()).toContainText("Diatur oleh Uji admin");
+  await expect(riwayat.nth(1)).not.toContainText("+3 hari cakupan");
+
+  // Simpan sekali lagi tanpa perubahan: tidak ada versi maupun entri riwayat baru.
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === "POST" && r.request().headers()["next-action"] !== undefined),
+    panel.getByRole("button", { name: "Simpan jadwal" }).click(),
+  ]);
+  await expect(panel.getByText("Berhasil disimpan")).toBeVisible();
+  expect(await db.select({ id: jadwalToko.id }).from(jadwalToko).where(eq(jadwalToko.tokoId, deltamas.id))).toHaveLength(2);
+  await expect(riwayat).toHaveCount(2);
+  await panel.getByRole("button", { name: "Tutup" }).click();
+
+  const barisDeltamas = page.locator(`tr[data-jadwal-toko="${deltamas.id}"]`);
+  await expect(barisDeltamas.getByRole("cell", { name: "Mingguan · +3 hari cakupan", exact: true })).toBeVisible();
+  await expect(barisDeltamas.getByRole("cell", { name: "Kamis (H−1)", exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Salin jadwal ke beberapa toko" }).click();
+  const salin = page.getByRole("dialog", { name: "Salin jadwal ke beberapa toko" });
+  const centangSalin = salin.getByRole("checkbox", { name: "Tambah 3 hari cakupan" });
+  await expect(centangSalin).not.toBeChecked();
+  await expect(centangSalin).toHaveAccessibleDescription(keterangan);
+  await salin.getByRole("checkbox", { name: lain.nama }).check();
+  await salin.getByRole("checkbox", { name: "Selasa" }).check();
+  await centangSalin.check();
+  await salin.getByRole("button", { name: "Terapkan ke toko terpilih" }).click();
+  await expect(salin.getByText("1 dari 1 toko berhasil.")).toBeVisible();
+  await salin.getByRole("button", { name: "Tutup" }).click();
+  await expect(
+    page.locator(`tr[data-jadwal-toko="${lain.id}"]`).getByRole("cell", { name: "Mingguan · +3 hari cakupan", exact: true }),
+  ).toBeVisible();
 });

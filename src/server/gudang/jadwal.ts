@@ -107,17 +107,27 @@ export function jadwalDariMasukan(masukan: MasukanJadwal): { jadwal: Jadwal } | 
 }
 
 /**
- * Pola, hari kirim, dan persiapan sama. Tanggal jangkar versi lama diabaikan, jadi menyimpan ulang jadwal dua mingguan
- * lama tanpa perubahan tidak membuat versi baru (PRD A5 ▶ Revisi 2026-10-19, Peralihan).
+ * Pola, hari kirim, persiapan, dan pilihan "Tambah 3 hari cakupan" sama (PRD A5 ▶ Keputusan 2026-10-27, T144). Tanggal
+ * jangkar versi lama diabaikan, jadi menyimpan ulang jadwal dua mingguan lama tanpa perubahan tidak membuat versi baru
+ * (PRD A5 ▶ Revisi 2026-10-19, Peralihan).
  */
 function jadwalSama(a: Jadwal, b: Jadwal) {
-  return a.pola === b.pola && JSON.stringify(a.hariKirim) === JSON.stringify(b.hariKirim);
+  return (
+    a.pola === b.pola &&
+    JSON.stringify(a.hariKirim) === JSON.stringify(b.hariKirim) &&
+    (a.tambah3HariCakupan === true) === (b.tambah3HariCakupan === true)
+  );
 }
 
 /** Jadwal aktif satu toko di dalam transaksi, atau `null`. */
 export async function bacaJadwalAktif(tx: Tx, idToko: number): Promise<(Jadwal & { id: number }) | null> {
   const [aktif] = await tx
-    .select({ id: jadwalToko.id, pola: jadwalToko.pola, hariKirim: jadwalToko.hariKirim })
+    .select({
+      id: jadwalToko.id,
+      pola: jadwalToko.pola,
+      hariKirim: jadwalToko.hariKirim,
+      tambah3HariCakupan: jadwalToko.tambah3HariCakupan,
+    })
     .from(jadwalToko)
     .where(and(eq(jadwalToko.tokoId, idToko), eq(jadwalToko.status, "aktif")));
   return aktif ?? null;
@@ -126,8 +136,8 @@ export async function bacaJadwalAktif(tx: Tx, idToko: number): Promise<(Jadwal &
 /**
  * Menjadikan `baru` jadwal aktif toko. Jadwal aktif lama
  * dinonaktifkan atas nama `idPengguna` dan tetap tersimpan sebagai riwayat. Jadwal yang sama dengan jadwal aktif tidak
- * membuat versi baru. Jadwal baru disimpan tanpa tanggal jangkar (T135). Harus dipanggil di dalam transaksi setelah
- * `periksaTujuan` mengunci toko.
+ * membuat versi baru. Jadwal baru disimpan tanpa tanggal jangkar (T135), beserta pilihan "Tambah 3 hari cakupan" (T144).
+ * Harus dipanggil di dalam transaksi setelah `periksaTujuan` mengunci toko.
  */
 export async function gantiJadwalAktif(tx: Tx, { idToko, baru, idPengguna }: { idToko: number; baru: Jadwal; idPengguna: string }) {
   const lama = await bacaJadwalAktif(tx, idToko);
@@ -142,6 +152,7 @@ export async function gantiJadwalAktif(tx: Tx, { idToko, baru, idPengguna }: { i
     tokoId: idToko,
     pola: baru.pola,
     hariKirim: [...baru.hariKirim],
+    tambah3HariCakupan: baru.tambah3HariCakupan === true,
     dibuatOleh: idPengguna,
   });
 }
@@ -268,9 +279,10 @@ export async function nonaktifkanJadwalTetap({
   });
 }
 
-/** Satu baris riwayat jadwal tetap toko. `berakhir` null = masih aktif. */
+/** Satu baris riwayat jadwal tetap toko, beserta pilihan "Tambah 3 hari cakupan"-nya (T144). `berakhir` null = masih aktif. */
 export type EntriRiwayatJadwal = Jadwal & {
   id: number;
+  tambah3HariCakupan: boolean;
   diaturOleh: string;
   diaturPada: Date;
   berakhir: { jenis: "diganti" | "dinonaktifkan"; oleh: string; pada: Date } | null;
@@ -290,6 +302,7 @@ export async function riwayatJadwalTetapGudang(idGudang: number): Promise<Map<nu
       idToko: jadwalToko.tokoId,
       pola: jadwalToko.pola,
       hariKirim: jadwalToko.hariKirim,
+      tambah3HariCakupan: jadwalToko.tambah3HariCakupan,
       diaturOleh: pengatur.name,
       diaturPada: jadwalToko.dibuatPada,
       dinonaktifkanOleh: penonaktif.name,
@@ -322,6 +335,7 @@ export async function riwayatJadwalTetapGudang(idGudang: number): Promise<Map<nu
       id: b.id,
       pola: b.pola,
       hariKirim: b.hariKirim,
+      tambah3HariCakupan: b.tambah3HariCakupan,
       diaturOleh: b.diaturOleh,
       diaturPada: b.diaturPada,
       berakhir,
