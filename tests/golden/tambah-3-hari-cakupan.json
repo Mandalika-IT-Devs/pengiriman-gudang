@@ -1,0 +1,190 @@
+{
+  "sumber": "docs/PRD.md A5 ▶ Keputusan 2026-10-27 dan A6 ▶ Keputusan 2026-10-27 (Tambah 3 hari cakupan): cakupan = H−p sampai H+L−1+3, jumlah hari p + L + 3, L dihitung seperti biasa. Semua kasus memakai jadwal tetap yang dicentang. Kategori efektif = kategori dasar (tanpa perubahan kategori). Rata-rata contoh SMB PW110P-GOR dari PRD A6 ▶ Revisi 2026-10-12.",
+  "tambahanHari": 3,
+  "kasusContohPemilik": {
+    "catatan": "Contoh pemilik: mingguan, Kamis (H−1), kirim Kamis 29-10-2026 → Rabu 28-10 sampai Sabtu 07-11-2026, 11 hari.",
+    "jadwal": {
+      "pola": "mingguan",
+      "hariKirim": [{ "hari": "Kamis", "persiapan": "H-1" }],
+      "tambah3HariCakupan": true
+    },
+    "diLuarJadwal": [],
+    "tanggalKirim": "2026-10-29",
+    "persiapanHari": 1,
+    "panjangCakupan": 7,
+    "rataRata": {
+      "Senin–Kamis": 5,
+      "Jumat": 5,
+      "Sabtu": 8,
+      "Minggu": 7
+    },
+    "tanggalCakupan": [
+      { "tanggal": "2026-10-28", "hari": "Rabu", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-10-29", "hari": "Kamis", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-10-30", "hari": "Jumat", "kategoriEfektif": "Jumat" },
+      { "tanggal": "2026-10-31", "hari": "Sabtu", "kategoriEfektif": "Sabtu" },
+      { "tanggal": "2026-11-01", "hari": "Minggu", "kategoriEfektif": "Minggu" },
+      { "tanggal": "2026-11-02", "hari": "Senin", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-03", "hari": "Selasa", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-04", "hari": "Rabu", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-05", "hari": "Kamis", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-06", "hari": "Jumat", "kategoriEfektif": "Jumat" },
+      { "tanggal": "2026-11-07", "hari": "Sabtu", "kategoriEfektif": "Sabtu" }
+    ],
+    "jumlahHari": 11,
+    "kebutuhan": 63,
+    "teksCakupan": "Cakupan 11 hari: persiapan 1 hari + 7 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+    "jumlahKirim": {
+      "persenBuffer": 20,
+      "stokAkhir": 20,
+      "stokTarget": 76,
+      "jumlahKirim": 56,
+      "catatan": "⌈63 × 1,20⌉ − 20 = ⌈75,6⌉ − 20 = 76 − 20 = 56; di aplikasi: 63 × 120% − 20 = 55,6 → dibulatkan ke atas 56."
+    },
+    "tanpaTambahan": {
+      "catatan": "Jadwal yang sama tanpa centang: Rabu 28-10 sampai Rabu 04-11-2026, 8 hari.",
+      "akhirCakupan": "2026-11-04",
+      "jumlahHari": 8,
+      "kebutuhan": 45,
+      "stokTarget": 54,
+      "jumlahKirim": 34,
+      "teksCakupan": "Cakupan 8 hari: persiapan 1 hari + 7 hari sampai sebelum kiriman berikutnya"
+    }
+  },
+  "kasusCakupan": [
+    {
+      "nama": "2× seminggu, kirim Senin (H)",
+      "jadwal": {
+        "pola": "2x-seminggu",
+        "hariKirim": [
+          { "hari": "Senin", "persiapan": "H" },
+          { "hari": "Kamis", "persiapan": "H-1" }
+        ],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [],
+      "tanggalKirim": "2026-10-26",
+      "persiapanHari": 0,
+      "panjangCakupan": 3,
+      "awalCakupan": "2026-10-26",
+      "akhirCakupan": "2026-10-31",
+      "jumlahHari": 6,
+      "teksCakupan": "Cakupan 6 hari: 3 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    },
+    {
+      "nama": "2× seminggu, kirim Kamis (H−1)",
+      "jadwal": {
+        "pola": "2x-seminggu",
+        "hariKirim": [
+          { "hari": "Senin", "persiapan": "H" },
+          { "hari": "Kamis", "persiapan": "H-1" }
+        ],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [],
+      "tanggalKirim": "2026-10-29",
+      "persiapanHari": 1,
+      "panjangCakupan": 4,
+      "awalCakupan": "2026-10-28",
+      "akhirCakupan": "2026-11-04",
+      "jumlahHari": 8,
+      "teksCakupan": "Cakupan 8 hari: persiapan 1 hari + 4 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    },
+    {
+      "nama": "dua mingguan, kirim Rabu (H−1)",
+      "jadwal": {
+        "pola": "dua-mingguan",
+        "hariKirim": [{ "hari": "Rabu", "persiapan": "H-1" }],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [],
+      "tanggalKirim": "2026-10-28",
+      "persiapanHari": 1,
+      "panjangCakupan": 14,
+      "awalCakupan": "2026-10-27",
+      "akhirCakupan": "2026-11-13",
+      "jumlahHari": 18,
+      "teksCakupan": "Cakupan 18 hari: persiapan 1 hari + 14 hari (dua minggu) + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    },
+    {
+      "nama": "1× sebulan, kirim Selasa pertama (H−1)",
+      "jadwal": {
+        "pola": "1x-sebulan",
+        "hariKirim": [{ "hari": "Selasa", "persiapan": "H-1" }],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [],
+      "tanggalKirim": "2026-11-03",
+      "persiapanHari": 1,
+      "panjangCakupan": 30,
+      "awalCakupan": "2026-11-02",
+      "akhirCakupan": "2026-12-05",
+      "jumlahHari": 34,
+      "teksCakupan": "Cakupan 34 hari: persiapan 1 hari + 30 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    },
+    {
+      "nama": "BOTANI dengan tambahan Selasa: kirim rutin Senin (H)",
+      "jadwal": {
+        "pola": "2x-seminggu",
+        "hariKirim": [
+          { "hari": "Senin", "persiapan": "H" },
+          { "hari": "Kamis", "persiapan": "H-1" }
+        ],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [{ "tanggalKirim": "2026-10-20", "persiapanHari": 1, "tanggalRutinDipindah": null }],
+      "tanggalKirim": "2026-10-19",
+      "persiapanHari": 0,
+      "panjangCakupan": 1,
+      "awalCakupan": "2026-10-19",
+      "akhirCakupan": "2026-10-22",
+      "jumlahHari": 4,
+      "teksCakupan": "Cakupan 4 hari: 1 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    },
+    {
+      "nama": "BOTANI dengan tambahan Selasa: pengiriman di luar jadwal Selasa (H−1)",
+      "jadwal": {
+        "pola": "2x-seminggu",
+        "hariKirim": [
+          { "hari": "Senin", "persiapan": "H" },
+          { "hari": "Kamis", "persiapan": "H-1" }
+        ],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [{ "tanggalKirim": "2026-10-20", "persiapanHari": 1, "tanggalRutinDipindah": null }],
+      "tanggalKirim": "2026-10-20",
+      "persiapanHari": 1,
+      "panjangCakupan": 2,
+      "awalCakupan": "2026-10-19",
+      "akhirCakupan": "2026-10-24",
+      "jumlahHari": 6,
+      "teksCakupan": "Cakupan 6 hari: persiapan 1 hari + 2 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": "2026-10-19"
+    },
+    {
+      "nama": "BOTANI dengan tambahan Selasa: kirim rutin Kamis (H−1)",
+      "jadwal": {
+        "pola": "2x-seminggu",
+        "hariKirim": [
+          { "hari": "Senin", "persiapan": "H" },
+          { "hari": "Kamis", "persiapan": "H-1" }
+        ],
+        "tambah3HariCakupan": true
+      },
+      "diLuarJadwal": [{ "tanggalKirim": "2026-10-20", "persiapanHari": 1, "tanggalRutinDipindah": null }],
+      "tanggalKirim": "2026-10-22",
+      "persiapanHari": 1,
+      "panjangCakupan": 4,
+      "awalCakupan": "2026-10-21",
+      "akhirCakupan": "2026-10-28",
+      "jumlahHari": 8,
+      "teksCakupan": "Cakupan 8 hari: persiapan 1 hari + 4 hari sampai sebelum kiriman berikutnya + tambahan 3 hari",
+      "kirimanSebelumnyaBelumSampai": null
+    }
+  ]
+}
