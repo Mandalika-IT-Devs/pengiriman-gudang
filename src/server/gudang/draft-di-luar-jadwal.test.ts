@@ -61,6 +61,7 @@ async function berlakukan(isian: Omit<IsianPengirimanDiLuarJadwal, "idToko" | "a
     idGudang: cibubur,
     isian: { ...isian, idToko: toko.id, alasan: ALASAN },
     idPengguna: idOperator,
+    peranPengguna: "viewer",
     hariIni: HARI_INI,
   });
   if (usul.keadaan !== "berhasil") throw new Error(usul.pesan);
@@ -79,7 +80,7 @@ async function batalkan(id: number) {
     alasan: "Promo dibatalkan",
     idPengguna: idAdmin,
     hariIni: HARI_INI,
-    gudangOperator: null,
+    dariGudang: null,
   });
   if (hasil.keadaan !== "berhasil") throw new Error(hasil.pesan);
 }
@@ -216,6 +217,35 @@ describe("pindah Senin 2026-10-19 → Selasa 2026-10-20 (H)", () => {
     await hitung(KAMIS);
     expect(await tokoDi(KAMIS)).toMatchObject({ panjangCakupan: 4, kirimanSebelumnyaBelumSampai: "2026-10-21", perluDihitungUlang: [] });
     await batalkan(idRabu);
+  });
+});
+
+// T148 (PRD A5 ▶ Keputusan 2026-11-04): yang dibuat admin langsung berlaku tanpa persetujuan, dan ikut perhitungan seperti
+// pengiriman berlaku biasa.
+describe("tambahan yang dibuat admin (T148)", () => {
+  it("langsung berlaku dan menandai draft Senin dan Selasa perlu dihitung ulang; dihitung ulang dengan admin sebagai pengusul dan penyetuju", async () => {
+    await hitung(SENIN);
+    await hitung(SELASA);
+    const usul = await usulkanPengirimanDiLuarJadwal({
+      idGudang: cibubur,
+      isian: { jenis: "tambahan", idToko: toko.id, tanggalKirim: SELASA, persiapanHari: 1, tanggalRutinDipindah: null, alasan: ALASAN },
+      idPengguna: idAdmin,
+      peranPengguna: "admin",
+      hariIni: HARI_INI,
+    });
+    expect(usul).toEqual({ keadaan: "berhasil", idGudang: cibubur });
+    expect((await draft(SENIN))?.perluDihitungUlang).toEqual(["jadwal"]);
+    expect((await draft(SELASA))?.perluDihitungUlang).toEqual(["jadwal"]);
+
+    await hitung(SELASA);
+    const selasa = await tokoDi(SELASA);
+    expect(selasa).toMatchObject({
+      persiapanHari: 1,
+      panjangCakupan: 2,
+      diLuarJadwal: { jenis: "tambahan", alasan: ALASAN, pengusul: "Uji admin", penyetuju: "Uji admin" },
+    });
+    expect(selasa?.diLuarJadwal?.disetujuiPada).toEqual(selasa?.diLuarJadwal?.diusulkanPada);
+    await batalkan(selasa?.diLuarJadwal?.id ?? 0);
   });
 });
 

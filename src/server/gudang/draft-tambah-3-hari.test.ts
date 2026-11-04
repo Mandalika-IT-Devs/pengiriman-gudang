@@ -167,6 +167,7 @@ describe("pengiriman di luar jadwal toko bertanda juga mendapat 3 hari tambahan 
         alasan: "Stok BOTANI menipis jelang promo",
       },
       idPengguna: idOperator,
+      peranPengguna: "viewer",
       hariIni: HARI_INI,
     });
     if (usul.keadaan !== "berhasil") throw new Error(usul.pesan);

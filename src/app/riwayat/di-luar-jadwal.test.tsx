@@ -6,7 +6,7 @@ import { db } from "@/server/db";
 import { pengirimanDiLuarJadwal } from "@/server/db/schema";
 import type { HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
-import { buatGudangUji, buatTokoUji, hapusGudangUji } from "@/server/gudang/uji-bantu";
+import { buatGudangUji, buatTokoUji, hapusGudangUji, idGudangUji } from "@/server/gudang/uji-bantu";
 
 const kepala = vi.hoisted(() => ({ cookie: "" }));
 vi.mock("next/headers", () => ({
@@ -209,5 +209,56 @@ describe("Riwayat, tab Di luar jadwal", () => {
     }
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
     await expect(buka({ toko: String(tokoX.id) })).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+  });
+});
+
+/** Isi sel `<td>` satu baris, berurutan. */
+const selBaris = (html: string) => [...html.matchAll(/<td[^>]*>(.*?)<\/td>/g)].map((m) => m[1]!);
+
+// T148 (PRD A5 ▶ Keputusan 2026-11-04): pengiriman yang dibuat admin langsung berlaku dengan admin sebagai pengusul dan
+// penyetuju, dan waktu keputusan sama dengan waktu usul, juga di Pusat. Pengiriman operator Pusat tetap "Langsung berlaku
+// (Pusat)". Pembatalan oleh admin tercatat dengan namanya (UAT U9.6).
+describe("Riwayat, tab Di luar jadwal: pengiriman yang dibuat admin (T148)", () => {
+  it("kolom Diputuskan berisi nama admin dengan waktu usulnya, juga di Pusat; pengiriman operator Pusat tetap Langsung berlaku (Pusat)", async () => {
+    const pusat = await idGudangUji("Pusat");
+    const toko = await buatTokoUji();
+    const admin = await buatPenggunaUji("admin");
+    const operator = await buatPenggunaUji("viewer");
+    const usul = new Date(Date.UTC(2099, 1, 2, 3));
+    const dasar = { tokoId: toko.id, jenis: "tambahan" as const, persiapanHari: 1 as const, alasan: "Uji admin M7" };
+    const olehAdmin = { diusulkanOleh: admin.id, diusulkanPada: usul, diputuskanOleh: admin.id, diputuskanPada: usul };
+    const [diGudangA, diPusat, operatorPusat, dibatalkan] = await db
+      .insert(pengirimanDiLuarJadwal)
+      .values([
+        { ...dasar, ...olehAdmin, gudangId: gudangA.id, tanggalKirim: "2099-02-05", status: "berlaku" },
+        { ...dasar, ...olehAdmin, gudangId: pusat, tanggalKirim: "2099-02-06", status: "berlaku" },
+        { ...dasar, gudangId: pusat, tanggalKirim: "2099-02-07", status: "berlaku", diusulkanOleh: operator.id, diusulkanPada: usul },
+        {
+          ...dasar,
+          ...olehAdmin,
+          gudangId: gudangA.id,
+          tanggalKirim: "2099-02-08",
+          status: "dibatalkan",
+          alasanPembatalan: "Uji selesai",
+          dibatalkanOleh: admin.id,
+          dibatalkanPada: new Date(Date.UTC(2099, 1, 3, 3)),
+        },
+      ])
+      .returning({ id: pengirimanDiLuarJadwal.id });
+
+    const html = await buka({ toko: String(toko.id) });
+    for (const p of [diGudangA, diPusat, dibatalkan]) {
+      const [, , , , , , diusulkan, diputuskan] = selBaris(baris(html, p.id));
+      expect(diputuskan).toContain("<span>Uji admin</span>");
+      expect(diputuskan).toContain(`dateTime="${usul.toISOString()}"`);
+      // Nama dan waktu yang sama dengan kolom Diusulkan.
+      expect(diputuskan).toBe(diusulkan);
+    }
+    expect(baris(html, diPusat.id)).not.toContain("Langsung berlaku (Pusat)");
+    expect(selBaris(baris(html, operatorPusat.id))[7]).toContain("Langsung berlaku (Pusat)");
+    const batal = baris(html, dibatalkan.id);
+    expect(batal).toContain('data-status-pengiriman="dibatalkan"');
+    expect(batal).toContain("Alasan pembatalan: Uji selesai");
+    expect(selBaris(batal)[8]).toContain("Uji admin, ");
   });
 });

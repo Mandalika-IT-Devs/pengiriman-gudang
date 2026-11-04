@@ -116,6 +116,43 @@ test("Gudang selain Pusat: Kirim usulan → Menunggu; admin menyetujui di Perset
   await expect(riwayat.getByRole("button")).toHaveCount(0);
 });
 
+// T148 — PRD A5 ▶ Keputusan 2026-11-04 (UAT U9.5, U9.6): admin tanpa penugasan membuat pengiriman di luar jadwal di gudang
+// selain Pusat. Pengiriman itu langsung Berlaku dengan admin sebagai penyetuju, lalu dibatalkan dari "Perlu tindakan".
+test("Admin di gudang selain Pusat: Simpan → langsung Berlaku dengan nama admin; Batalkan dengan alasan → Dibatalkan", async ({ page }) => {
+  const idGudang = await idGudangUji("Gudang Cibubur");
+  const toko = await buatTokoUji();
+  await db.insert(hubunganTokoGudang).values({ tokoId: toko.id, gudangId: idGudang });
+  await jadwalSenin(toko.id);
+  const admin = await buatPenggunaUji("admin");
+  await masuk(page, admin.email);
+
+  await page.goto("/usulan-jadwal");
+  await page.locator(`a[data-id-gudang="${idGudang}"]`).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Atur pengiriman di luar jadwal — Gudang Cibubur");
+  await expect(page.getByText("Pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Kirim usulan" })).toHaveCount(0);
+
+  await isiForm(page, toko.nama, tanggalDiLuarJadwal());
+  await page.getByRole("button", { name: "Simpan", exact: true }).click();
+  await expect(page.getByText("Berhasil disimpan")).toBeVisible();
+
+  const baris = page.getByRole("table", { name: "Perlu tindakan" }).getByRole("row", { name: new RegExp(toko.nama) });
+  await expect(baris).toContainText("Berlaku");
+  await expect(baris).not.toContainText("Langsung berlaku (Pusat)");
+  await expect(baris.getByRole("button", { name: /^Tarik/ })).toHaveCount(0);
+  await baris.getByLabel("Alasan pembatalan").fill("Uji selesai");
+  await baris.getByRole("button", { name: "Batalkan", exact: true }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Batalkan pengiriman" }).click();
+  await expect(page.getByRole("row", { name: new RegExp(toko.nama) })).toHaveCount(0);
+
+  await page.goto(`/riwayat?tab=di-luar-jadwal&cari=${encodeURIComponent(toko.nama)}`);
+  const riwayat = page.getByRole("table", { name: "Riwayat pengiriman di luar jadwal" }).getByRole("row", { name: new RegExp(toko.nama) });
+  await expect(riwayat).toContainText("Dibatalkan");
+  await expect(riwayat).toContainText("Alasan pembatalan: Uji selesai");
+  await expect(riwayat).toContainText("Uji admin");
+  await expect(riwayat).not.toContainText("Langsung berlaku (Pusat)");
+});
+
 test("Halaman Salin jadwal operator sudah dihapus: /salin-jadwal → 404", async ({ page }) => {
   const { idGudang, operator } = await operatorJadwal("Gudang Cibubur");
   await masuk(page, operator.email);

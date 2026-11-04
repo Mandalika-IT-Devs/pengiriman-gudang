@@ -21,16 +21,20 @@ import { FormPengiriman } from "./form-pengiriman";
 
 type Props = { params: Promise<{ id: string }> };
 
-/** Judul tab mengikuti jalur ("Atur pengiriman di luar jadwal" di Pusat, "Usulkan …" di gudang lain). */
+/**
+ * Judul tab mengikuti jalur ("Atur pengiriman di luar jadwal" di Pusat dan bagi admin di semua gudang, "Usulkan …" bagi
+ * operator gudang lain).
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return metadataHalamanJadwal((await params).id);
 }
 
 /**
- * Zona kerja (DESIGN §1). Pengiriman di luar jadwal satu gudang (T113, PRD A5 ▶ Revisi 2026-10-13): form usulan (di
- * Pusat langsung berlaku), lalu daftar "Perlu tindakan" (T128, PRD A5 ▶ Revisi 2026-10-14): usulan menunggu, dengan
- * Tarik untuk pengusulnya, dan di Pusat pengiriman berlaku yang masih bisa dibatalkan, dengan Batalkan. Riwayat lengkap
- * ada di halaman Riwayat, tab "Di luar jadwal". Tanpa hak `kelola-usulan-jadwal` di gudang ini → 404.
+ * Zona kerja (DESIGN §1). Pengiriman di luar jadwal satu gudang (T113, PRD A5 ▶ Revisi 2026-10-13): form usulan (jalur
+ * langsung berlaku: Pusat, dan admin di semua gudang, T148), lalu daftar "Perlu tindakan" (T128, PRD A5 ▶ Revisi
+ * 2026-10-14): usulan menunggu, dengan Tarik untuk pengusulnya, dan pada jalur langsung pengiriman berlaku yang masih
+ * bisa dibatalkan, dengan Batalkan. Riwayat lengkap ada di halaman Riwayat, tab "Di luar jadwal". Tanpa hak
+ * `kelola-usulan-jadwal` di gudang ini → 404.
  */
 export default async function HalamanUsulanJadwal({ params }: Props) {
   const { gudang, jalur, pilihanToko, perluTindakan, idPengguna, hariIni, adaDaftarGudang } = await muatGudangJadwal((await params).id);

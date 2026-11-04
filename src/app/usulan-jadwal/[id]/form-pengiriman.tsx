@@ -41,9 +41,9 @@ const teksJalur = {
 /**
  * Form pengiriman di luar jadwal satu toko (T113, PRD A5 ▶ Revisi 2026-10-13): toko yang punya jadwal tetap aktif,
  * jenis (Tambahan/Pindah), tanggal kirim, persiapan, dan alasan wajib. Untuk Pindah dipilih tanggal rutin yang dipindah
- * dari tanggal kirim rutin toko itu yang akan datang; persiapan awalnya mengikuti tanggal rutin itu. Di Pusat langsung
- * berlaku ("Simpan"), di gudang lain menunggu persetujuan admin ("Kirim usulan"). Syarat diperiksa lagi di server. Nama
- * form adalah judul halaman (`idJudul`).
+ * dari tanggal kirim rutin toko itu yang akan datang; persiapan awalnya mengikuti tanggal rutin itu. Jalur langsung (Pusat,
+ * dan admin di semua gudang, T148) berlaku saat disimpan ("Simpan"); jalur usulan menunggu persetujuan admin ("Kirim
+ * usulan"). Syarat diperiksa lagi di server. Nama form adalah judul halaman (`idJudul`).
  */
 export function FormPengiriman({
   idGudang,
