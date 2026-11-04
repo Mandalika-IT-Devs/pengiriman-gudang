@@ -170,3 +170,14 @@ describe('teks bantuan istilah "Produk otomatis dan manual" (PRD A6 ▶ Keputusa
     });
   });
 });
+
+// T151 — PRD A5 ▶ Keputusan 2026-11-04 (toko acuan: Tampilan, Draft): bantuan istilah "Toko acuan" di kepala toko draft.
+describe('teks bantuan istilah "Toko acuan" (PRD A5 ▶ Keputusan 2026-11-04)', () => {
+  it("judul dan teks persis PRD", () => {
+    expect(TEKS_BANTUAN_ISTILAH.tokoAcuan).toEqual({
+      judul: "Toko acuan",
+      penjelasan:
+        "Toko yang varian dan rata-rata penjualannya dipinjam toko ini, karena toko ini belum punya data penjualan. Diatur admin di jadwal tetap; jadwal, stok, dan kategori hari tetap milik toko ini.",
+    });
+  });
+});

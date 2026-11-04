@@ -43,6 +43,11 @@ export type TokoKirim = {
   panjangCakupan: number;
   /** Tanda "Tambah 3 hari cakupan" jadwal tetap toko (PRD A5 ▶ Keputusan 2026-10-27, T143): cakupan + 3 hari. */
   tambah3HariCakupan: boolean;
+  /**
+   * Toko acuan jadwal tetap toko (PRD A5 ▶ Keputusan 2026-11-04, T151), untuk setiap pengiriman toko itu, rutin maupun di
+   * luar jadwal: sumber varian dan rata-rata draft. `null` = tanpa toko acuan.
+   */
+  tokoAcuanId: number | null;
   /** Rutin, atau di luar jadwal dengan acuannya `pengirimanDiLuarJadwalId` (T114). */
   jenisPengiriman: JenisPengiriman;
   pengirimanDiLuarJadwalId: number | null;
@@ -66,6 +71,7 @@ async function pengirimanGudangPada(idGudang: number, tanggalKirim: TanggalBisni
       persiapanHari: hasil.persiapanHari,
       panjangCakupan: hasil.panjangCakupan,
       tambah3HariCakupan: hasil.tambah3HariCakupan === true,
+      tokoAcuanId: jadwal.tokoAcuan?.id ?? null,
       jenisPengiriman: hasil.diLuarJadwal?.jenis ?? "rutin",
       pengirimanDiLuarJadwalId: hasil.diLuarJadwal?.id ?? null,
       kirimanSebelumnyaBelumSampai: kirimanSebelumnyaBelumSampaiToko(sumber, tanggalKirim),

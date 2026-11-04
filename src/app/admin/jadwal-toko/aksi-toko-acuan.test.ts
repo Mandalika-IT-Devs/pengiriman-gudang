@@ -376,8 +376,9 @@ describe("toko acuan dan versi jadwal", () => {
 });
 
 // UAT U9.13 dan PRD A5 ▶ Keputusan 2026-11-04 (Perubahan dan peralihan): mengubah toko acuan menandai draft belum final
-// perlu dihitung ulang karena "Jadwal toko" (alasan `jadwal`), dengan stok yang sudah diisi tetap ada. Angka draft belum
-// memakai toko acuan (T151).
+// perlu dihitung ulang karena "Jadwal toko" (alasan `jadwal`), dengan stok yang sudah diisi tetap ada. Sejak T151 draft
+// memakai varian toko acuan: MKG tidak punya data di periode sumber uji, jadi toko ini tanpa varian selama memakai MKG, dan
+// stoknya disimpan lalu dipakai lagi setelah toko acuan dihapus (PRD A7 ▶ Keputusan 2026-10-10).
 describe("toko acuan dari form admin: draft belum final", () => {
   /** Kamis 29-10-2026 (golden toko-acuan.json `kasusKebutuhan`), mingguan Kamis (H−1). */
   const KAMIS = parseTanggalBisnis("2026-10-29");
@@ -415,15 +416,25 @@ describe("toko acuan dari form admin: draft belum final", () => {
     ).toEqual({ keadaan: "berhasil" });
     expect((await draft())?.perluDihitungUlang).toEqual([]);
 
-    for (const idTokoAcuan of [mkg, null]) {
-      await expect(aturJadwalTetapToko({ idGudang: bandung, idToko: tokoDraft.id, ...mingguanKamis, idTokoAcuan })).resolves.toEqual({
+    const aturTokoAcuan = async (idTokoAcuan: number | null) =>
+      expect(aturJadwalTetapToko({ idGudang: bandung, idToko: tokoDraft.id, ...mingguanKamis, idTokoAcuan })).resolves.toEqual({
         keadaan: "berhasil",
       });
-      expect((await draft())?.perluDihitungUlang).toEqual(["jadwal"]);
-      expect(await barisProduk()).toMatchObject({ stokAkhir: STOK_AKHIR });
-      await hitung();
-      expect((await draft())?.perluDihitungUlang).toEqual([]);
-      expect(await barisProduk()).toMatchObject({ stokAkhir: STOK_AKHIR });
-    }
+    const stokTidakDipakai = async () => (await draft())?.stokTidakDipakai.filter((s) => s.toko.id === tokoDraft.id);
+
+    await aturTokoAcuan(mkg);
+    expect((await draft())?.perluDihitungUlang).toEqual(["jadwal"]);
+    expect(await barisProduk()).toMatchObject({ stokAkhir: STOK_AKHIR });
+    await hitung();
+    expect((await draft())?.perluDihitungUlang).toEqual([]);
+    expect(await barisProduk()).toBeUndefined();
+    expect(await stokTidakDipakai()).toMatchObject([{ kodeProduk, stokAkhir: STOK_AKHIR, alasan: "varian-tidak-di-draft" }]);
+
+    await aturTokoAcuan(null);
+    expect((await draft())?.perluDihitungUlang).toEqual(["jadwal"]);
+    await hitung();
+    expect((await draft())?.perluDihitungUlang).toEqual([]);
+    expect(await barisProduk()).toMatchObject({ stokAkhir: STOK_AKHIR });
+    expect(await stokTidakDipakai()).toEqual([]);
   });
 });

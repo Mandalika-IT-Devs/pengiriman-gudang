@@ -18,9 +18,10 @@ import type {
   RingkasanDraftRencana,
   RingkasanTokoDraft,
   StokTidakDipakai,
+  TokoAcuanDraft,
   TokoDraft,
 } from "@/server/gudang/draft-rencana";
-import { MASALAH_TANPA_VARIAN } from "@/server/gudang/masalah-draft";
+import { masalahTanpaVarian } from "@/server/gudang/masalah-draft";
 
 import { DaftarMasalah } from "./daftar-masalah";
 import { BagianDikirimPekanIni, PenandaTidakDikirim } from "./dikirim-pekan-ini";
@@ -33,6 +34,7 @@ import { PenandaDiLuarJadwal } from "./penanda-di-luar-jadwal";
 import { RincianBaris } from "./rincian-baris";
 import { IkonStokKosong } from "./stok-kosong";
 import { TeksCakupan } from "./teks-cakupan";
+import { CatatanDataSendiri, KeteranganTokoAcuan } from "./toko-acuan";
 
 /** Stok akhir tersimpan di baris ringkas draft (pengguna tanpa hak `input-stok`): kosong tampil "—" + ikon (DESIGN §11.4). */
 function SelStokRingkas({ stokAkhir }: { stokAkhir: number | null }) {
@@ -75,14 +77,23 @@ export function SelStok({ stokAkhir }: { stokAkhir: number | null }) {
   );
 }
 
-/** Masalah toko tanpa varian (PRD A7 ▶ Keputusan 2026-10-11, T62): ikon + teks seperti masalah baris (DESIGN §7). */
-function MasalahTanpaVarian() {
+/**
+ * Masalah toko tanpa varian (PRD A7 ▶ Keputusan 2026-10-11, T62): ikon + teks seperti masalah baris (DESIGN §7). Toko yang
+ * memakai toko acuan menyebut toko acuannya (PRD A5 ▶ Keputusan 2026-11-04, T151).
+ */
+function MasalahTanpaVarian({ tokoAcuan }: { tokoAcuan: TokoAcuanDraft | undefined }) {
   return (
     <p data-tanpa-varian className="flex items-center gap-2 font-semibold">
       <TriangleAlert aria-hidden strokeWidth={2} className="size-5 shrink-0 text-warning" />
-      {MASALAH_TANPA_VARIAN}
+      {masalahTanpaVarian(tokoAcuan)}
     </p>
   );
+}
+
+/** Masalah tanpa varian sebagai lanjutan "Belum bisa difinalisasi: …": huruf awal kecil, diakhiri satu titik. */
+function alasanTanpaVarian(tokoAcuan: TokoAcuanDraft | undefined) {
+  const masalah = masalahTanpaVarian(tokoAcuan);
+  return `${masalah.charAt(0).toLowerCase()}${masalah.slice(1)}${masalah.endsWith(".") ? "" : "."}`;
 }
 
 /**
@@ -262,7 +273,15 @@ export function FinalisasiToko({
 }: {
   toko: Pick<
     TokoDraft,
-    "id" | "nama" | "versi" | "versiFinal" | "perluDihitungUlang" | "jumlahTertahan" | "kirimanSebelumnyaBelumSampai" | "dikirimPekanIni"
+    | "id"
+    | "nama"
+    | "versi"
+    | "versiFinal"
+    | "perluDihitungUlang"
+    | "jumlahTertahan"
+    | "kirimanSebelumnyaBelumSampai"
+    | "dikirimPekanIni"
+    | "tokoAcuan"
   > & { baris: Pick<BarisDraft, "kodeProduk" | "stokAkhir" | "jumlahKirim">[] };
   finalisasi: FinalisasiDraft;
 }) {
@@ -279,7 +298,7 @@ export function FinalisasiToko({
     toko.perluDihitungUlang.length > 0
       ? `dasar perhitungan toko ini berubah (${toko.perluDihitungUlang.map((a) => labelAlasan[a]).join(", ")}). Hitung ulang draft lebih dulu.`
       : toko.baris.length === 0
-        ? `${MASALAH_TANPA_VARIAN.toLowerCase()}.`
+        ? alasanTanpaVarian(toko.tokoAcuan)
         : toko.jumlahTertahan > 0
           ? `${formatAngka(toko.jumlahTertahan)} baris masih tertahan.`
           : null;
@@ -348,9 +367,12 @@ function TabelToko({
           <StatusToko toko={toko} terpilih={false} />
           {toko.dikirimPekanIni?.dikirim === false ? <PenandaTidakDikirim /> : null}
           {toko.baris.length === 0 ? null : <RingkasanTertahan jumlah={toko.jumlahTertahan} />}
+          {/* PRD A5 ▶ Keputusan 2026-11-04 (T151): asal varian dan rata-rata toko yang memakai toko acuan. */}
+          {toko.tokoAcuan === undefined ? null : <KeteranganTokoAcuan nama={toko.tokoAcuan.nama} />}
           <div className="lg:ml-auto">
             <FinalisasiToko toko={toko} finalisasi={finalisasi} />
           </div>
+          {toko.tokoAcuan?.catatanDataSendiri ? <CatatanDataSendiri /> : null}
         </div>
         <p className="text-muted-foreground">
           <TeksCakupan
@@ -365,7 +387,7 @@ function TabelToko({
         <BagianDikirimPekanIni toko={toko} ubah={finalisasi} />
         <PeringatanKirimanSebelumnya tanggal={toko.kirimanSebelumnyaBelumSampai} />
         {toko.baris.length === 0 ? (
-          <MasalahTanpaVarian />
+          <MasalahTanpaVarian tokoAcuan={toko.tokoAcuan} />
         ) : inputStok === null ? (
           <TabelVarian toko={toko} inputStok={null} rincian={rincian} />
         ) : (
@@ -537,7 +559,9 @@ function TabelRingkasanToko({
               <TableCell angka data-jumlah-baris={t.jumlahBaris}>
                 {formatAngka(t.jumlahBaris)}
               </TableCell>
-              <TableCell>{t.jumlahBaris === 0 ? <MasalahTanpaVarian /> : <RingkasanTertahan jumlah={t.jumlahTertahan} />}</TableCell>
+              <TableCell>
+                {t.jumlahBaris === 0 ? <MasalahTanpaVarian tokoAcuan={t.tokoAcuan} /> : <RingkasanTertahan jumlah={t.jumlahTertahan} />}
+              </TableCell>
               <TableCell>
                 <StatusToko toko={t} terpilih={dibuka} />
               </TableCell>

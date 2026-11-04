@@ -15,6 +15,7 @@ import { nilaiRincian } from "@/server/laporan/rincian";
 import { DaftarMasalah } from "./daftar-masalah";
 import { formatJumlahKirim, formatKebutuhan } from "./format-rincian";
 import { TeksCakupan } from "./teks-cakupan";
+import { KeteranganTokoAcuan } from "./toko-acuan";
 
 // Rincian perhitungan satu baris draft (T60; PRD A1, A6; DESIGN §8), juga satu baris rencana final dari snapshotnya
 // (T63). Zona kerja. Semua angka dibaca dari data tersimpan; komponen hanya menampilkan dan tidak menghitung rumus.
@@ -34,7 +35,10 @@ type BarisRincian = Pick<
   | "masalah"
   | "rincian"
 >;
-type TokoRincian = Pick<TokoDraft, "id" | "nama" | "polaJadwal" | "persiapanHari" | "panjangCakupan" | "tambah3HariCakupan" | "cakupan">;
+type TokoRincian = Pick<
+  TokoDraft,
+  "id" | "nama" | "polaJadwal" | "persiapanHari" | "panjangCakupan" | "tambah3HariCakupan" | "cakupan" | "tokoAcuan"
+>;
 type DasarRincian = Pick<DraftRencana, "bulanSumber" | "ranking">;
 
 const KATEGORI: readonly KategoriDasar[] = ["Senin–Kamis", "Jumat", "Sabtu", "Minggu"];
@@ -129,20 +133,27 @@ function TanggalCakupan({
   );
 }
 
+/**
+ * Rata-rata Ringkasan per kategori hari yang dipakai baris ini. Toko yang memakai toko acuan (PRD A5 ▶ Keputusan
+ * 2026-11-04, T151) meminjam rata-rata toko acuan: keterangannya tampil di sini, dan tautan penelusuran membuka Ringkasan
+ * toko acuan itu.
+ */
 function RataRataPerKategori({
   baris,
-  tokoId,
+  toko,
   bulanSumber,
   tautanRingkasan,
 }: {
   baris: BarisRincian;
-  tokoId: number;
+  toko: Pick<TokoRincian, "id" | "tokoAcuan">;
   bulanSumber: readonly string[];
   tautanRingkasan: boolean;
 }) {
   const rataRata = baris.rincian?.rataRata ?? {};
+  const idTokoSumber = toko.tokoAcuan?.id ?? toko.id;
   return (
     <Bagian judul="Rata-rata per kategori" data-tahap="rata-rata">
+      {toko.tokoAcuan === undefined ? null : <KeteranganTokoAcuan nama={toko.tokoAcuan.nama} className="font-semibold" />}
       <p className="text-muted-foreground">
         Rata-rata Ringkasan periode sumber: {bulanSumber.map(formatBulanLaporan).join(", ")}.
         {tautanRingkasan ? " Buka angka untuk menelusuri asalnya." : " Nilai saat difinalisasi."}
@@ -159,7 +170,7 @@ function RataRataPerKategori({
                 <span className="font-semibold tabular-nums">{formatAngka(nilai)}</span>
               ) : (
                 <Link
-                  href={urlPenelusuranRingkasan(bulanSumber, tokoId, baris.kodeProduk, kategori)}
+                  href={urlPenelusuranRingkasan(bulanSumber, idTokoSumber, baris.kodeProduk, kategori)}
                   data-tautan-ringkasan={kategori}
                   className={`${tautanTombolVariants({ garisBawah: true })} tabular-nums`}
                 >
@@ -290,7 +301,7 @@ export function RincianBaris({
       ) : (
         <>
           <TanggalCakupan toko={{ ...toko, cakupan }} rincian={baris.rincian} />
-          <RataRataPerKategori baris={baris} tokoId={toko.id} bulanSumber={draft.bulanSumber} tautanRingkasan={tautanRingkasan} />
+          <RataRataPerKategori baris={baris} toko={toko} bulanSumber={draft.bulanSumber} tautanRingkasan={tautanRingkasan} />
         </>
       )}
       <Kebutuhan baris={baris} />
