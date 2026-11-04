@@ -23,7 +23,7 @@ Dibaca oleh subagent `tiket:pelaksana` saat menulis kode dan oleh `tiket:peninja
 ## Kewenangan
 
 - Setiap server action dan route handler memeriksa peran dan hak tindakan **di server**, sebelum membaca atau menulis data. Menyembunyikan tombol di UI hanya tambahan.
-- "Admin" tidak memberi hak operator. Hak operator berasal dari penugasan gudang.
+- Hak tindakan operator berasal dari penugasan gudang. Admin memegang semua hak tindakan di setiap gudang aktif tanpa penugasan, dan tetap hanya-baca di gudang nonaktif (PRD A3 ▶ Keputusan 2026-11-04). Aturan siapa memegang hak tindakan ditulis di satu tempat, dan setiap pemeriksaan hak di server memakainya.
 
 ## Penyimpanan dan status
 
