@@ -159,16 +159,16 @@ export async function bacaJadwalAktif(tx: Tx, idToko: number): Promise<(JadwalTe
  * Menjadikan `baru` jadwal aktif toko. Jadwal aktif lama
  * dinonaktifkan atas nama `idPengguna` dan tetap tersimpan sebagai riwayat. Jadwal yang sama dengan jadwal aktif tidak
  * membuat versi baru. Jadwal baru disimpan tanpa tanggal jangkar (T135), beserta pilihan "Tambah 3 hari cakupan" (T144)
- * dan toko acuan (T149). `baru.idTokoAcuan` tidak diisi = toko acuan jadwal aktif dipertahankan (Salin jadwal belum
- * mengatur toko acuan, T150); toko acuan yang diisi sudah diperiksa `periksaTokoAcuan`. Harus dipanggil di dalam transaksi
- * setelah `periksaTujuan` mengunci toko.
+ * dan toko acuan (T149). `baru.idTokoAcuan` tidak diisi = tanpa toko acuan, sama seperti form jadwal tetap dan Salin jadwal
+ * (T150); toko acuan yang diisi sudah diperiksa `periksaTokoAcuan`. Harus dipanggil di dalam transaksi setelah
+ * `periksaTujuan` mengunci toko.
  */
 export async function gantiJadwalAktif(
   tx: Tx,
   { idToko, baru, idPengguna }: { idToko: number; baru: Jadwal & { idTokoAcuan?: number | null }; idPengguna: string },
 ) {
   const lama = await bacaJadwalAktif(tx, idToko);
-  const idTokoAcuan = baru.idTokoAcuan === undefined ? (lama?.idTokoAcuan ?? null) : baru.idTokoAcuan;
+  const idTokoAcuan = baru.idTokoAcuan ?? null;
   if (lama) {
     if (jadwalSama(lama, { ...baru, idTokoAcuan })) return;
     await tx
@@ -186,8 +186,27 @@ export async function gantiJadwalAktif(
   });
 }
 
-/** Kunci advisory: pengisian toko acuan berjalan bergiliran agar pemeriksaan "tidak berantai" tidak balapan. */
+/**
+ * Kunci advisory: pengisian toko acuan dan penonaktifan toko (T150) berjalan bergiliran agar pemeriksaan "tidak berantai"
+ * dan "toko acuan aktif" tidak balapan.
+ */
 const KUNCI_TOKO_ACUAN = 149;
+
+/** Mengambil kunci advisory toko acuan sampai transaksi `tx` selesai. */
+export async function kunciTokoAcuan(tx: Tx) {
+  await tx.execute(sql`select pg_advisory_xact_lock(${KUNCI_TOKO_ACUAN}, 0)`);
+}
+
+/** Nama toko lain yang jadwal tetap aktifnya memakai toko `idToko` sebagai toko acuan, urut nama. */
+export async function peminjamTokoAcuan(tx: Tx, idToko: number): Promise<string[]> {
+  const peminjam = await tx
+    .select({ nama: toko.nama })
+    .from(jadwalToko)
+    .innerJoin(toko, eq(toko.id, jadwalToko.tokoId))
+    .where(and(eq(jadwalToko.tokoAcuanId, idToko), eq(jadwalToko.status, "aktif")))
+    .orderBy(asc(toko.nama));
+  return peminjam.map((p) => p.nama);
+}
 
 const PESAN_TOKO_ACUAN_TIDAK_DITEMUKAN = "Toko acuan tidak ditemukan. Muat ulang halaman, lalu pilih lagi.";
 
@@ -205,24 +224,18 @@ const memakaiTokoAcuan = (klien: typeof db | Tx) =>
  * dalam transaksi penyimpanannya; pemeriksaan dan penyimpanan toko acuan berjalan bergiliran (kunci advisory).
  */
 async function periksaTokoAcuan(tx: Tx, { idToko, idTokoAcuan }: { idToko: number; idTokoAcuan: number }): Promise<string | null> {
-  await tx.execute(sql`select pg_advisory_xact_lock(${KUNCI_TOKO_ACUAN}, 0)`);
+  await kunciTokoAcuan(tx);
   const [acuan] = await tx
     .select({ nama: toko.nama, aktif: toko.aktif, memakaiTokoAcuan: sql<boolean>`exists (${memakaiTokoAcuan(tx)})` })
     .from(toko)
     .where(eq(toko.id, idTokoAcuan));
   if (!acuan) return PESAN_TOKO_ACUAN_TIDAK_DITEMUKAN;
   const [ini] = await tx.select({ nama: toko.nama }).from(toko).where(eq(toko.id, idToko));
-  const peminjam = await tx
-    .select({ nama: toko.nama })
-    .from(jadwalToko)
-    .innerJoin(toko, eq(toko.id, jadwalToko.tokoId))
-    .where(and(eq(jadwalToko.tokoAcuanId, idToko), eq(jadwalToko.status, "aktif")))
-    .orderBy(asc(toko.nama));
 
   const hasil = validasiTokoAcuan({
     toko: ini.nama,
     tokoAcuan: acuan,
-    dipakaiSebagaiAcuanOleh: peminjam.map((p) => p.nama),
+    dipakaiSebagaiAcuanOleh: await peminjamTokoAcuan(tx, idToko),
   });
   return hasil.hasil === "ditolak" ? hasil.pesan : null;
 }
@@ -312,10 +325,10 @@ export async function batalkanPengirimanDiLuarJadwalTerdampak(
 // (T113). Peran admin diperiksa pemanggil (server action). `hariIni` = tanggal saat ini (WIB).
 
 /**
- * Menyimpan jadwal tetap satu toko atas nama admin `idPengguna`. Toko harus terhubung ke gudang `idGudang`. Toko acuan
- * (T149): `null` = tanpa toko acuan, id = diperiksa ulang `periksaTokoAcuan`, tidak diisi = toko acuan jadwal aktif tidak
- * diubah (Salin jadwal). Mengubah toko acuan saja tidak mengubah tanggal kirim toko, jadi tidak ada pengiriman di luar
- * jadwal yang dibatalkan karenanya.
+ * Menyimpan jadwal tetap satu toko atas nama admin `idPengguna`, dari form jadwal tetap atau Salin jadwal. Toko harus
+ * terhubung ke gudang `idGudang`. Toko acuan (T149, T150): `null` atau tidak diisi = tanpa toko acuan, id = diperiksa ulang
+ * `periksaTokoAcuan`. Mengubah toko acuan saja tidak mengubah tanggal kirim toko, jadi tidak ada pengiriman di luar jadwal
+ * yang dibatalkan karenanya.
  */
 export async function aturJadwalTetap({
   idGudang,

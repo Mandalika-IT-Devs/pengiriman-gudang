@@ -1,5 +1,6 @@
 // Toko acuan pada jadwal tetap (PRD A5 ▶ Keputusan 2026-11-04; GLOSSARY "Toko acuan"): toko tanpa data penjualan meminjam
-// varian dan rata-rata penjualan toko lain. Toko acuan harus toko lain yang aktif, dan tidak boleh berantai.
+// varian dan rata-rata penjualan toko lain. Toko acuan harus toko lain yang aktif, dan tidak boleh berantai. Toko yang
+// sedang menjadi toko acuan tidak bisa dinonaktifkan (T150).
 
 export type MasukanValidasiTokoAcuan = {
   /** Nama toko yang jadwal tetapnya disimpan (nama toko unik). */
@@ -32,4 +33,25 @@ export function validasiTokoAcuan({ toko, tokoAcuan, dipakaiSebagaiAcuanOleh }: 
     };
   }
   return { hasil: "sah" };
+}
+
+export type MasukanNonaktifkanToko = {
+  /** Nama toko yang akan dinonaktifkan. */
+  toko: string;
+  /** Nama toko lain yang jadwal tetap aktifnya memakai toko ini sebagai toko acuan, dalam urutan tampil. */
+  dipakaiSebagaiAcuanOleh: readonly string[];
+};
+
+export type HasilNonaktifkanToko = { hasil: "boleh" } | { hasil: "ditolak"; pesan: string };
+
+/**
+ * Memeriksa apakah toko boleh dinonaktifkan (PRD A5 ▶ Keputusan 2026-11-04, "Menonaktifkan toko"): toko yang sedang
+ * menjadi toko acuan di jadwal tetap aktif toko lain ditolak, supaya toko acuan selalu aktif.
+ */
+export function nonaktifkanToko({ toko, dipakaiSebagaiAcuanOleh }: MasukanNonaktifkanToko): HasilNonaktifkanToko {
+  if (dipakaiSebagaiAcuanOleh.length === 0) return { hasil: "boleh" };
+  return {
+    hasil: "ditolak",
+    pesan: `Toko ${toko} masih menjadi toko acuan untuk ${dipakaiSebagaiAcuanOleh.join(", ")}. Ganti atau hapus toko acuan itu di Jadwal toko dulu.`,
+  };
 }

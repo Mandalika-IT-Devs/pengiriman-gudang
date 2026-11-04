@@ -45,7 +45,8 @@ export async function gantiNamaToko(input: unknown): Promise<HasilSimpan> {
 }
 
 /**
- * Mengaktifkan atau menonaktifkan satu toko (T76, dipindah ke halaman Toko di T111). Hanya admin.
+ * Mengaktifkan atau menonaktifkan satu toko (T76, dipindah ke halaman Toko di T111). Hanya admin. Toko yang sedang
+ * menjadi toko acuan tidak bisa dinonaktifkan (T150); pesannya dari server.
  * Hasil yang belum pasti tidak diulang di sini; klien menampilkannya lewat `usePenyimpanan`.
  */
 export async function ubahStatusToko(input: unknown): Promise<HasilSimpan> {
@@ -53,6 +54,7 @@ export async function ubahStatusToko(input: unknown): Promise<HasilSimpan> {
   const isian = z.object({ idToko: skemaIdToko, aktif: z.boolean({ error: "Status toko tidak dikenal." }) }).safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
-  const ada = await tetapkanAktifToko(isian.data.idToko, isian.data.aktif);
-  return muatUlangSetelahTokoBerubah(ada ? { keadaan: "berhasil" } : { keadaan: "gagal", pesan: PESAN_TIDAK_DITEMUKAN });
+  const hasil = await tetapkanAktifToko(isian.data.idToko, isian.data.aktif);
+  if (hasil.keadaan === "ditolak") return { keadaan: "gagal", pesan: hasil.pesan };
+  return muatUlangSetelahTokoBerubah(hasil.keadaan === "berhasil" ? hasil : { keadaan: "gagal", pesan: PESAN_TIDAK_DITEMUKAN });
 }

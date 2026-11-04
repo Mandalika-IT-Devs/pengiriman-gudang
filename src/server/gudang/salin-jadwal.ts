@@ -6,7 +6,8 @@ import { aturJadwalTetap } from "./jadwal";
 // Salin jadwal (T57; T112, PRD A5 ▶ Revisi 2026-10-13): alat admin di halaman Jadwal toko. Satu pengaturan jadwal tetap
 // diterapkan langsung ke beberapa toko dalam satu gudang, tanpa entitas template tersimpan. Setiap toko lewat jalur
 // satu-toko yang sama dengan form biasa (`aturJadwalTetap`), masing-masing dalam transaksinya sendiri, sehingga toko yang
-// gagal tidak membatalkan toko lain. Peran admin diperiksa pemanggil.
+// gagal tidak membatalkan toko lain. Toko acuan pengaturan itu ikut diterapkan ke setiap toko dan diperiksa per toko (PRD A5
+// ▶ Keputusan 2026-11-04, T150). Peran admin diperiksa pemanggil.
 
 /** Hasil satu toko (CODING_STANDARDS "Operasi massal mengembalikan hasil per item"). */
 export type HasilSalinToko = { idToko: number; status: "berhasil" } | { idToko: number; status: "ditolak" | "belumPasti"; pesan: string };
@@ -15,26 +16,30 @@ const PESAN_BELUM_PASTI =
   "Hasil belum pasti karena terjadi gangguan saat menyimpan toko ini. Muat ulang halaman dan periksa jadwal tetap toko ini sebelum mencoba lagi.";
 
 /**
- * Menerapkan `masukan` ke setiap toko di `daftarIdToko` (gudang `idGudang`) satu per satu, sesuai urutan dan tanpa
- * duplikat. Galat tak terduga pada satu toko dicatat sebagai `belumPasti` dan tidak diulang otomatis.
+ * Menerapkan `masukan` dan toko acuan `idTokoAcuan` (`null` atau tidak diisi = tanpa toko acuan) ke setiap toko di
+ * `daftarIdToko` (gudang `idGudang`) satu per satu, sesuai urutan dan tanpa duplikat. Toko yang melanggar aturan toko
+ * acuan, misalnya toko acuan itu sendiri, ditolak dengan pesannya. Galat tak terduga pada satu toko dicatat sebagai
+ * `belumPasti` dan tidak diulang otomatis.
  */
 export async function salinJadwalKeToko({
   idGudang,
   daftarIdToko,
   masukan,
+  idTokoAcuan = null,
   idPengguna,
   hariIni,
 }: {
   idGudang: number;
   daftarIdToko: readonly number[];
   masukan: MasukanJadwal;
+  idTokoAcuan?: number | null;
   idPengguna: string;
   hariIni: TanggalBisnis;
 }): Promise<HasilSalinToko[]> {
   const hasil: HasilSalinToko[] = [];
   for (const idToko of new Set(daftarIdToko)) {
     try {
-      const satu = await aturJadwalTetap({ idGudang, idToko, masukan, idPengguna, hariIni });
+      const satu = await aturJadwalTetap({ idGudang, idToko, masukan, idTokoAcuan, idPengguna, hariIni });
       hasil.push(satu.keadaan === "berhasil" ? { idToko, status: "berhasil" } : { idToko, status: "ditolak", pesan: satu.pesan });
     } catch (galat) {
       console.error(`[salin-jadwal] gudang ${idGudang}, toko ${idToko}:`, galat);

@@ -111,6 +111,7 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 - "Tambah toko": nama wajib diisi dan unik. Nama harus **sama persis** dengan nama blok toko di sheet penjualan, karena impor mengenali toko dari nama ini. Toko baru belum terhubung ke gudang, tetapi langsung dikenali impor berikutnya.
 - "Ubah nama": setelah nama diubah, sheet berikutnya harus memakai nama baru. Penjualan, jadwal, dan rencana final lama tetap melekat ke toko yang sama.
 - "Nonaktifkan" dan "Aktifkan": toko nonaktif tidak bisa ditambahkan ke gudang dan tidak ikut masuk draft, walaupun masih punya jadwal tetap. Tidak ada hapus permanen.
+  - Toko yang sedang menjadi toko acuan di jadwal tetap aktif toko lain tidak bisa dinonaktifkan. Contoh: "Toko MKG masih menjadi toko acuan untuk UJI BARU. Ganti atau hapus toko acuan itu di Jadwal toko dulu." Toko itu tetap aktif. Ganti atau kosongkan toko acuan toko-toko itu di **Data Master › Jadwal toko**, lalu nonaktifkan lagi.
 
 **Mengatur jadwal tetap** (**Data Master › Jadwal toko**):
 
@@ -127,6 +128,8 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
   - "Nonaktifkan jadwal" meminta konfirmasi lebih dulu.
   - Di bawah form ada "Riwayat jadwal tetap" toko itu, terbaru di atas.
 - "Salin jadwal ke beberapa toko" membuka panel untuk menerapkan satu pengaturan langsung ke beberapa toko dalam gudang itu. Hasilnya tampil per toko.
+  - Panel ini punya isian "Toko acuan" dengan keterangan yang sama seperti "Atur jadwal". Toko acuan yang dipilih diterapkan ke setiap toko terpilih. Jika dibiarkan "Tanpa toko acuan", setiap toko terpilih disimpan tanpa toko acuan, termasuk toko yang sebelumnya memakai toko acuan.
+  - Toko terpilih yang melanggar aturan toko acuan ditolak per toko dengan pesan yang sama seperti "Atur jadwal". Contohnya, jika toko acuan itu sendiri ikut terpilih, tokonya ditolak dengan "Toko acuan tidak boleh toko ini sendiri." Toko lain tetap tersimpan.
 - Perubahan jadwal tetap menandai draft yang terdampak sebagai "Perlu dihitung ulang". Stok yang sudah diisi tidak hilang, dan rencana final tidak berubah.
 - Mengubah atau menonaktifkan jadwal tetap bisa membatalkan pengiriman di luar jadwal secara otomatis. Contohnya: tanggal rutin yang dipindah tidak lagi menjadi tanggal kirim rutin, atau tanggal tambahan kini sudah menjadi tanggal kirim rutin. Alasan pembatalannya tercatat di riwayat.
 
