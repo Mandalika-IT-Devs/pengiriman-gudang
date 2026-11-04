@@ -222,6 +222,53 @@ describe("/admin/impor/[id]", () => {
     expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Aktifkan<\/button>/);
   });
 
+  // T145 — PRD A6 ▶ Keputusan 2026-11-04 (Teks yang tampil): klasifikasi produk display di halaman tinjau impor.
+  it('T145: produk baru berkategori display → "Manual — display"; kode -T tetap "Manual — display tester"', async () => {
+    const tahun = await tahunUjiBebas();
+    const toko = await buatTokoUji();
+    const display = kodeProdukUji("24H");
+    const displayHurufKecil = kodeProdukUji("GS15-B");
+    const tester = kodeProdukUji("CHA-T");
+    const id = await imporUji({
+      isi: buatWorkbookUji({
+        "JUNI (S)": sheetPenjualanUji({
+          toko: toko.nama,
+          bulan: 6,
+          hari: [1],
+          produk: [
+            produk(display, [1], "DISPLAY PRIA"),
+            produk(displayHurufKecil, [1], "Display Wanita"),
+            produk(tester, [1], "DISPLAY PRIA"),
+          ],
+        }),
+      }),
+      tahunImpor: tahun,
+      idPengguna: idAdmin,
+    });
+
+    const baris = (await tampil(id)).match(/<tr[^>]*>.*?<\/tr>/g) ?? [];
+    const barisProduk = (kode: string) => baris.find((b) => b.includes(kode)) ?? "";
+    expect(barisProduk(display)).toContain(">Manual — display</td>");
+    expect(barisProduk(displayHurufKecil)).toContain(">Manual — display</td>");
+    expect(barisProduk(tester)).toContain(">Manual — display tester</td>");
+  });
+
+  it('T145: kategori berubah menjadi DISPLAY WANITA → peringatan data produk berubah "Klasifikasi: Otomatis → Manual — display"', async () => {
+    const tahun = await tahunUjiBebas();
+    const toko = await buatTokoUji();
+    const berubah = kodeProdukUji();
+    const lembar = (p: ReturnType<typeof produk>[]) =>
+      buatWorkbookUji({ "JUNI (S)": sheetPenjualanUji({ toko: toko.nama, bulan: 6, hari: [1], produk: p }) });
+    const lama = await imporUji({ isi: lembar([produk(berubah, [1])]), tahunImpor: tahun, idPengguna: idAdmin });
+    await aktifkanImpor(lama, idAdmin);
+    const baru = await imporUji({ isi: lembar([produk(berubah, [1], "DISPLAY WANITA")]), tahunImpor: tahun, idPengguna: idAdmin });
+
+    const baris = (await tampil(baru)).match(/<tr[^>]*>.*?<\/tr>/g) ?? [];
+    const barisBerubah = baris.find((b) => b.includes(berubah) && b.includes("Data produk berubah"));
+    expect(barisBerubah).toContain("Kategori: 15ML GLITTER/LEATHER → DISPLAY WANITA");
+    expect(barisBerubah).toContain("Klasifikasi: Otomatis → Manual — display</li>");
+  });
+
   it("data produk sama dengan master → peringatan data produk berubah tidak muncul", async () => {
     const tahun = await tahunUjiBebas();
     const toko = await buatTokoUji();

@@ -122,6 +122,7 @@ function DaftarMasalah({ data }: { data: DataTinjauImpor }) {
 const labelKlasifikasi = {
   "display-tester": "Manual — display tester",
   "kertas-tester": "Manual — kertas tester",
+  display: "Manual — display",
 } as const;
 
 const labelKolomProduk = { nama: "Nama", ukuran: "Ukuran", kategori: "Kategori" } as const;
