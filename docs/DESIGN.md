@@ -123,7 +123,7 @@ Hanya mode terang (ADR-0010).
 >   - Ranking pusat (admin)
 >   - Persetujuan jadwal (admin)
 >   - Pengiriman Gudang (admin dan operator)
->   - Kirim di luar jadwal (pengguna dengan hak `kelola-usulan-jadwal` di sedikitnya satu gudang)
+>   - Kirim di luar jadwal (pengguna dengan hak `kelola-usulan-jadwal` di sedikitnya satu gudang; sejak PRD A3 ▶ Keputusan 2026-11-04 termasuk admin, yang memegang hak itu di setiap gudang aktif)
 >   - Untuk operator, kelompok ini berisi Pengiriman Gudang dan Kirim di luar jadwal.
 > - **Laporan**: Ringkasan, Kalender.
 > - **Data Master** (hanya admin): Jadwal toko, Keluarga aroma, Pemetaan produk, Alias nama stok, Libur.
@@ -166,7 +166,7 @@ Status **selalu** tampil sebagai ikon + teks. Warna hanya penguat, tidak pernah 
 | Error impor, Gagal, Stok negatif | `destructive` | `CircleX` |
 | Tersimpan tetapi gagal memuat ulang | `warning` | `RefreshCcw` + teks "Perubahan tersimpan. Muat ulang halaman untuk melihatnya." |
 | Belum diketahui (stok belum diisi), Tidak tersedia | `muted-foreground` | `CircleDashed`; tampil "—", **bukan 0** |
-| Manual (display/kertas tester), Diarsipkan | `muted-foreground` | `Hand` / `Archive` |
+| Manual (display, display tester, kertas tester), Diarsipkan | `muted-foreground` | `Hand` / `Archive` |
 | Belum disimpan (form) | `muted-foreground` | `PencilLine` + teks "Ada perubahan yang belum disimpan" |
 
 Kolom "Token" menentukan warna **ikon** dan latar badge, bukan warna teks. Teks badge memakai `foreground`.

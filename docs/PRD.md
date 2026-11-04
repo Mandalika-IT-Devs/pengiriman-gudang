@@ -106,6 +106,7 @@ Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan 
 > ▶ Keputusan (2026-10-12, UAT kedua): pemilik **mengonfirmasi** display dummy `DD-GS15-B` dan `DD-GS15-W` tetap dipetakan ke keluarga GIFT SET BOX.
 > - **Seed UAT** (hanya `pnpm uat`, bukan instalasi produksi) menambahkan: periode sumber Juni, Juli, Agustus 2026 untuk Gudang Cibubur, Gudang Bali, dan Gudang Bandung; akun Operator Cibubur, Operator Bali, Operator Bandung (peran viewer) yang ditugaskan ke gudangnya dengan kelima hak tindakan. Kata sandi ketiga akun dari variabel lingkungan `UAT_SANDI_OPERATOR`. Pusat dan Gudang Jabodetabek dibiarkan kosong untuk skenario A3–A5.
 > - Impor penjualan dan ranking pusat **tidak** di-seed: keduanya pekerjaan rutin admin setiap bulan.
+> ▶ Keputusan (2026-11-04): sejak A6 ▶ Keputusan 2026-11-04, display dummy `DD-GS15-B` dan `DD-GS15-W` adalah produk manual. Pemetaannya ke GIFT SET BOX tetap, tetapi tidak lagi memengaruhi angka apa pun.
 
 > ▶ Revisi (2026-10-13, pemilik): **admin mengelola daftar gudang dan toko dari aplikasi.** Kalimat "MANDALIKA memiliki lima gudang operasional" di atas dan daftar nama gudang pada ▶ OD-02 menjadi **data awal**, bukan batas. Tidak ada hapus permanen: gudang dan toko yang tidak dipakai lagi **dinonaktifkan**, karena data penjualan, jadwal, dan rencana final lama masih merujuk kepadanya.
 > - **Gudang:** tambah (nama wajib dan unik), ubah nama, nonaktifkan, dan aktifkan kembali.
@@ -137,6 +138,20 @@ Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan 
 >   - Pemilik memilih ini setelah risikonya dijelaskan: salinan kata sandi tersimpan di server, dan catatan seperti "Difinalisasi oleh" tidak lagi membuktikan siapa yang bertindak bila kata sandi itu dipakai orang lain.
 > - **Atur ulang kata sandi.** Admin bisa mengisi kata sandi baru untuk akun lain (bukan akun sendiri) tanpa mengetahui kata sandi lama. Akun itu keluar dari semua perangkat dan harus masuk lagi dengan kata sandi baru. Admin menyampaikan kata sandi baru kepada penggunanya.
 > - **Terakhir diubah.** Halaman Pengguna menampilkan kapan kata sandi setiap akun terakhir diisi dan oleh siapa. Untuk kata sandi yang diisi sebelum fitur ini, ditampilkan "—".
+
+> ▶ Keputusan (2026-11-04, pemilik): **admin bertindak sebagai operator di gudang aktif mana pun, tanpa penugasan.** Keputusan ini menggantikan kalimat "Admin tidak otomatis menjadi operator pengiriman" di paragraf ketiga A3 dan ▶ Keputusan 2026-10-09 "admin boleh **melihat** halaman Pengiriman Gudang semua gudang (hanya-baca), tanpa tindakan operasional". Kalimat "Setiap tindakan harus mengikuti kewenangan pengguna" tetap berlaku.
+> - **Hak:** admin memegang kelima hak tindakan (`kelola-usulan-jadwal`, `input-stok`, `hitung-kebutuhan`, `finalisasi`, `ekspor`) di setiap gudang **aktif**, dengan akunnya sendiri, tanpa penugasan. Penugasan yang mungkin dimiliki akun admin tidak mengurangi hak itu.
+> - **Gudang nonaktif** tetap hanya-baca bagi admin (▶ Revisi 2026-10-13 di atas).
+> - **Yang berubah di layar admin:**
+>   - Halaman Pengiriman Gudang setiap gudang aktif tampil tanpa label "Hanya-baca", dengan semua tindakan: hitung kebutuhan, isi dan unggah stok, finalisasi, ekspor rencana final, dan pilihan "Dikirim pekan ini" (A5 ▶ Revisi 2026-10-19). Admin tetap melihat daftar gudang lebih dulu, tidak langsung masuk ke satu gudang.
+>   - Sidebar admin menampilkan "Kirim di luar jadwal" di Pekerjaan rutin, tepat setelah Pengiriman Gudang, selama ada gudang aktif.
+>   - Pengiriman di luar jadwal yang dibuat admin langsung berlaku di semua gudang (A5 ▶ Keputusan 2026-11-04).
+> - **Pencatatan:** setiap tindakan admin tercatat atas nama admin itu, apa adanya, tanpa penanda khusus. Contoh: "Difinalisasi oleh Admin", "Dipilih Admin, 05-11-2026".
+> - **Tidak berubah:**
+>   - Beranda admin. Kartu "Perlu tindakan" dan langkah admin tetap seperti sekarang, tanpa kartu atau langkah operator per gudang.
+>   - Aturan Riwayat (A7).
+>   - Persetujuan jadwal untuk usulan operator.
+>   - Hak operator, yang tetap berasal dari penugasan.
 
 ### A4. Ketika saya menentukan sumber perhitungan gudang
 
@@ -389,6 +404,73 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 > - Menyimpan ulang dengan pola, hari kirim, persiapan, dan pilihan ini yang sama tidak membuat versi jadwal baru.
 > - Rencana final menyimpan pilihan ini di snapshotnya. Rencana final yang sudah ada tidak berubah.
 
+> ▶ Keputusan (2026-11-04, pemilik): **pengiriman di luar jadwal yang dibuat admin.** Admin memegang hak `kelola-usulan-jadwal` di setiap gudang aktif (A3 ▶ Keputusan 2026-11-04).
+> - Admin boleh membuat pengiriman di luar jadwal di setiap gudang aktif, dengan isian dan syarat yang sama seperti operator (▶ Revisi 2026-10-13).
+> - Pengiriman itu **langsung berlaku** di semua gudang, termasuk gudang selain Pusat, tanpa antrean persetujuan.
+>   - Admin tercatat sebagai pengusul **dan** penyetuju, dengan waktu keputusan sama dengan waktu usulnya.
+>   - Kolom "Diputuskan" dan kolom "Penyetuju/penolak" di ekspor Riwayat berisi nama admin itu, juga di Pusat. Teks "Langsung berlaku (Pusat)" tetap untuk pengiriman yang dibuat operator Pusat.
+> - Form untuk admin sama dengan form Pusat di semua gudang: judul "Atur pengiriman di luar jadwal — <gudang>", keterangan "Pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.", dan tombol "Simpan".
+> - Daftar **"Perlu tindakan"** di halaman Kirim di luar jadwal, bagi admin, berisi entri berikut di setiap gudang aktif:
+>   - usulan operator berstatus Menunggu. Tombol Tarik tetap hanya untuk pengusulnya; admin menyetujui atau menolaknya di Persetujuan jadwal;
+>   - pengiriman berlaku yang masih bisa dibatalkan, dengan tombol Batalkan. Syarat dan alasan wajib pembatalan tidak berubah.
+> - Usulan operator di gudang selain Pusat tetap menunggu persetujuan admin. Aturan operator Pusat tidak berubah.
+
+> ▶ Keputusan (2026-11-04, pemilik): **toko acuan pada jadwal tetap.** Toko yang belum punya data penjualan, misalnya toko baru, meminjam varian dan rata-rata penjualan dari toko lain yang dipilih admin. Jadwal tetapnya tetap diatur sendiri.
+>
+> **Pengaturan**
+> - Form jadwal tetap punya isian **"Toko acuan"** (pilihan, boleh kosong), di bawah checkbox "Tambah 3 hari cakupan". Awalnya kosong. Hanya admin yang mengaturnya, sama seperti pola dan hari kirim.
+> - Satu toko acuan berlaku untuk keempat kategori hari (Senin–Kamis, Jumat, Sabtu, Minggu).
+> - Di bawah isian selalu tampil keterangan: "Isi hanya untuk toko yang belum punya data penjualan. Varian dan rata-rata diambil dari toko acuan, sedangkan jadwal, stok, dan kategori hari tetap milik toko ini."
+> - **Pilihan toko acuan:** toko **aktif** mana pun selain toko itu sendiri, dari gudang mana pun atau yang belum terhubung ke gudang, asalkan jadwal tetap aktifnya tidak memakai toko acuan sendiri. Daftarnya urut nama toko.
+> - **Saat menyimpan**, server memeriksa ulang dan menolak dengan pesan berikut:
+>   - toko acuan sama dengan toko itu: "Toko acuan tidak boleh toko ini sendiri.";
+>   - toko acuan nonaktif: "Toko <B> nonaktif, jadi tidak bisa menjadi toko acuan.";
+>   - toko acuan memakai toko acuan sendiri: "Toko <B> memakai toko acuan sendiri, jadi tidak bisa menjadi toko acuan.";
+>   - toko ini sudah menjadi toko acuan toko lain: "Toko <A> menjadi toko acuan untuk <daftar nama toko, dipisah koma>, jadi tidak bisa memakai toko acuan sendiri."
+>
+>   Jadi toko acuan **tidak boleh berantai**.
+> - Form **Salin jadwal ke beberapa toko** punya isian dan keterangan yang sama, dan menerapkan toko acuannya ke setiap toko terpilih. Toko terpilih yang melanggar aturan di atas ditolak per toko dengan pesan yang sama, misalnya toko acuan itu sendiri ikut terpilih. Toko lain tetap tersimpan.
+> - **Menonaktifkan toko** (A3 ▶ Revisi 2026-10-13) yang sedang menjadi toko acuan di jadwal tetap aktif toko lain ditolak: "Toko <B> masih menjadi toko acuan untuk <daftar nama toko>. Ganti atau hapus toko acuan itu di Jadwal toko dulu."
+>
+> **Perhitungan (A6)**
+> - Untuk toko dengan toko acuan, draft memakai **toko acuan sebagai sumber varian dan rata-rata**:
+>   - **Varian toko** = semua produk yang barisnya ada di impor aktif periode sumber untuk **toko acuan**, termasuk yang penjualannya nol (A6 ▶ Keputusan 2026-10-09, dengan toko acuan menggantikan toko itu).
+>   - **Rata-rata** = Rata-rata Ringkasan **toko acuan** per kategori hari, atas bulan periode sumber **gudang toko itu** (gudang yang menghitung draft), bukan periode sumber gudang toko acuan.
+> - Yang tetap milik toko itu sendiri:
+>   - tanggal kirim toko dan cakupan (jadwal tetap, pengiriman di luar jadwal, tambah 3 hari cakupan);
+>   - kategori efektif setiap tanggal cakupan, yaitu perubahan kategori khusus toko itu, bukan khusus toko acuan;
+>   - stok akhir dan unggah stok;
+>   - pilihan "Dikirim pekan ini", kirim terakhir, finalisasi, dan rencana final.
+> - Buffer, klasifikasi produk, dan pemetaan keluarga aroma tidak berubah, karena ketiganya berlaku per produk.
+> - Toko acuan **tetap dipakai** walaupun toko itu sudah punya data penjualan sendiri di periode sumber, sampai admin menghapus toko acuannya. Draft lalu menampilkan catatan (lihat Tampilan).
+> - Jika toko acuan tidak punya varian di periode sumber, toko itu tampil dengan masalah "Tidak ada varian dari periode sumber untuk toko acuan <B>." dan tidak bisa difinalisasi, sama seperti toko tanpa varian (A7 ▶ Keputusan 2026-10-11).
+> - **Contoh** (golden `tests/golden/toko-acuan.json`): TOKO BARU, jadwal tetap mingguan Kamis (H−1), toko acuan SMB. Rata-rata SMB `PW110P-GOR` Senin–Kamis 5, Jumat 5, Sabtu 8, Minggu 7 (contoh A6 ▶ Revisi 2026-10-12).
+>   - Kirim Kamis 29-10-2026 → cakupan Rabu 28-10 sampai Rabu 04-11-2026, 8 hari. Kebutuhan = (5 × 5) + (1 × 5) + (1 × 8) + (1 × 7) = **45**. Produk tujuh besar dengan stok akhir 20: 45 × 120% − 20 = **34**.
+>   - Admin mengubah kategori Jumat 30-10-2026 menjadi Minggu **khusus TOKO BARU** → kebutuhan (5 × 5) + (1 × 8) + (2 × 7) = **47**.
+>   - Perubahan yang sama **khusus SMB** tidak mengubah kebutuhan TOKO BARU: tetap **45**.
+>
+> **Perubahan dan peralihan**
+> - Mengisi, mengganti, atau menghapus toko acuan adalah perubahan jadwal tetap:
+>   - menjadi versi jadwal baru dan tercatat di riwayat jadwal tetap;
+>   - draft yang belum final ditandai perlu dihitung ulang ("Jadwal toko"), dengan stok yang sudah diisi tetap dipertahankan (A7);
+>   - pengiriman di luar jadwal tidak dibatalkan, karena tanggal kirim toko tidak berubah.
+> - Menyimpan ulang dengan pola, hari kirim, persiapan, tambah 3 hari cakupan, dan toko acuan yang sama tidak membuat versi jadwal baru.
+> - Jadwal tetap yang sudah ada awalnya tanpa toko acuan.
+> - Rencana final menyimpan toko acuan (nama saat finalisasi) di snapshotnya. Rencana final yang sudah ada tidak berubah.
+>
+> **Tampilan**
+> - **Pola** ditulis "<pola> · toko acuan <B>", misalnya "Mingguan · toko acuan SMB". Jika ada tambah 3 hari cakupan, penanda toko acuan menyusul sesudahnya: "Mingguan · +3 hari cakupan · toko acuan SMB". Tidak ada kolom baru. Penanda ini tampil di tempat yang sama dengan ▶ Keputusan 2026-10-27:
+>   - tabel Jadwal toko (admin);
+>   - bagian Jadwal toko di Pengiriman Gudang;
+>   - riwayat jadwal tetap;
+>   - jadwal tetap pembanding di halaman Persetujuan jadwal;
+>   - rincian rencana final.
+> - **Draft:**
+>   - Kepala toko menampilkan "Rata-rata dipinjam dari toko acuan <B>", dengan bantuan istilah "Toko acuan" (DESIGN §11.6): "Toko yang varian dan rata-rata penjualannya dipinjam toko ini, karena toko ini belum punya data penjualan. Diatur admin di jadwal tetap; jadwal, stok, dan kategori hari tetap milik toko ini."
+>   - Di rincian baris, rata-rata per kategori diberi keterangan yang sama. Tautan penelusurannya membuka Ringkasan toko acuan.
+>   - Jika toko itu sudah punya data penjualan sendiri di periode sumber (minimal satu baris di impor aktif periode sumber), kepala toko juga menampilkan catatan: "Toko ini sudah punya data penjualan sendiri di periode sumber. Rata-rata tetap dipinjam dari toko acuan sampai admin menghapusnya di Jadwal toko." Catatan ini tidak menahan finalisasi.
+> - Tabel Riwayat, ekspor satu rencana final, ekspor Riwayat, Ringkasan, Kalender, dan Beranda tidak berubah.
+
 
 Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
 
@@ -466,6 +548,8 @@ Ranking pusat berasal dari file yang dipublikasikan admin dengan bulan dan versi
 > - Jika belum ada ranking yang dipublikasikan, perhitungan tidak berjalan dan pesan "Ranking pusat belum dipublikasikan" tampil.
 > - Produk otomatis yang keluarga aromanya belum dipetakan tampil sebagai masalah dan menahan finalisasi (ADR-0006).
 
+> ▶ Keputusan (2026-11-04, pemilik): jika jadwal tetap toko memakai **toko acuan**, varian dan rata-rata pada butir "Varian per toko" dan "Rata-rata yang dipakai" di atas diambil dari toko acuan, atas bulan periode sumber gudang toko itu. Cakupan, kategori efektif, dan stok tetap milik toko itu. Rincian dan contohnya ada di A5 ▶ Keputusan 2026-11-04 (toko acuan).
+
 > ▶ Keputusan (2026-10-10, T58): draft rencana.
 > - Jika **semua** bulan periode sumber tidak punya data aktif, perhitungan ditolak dengan pesan yang jelas dan draft tidak dibuat (sama seperti saat periode sumber belum ditetapkan).
 > - Toko nonaktif tidak ikut masuk draft walaupun masih punya jadwal aktif. Halaman Pengiriman Gudang menampilkan peringatan "Toko <nama> nonaktif tetapi masih punya jadwal aktif".
@@ -513,6 +597,32 @@ Stok yang belum diisi berarti belum diketahui, bukan nol. Stok negatif untuk pro
 Display, display tester, dan kertas tester ditangani manual tanpa jumlah kirim atau buffer otomatis. Jangan menganggap semua produk dengan kata “tester” memiliki perlakuan yang sama tanpa konfirmasi.
 
 > ▶ Revisi (2026-10-08, ADR-0007): pemilik mengoreksi kalimat di atas. **Yang ditangani manual hanya display tester (kode berakhiran `-T`) dan kertas tester (kategori `KTP`/`KTL`).** Display biasa, display dummy, display rework, ATOMIZER, GIFT SET, HAMPERS, KEMASAN, VIAL, dan ALKOHOL dihitung otomatis. Golden: `tests/golden/klasifikasi-produk.json`.
+
+> ▶ Keputusan (2026-11-04, pemilik, ADR-0012): **produk display menjadi produk manual.** Revisi 2026-10-08 di atas berubah: display biasa, display dummy, dan display rework tidak lagi dihitung otomatis. ADR-0007 digantikan ADR-0012.
+> - **Produk manual** adalah produk yang memenuhi salah satu syarat berikut, diperiksa berurutan:
+>   1. **display tester**: kode berakhiran `-T`, apa pun kategorinya (tidak berubah);
+>   2. **kertas tester**: kategori `KTP` atau `KTL`, dicocokkan persis seperti sebelumnya (tidak berubah);
+>   3. **display**: kategori `DISPLAY PRIA` atau `DISPLAY WANITA`, apa pun kodenya, termasuk display dummy (`DD-…`) dan display rework (`-R`).
+> - Karena aturan kode didahulukan, produk berkode `-T` yang berkategori DISPLAY tetap beralasan display tester.
+> - **Pencocokan kategori display** dilakukan setelah normalisasi: spasi di awal dan akhir dibuang, spasi ganda menjadi satu, dan huruf dijadikan besar, sama seperti alias nama stok. Jadi `Display Pria` dan `DISPLAY  WANITA` juga display. Kategori yang hanya mirip, misalnya `DISPLAY` atau `DISPLAY PRIA 10ML`, tetap otomatis.
+> - Normalisasi ini **hanya** untuk kategori display (pilihan pemilik). `KTP` dan `KTL` tetap dicocokkan persis, jadi kategori `ktp` tetap otomatis.
+> - Semua produk lain tetap otomatis: parfum, ATOMIZER, GIFT SET, HAMPERS, KEMASAN, VIAL, ALKOHOL, dan seterusnya.
+> - **Data yang sudah ada:** klasifikasi master produk dihitung ulang dengan aturan ini satu kali saat aturan berlaku, tanpa menunggu impor berikutnya.
+>   - Di data awal (359 produk), ada 89 produk display. Sembilan di antaranya sudah display tester, jadi 80 produk pindah dari otomatis ke manual. Produk manual menjadi 154, sebelumnya 74.
+> - **Draft yang belum final:**
+>   - Draft yang memuat produk yang klasifikasinya berubah ditandai "Perlu dihitung ulang", dengan dasar yang berubah **"Aturan produk manual"**.
+>   - Hanya toko yang memuat produk itu yang tertahan finalisasinya (A7 ▶ Keputusan 2026-10-11).
+>   - Angka tidak berubah sebelum operator menekan Hitung ulang, dan stok yang sudah diisi tetap dipertahankan.
+> - **Rencana final yang sudah ada tidak berubah** (snapshot).
+> - Aturan produk manual yang lain tidak berubah (▶ Keputusan T05 di atas):
+>   - statusnya selalu `manual`, berapa pun stoknya;
+>   - stok kosong atau negatif tidak menahan finalisasi, dan stok yang diisi tetap disimpan;
+>   - tombol "Isi 0 untuk stok yang kosong" tidak mengisinya;
+>   - keluarga aroma yang belum dipetakan tidak menahan finalisasi.
+> - **Teks yang tampil:**
+>   - klasifikasi di halaman tinjau impor: "Manual — display";
+>   - bantuan istilah "Produk otomatis dan manual": "Produk manual adalah display (kategori DISPLAY PRIA/DISPLAY WANITA), display tester (kode berakhiran -T), dan kertas tester (kategori KTP/KTL), tanpa jumlah kirim dan tanpa buffer otomatis. Semua produk lain adalah produk otomatis."
+> - Golden: `tests/golden/klasifikasi-produk-2026-11-04.json`, menggantikan `tests/golden/klasifikasi-produk.json`.
 
 ### A7. Ketika saya menyimpan dan memfinalisasi
 

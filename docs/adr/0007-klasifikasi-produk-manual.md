@@ -1,6 +1,6 @@
 # Hanya display tester dan kertas tester yang ditangani manual
 
-Status: accepted (2026-10-08) — koreksi pemilik atas kalimat PRD A6
+Status: superseded oleh ADR-0012 (2026-11-04): produk kategori DISPLAY PRIA/DISPLAY WANITA juga manual. Sebelumnya accepted (2026-10-08) — koreksi pemilik atas kalimat PRD A6
 
 Produk ditangani manual (tanpa jumlah kirim dan tanpa buffer otomatis) jika memenuhi salah satu syarat:
 

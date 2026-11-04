@@ -1,0 +1,169 @@
+{
+  "sumber": "docs/PRD.md A5 ▶ Keputusan 2026-11-04 (toko acuan) dan A6 ▶ Keputusan 2026-11-04. Rata-rata SMB PW110P-GOR dari PRD A6 ▶ Revisi 2026-10-12. TOKO BARU adalah toko contoh tanpa data penjualan. Buffer tujuh besar 20% dan rumus stok target dari PRD A6 ▶ Revisi 2026-10-14.",
+  "sumberVarianDanRataRata": [
+    {
+      "nama": "Tanpa toko acuan: memakai data toko itu sendiri",
+      "toko": "SMB",
+      "tokoAcuan": null,
+      "punyaDataSendiri": true,
+      "sumber": "SMB",
+      "catatanDataSendiri": false
+    },
+    {
+      "nama": "Toko baru dengan toko acuan",
+      "toko": "TOKO BARU",
+      "tokoAcuan": "SMB",
+      "punyaDataSendiri": false,
+      "sumber": "SMB",
+      "catatanDataSendiri": false
+    },
+    {
+      "nama": "Toko acuan tetap dipakai walaupun toko sudah punya data sendiri; draft menampilkan catatan",
+      "toko": "LMK",
+      "tokoAcuan": "SMB",
+      "punyaDataSendiri": true,
+      "sumber": "SMB",
+      "catatanDataSendiri": true,
+      "teksCatatan": "Toko ini sudah punya data penjualan sendiri di periode sumber. Rata-rata tetap dipinjam dari toko acuan sampai admin menghapusnya di Jadwal toko."
+    }
+  ],
+  "validasiTokoAcuan": [
+    {
+      "nama": "Tanpa toko acuan selalu sah",
+      "toko": "TOKO BARU",
+      "tokoAcuan": null,
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "sah"
+    },
+    {
+      "nama": "Toko acuan aktif dari gudang lain",
+      "toko": "TOKO BARU",
+      "tokoAcuan": { "nama": "PMS", "aktif": true, "memakaiTokoAcuan": false },
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "sah"
+    },
+    {
+      "nama": "Toko acuan yang belum terhubung ke gudang",
+      "toko": "TOKO BARU",
+      "tokoAcuan": { "nama": "DPM", "aktif": true, "memakaiTokoAcuan": false },
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "sah"
+    },
+    {
+      "nama": "Toko itu sendiri",
+      "toko": "TOKO BARU",
+      "tokoAcuan": { "nama": "TOKO BARU", "aktif": true, "memakaiTokoAcuan": false },
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "ditolak",
+      "pesan": "Toko acuan tidak boleh toko ini sendiri."
+    },
+    {
+      "nama": "Toko acuan nonaktif",
+      "toko": "TOKO BARU",
+      "tokoAcuan": { "nama": "SMB", "aktif": false, "memakaiTokoAcuan": false },
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "ditolak",
+      "pesan": "Toko SMB nonaktif, jadi tidak bisa menjadi toko acuan."
+    },
+    {
+      "nama": "Berantai: toko acuan memakai toko acuan sendiri",
+      "toko": "TOKO BARU",
+      "tokoAcuan": { "nama": "LMK", "aktif": true, "memakaiTokoAcuan": true },
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "ditolak",
+      "pesan": "Toko LMK memakai toko acuan sendiri, jadi tidak bisa menjadi toko acuan."
+    },
+    {
+      "nama": "Berantai: toko ini sudah menjadi toko acuan dua toko lain",
+      "toko": "SMB",
+      "tokoAcuan": { "nama": "MKG", "aktif": true, "memakaiTokoAcuan": false },
+      "dipakaiSebagaiAcuanOleh": ["LMK", "TOKO BARU"],
+      "hasil": "ditolak",
+      "pesan": "Toko SMB menjadi toko acuan untuk LMK, TOKO BARU, jadi tidak bisa memakai toko acuan sendiri."
+    }
+  ],
+  "nonaktifkanToko": [
+    {
+      "nama": "Toko yang menjadi toko acuan tidak bisa dinonaktifkan",
+      "toko": "SMB",
+      "dipakaiSebagaiAcuanOleh": ["TOKO BARU"],
+      "hasil": "ditolak",
+      "pesan": "Toko SMB masih menjadi toko acuan untuk TOKO BARU. Ganti atau hapus toko acuan itu di Jadwal toko dulu."
+    },
+    {
+      "nama": "Toko yang bukan toko acuan boleh dinonaktifkan",
+      "toko": "MKG",
+      "dipakaiSebagaiAcuanOleh": [],
+      "hasil": "boleh"
+    }
+  ],
+  "kasusKebutuhan": {
+    "catatan": "TOKO BARU (tanpa data penjualan) meminjam rata-rata SMB. Cakupan dan kategori efektif milik TOKO BARU. Angka sama dengan contoh 'tanpaTambahan' di tambah-3-hari-cakupan.json, karena jadwal dan rata-ratanya sama.",
+    "toko": "TOKO BARU",
+    "tokoAcuan": "SMB",
+    "jadwal": {
+      "pola": "mingguan",
+      "hariKirim": [{ "hari": "Kamis", "persiapan": "H-1" }],
+      "tambah3HariCakupan": false
+    },
+    "tanggalKirim": "2026-10-29",
+    "persiapanHari": 1,
+    "panjangCakupan": 7,
+    "rataRataTokoAcuan": {
+      "Senin–Kamis": 5,
+      "Jumat": 5,
+      "Sabtu": 8,
+      "Minggu": 7
+    },
+    "tanggalCakupan": [
+      { "tanggal": "2026-10-28", "hari": "Rabu", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-10-29", "hari": "Kamis", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-10-30", "hari": "Jumat", "kategoriEfektif": "Jumat" },
+      { "tanggal": "2026-10-31", "hari": "Sabtu", "kategoriEfektif": "Sabtu" },
+      { "tanggal": "2026-11-01", "hari": "Minggu", "kategoriEfektif": "Minggu" },
+      { "tanggal": "2026-11-02", "hari": "Senin", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-03", "hari": "Selasa", "kategoriEfektif": "Senin–Kamis" },
+      { "tanggal": "2026-11-04", "hari": "Rabu", "kategoriEfektif": "Senin–Kamis" }
+    ],
+    "jumlahHari": 8,
+    "kebutuhan": 45,
+    "rincianKebutuhan": "(5 × 5) + (1 × 5) + (1 × 8) + (1 × 7) = 45",
+    "jumlahKirim": {
+      "persenBuffer": 20,
+      "stokAkhir": 20,
+      "stokTarget": 54,
+      "jumlahKirim": 34,
+      "catatan": "⌈45 × 1,20⌉ − 20 = 54 − 20 = 34; di aplikasi: 45 × 120% − 20 = 34."
+    },
+    "perubahanKategori": [
+      {
+        "nama": "Perubahan kategori khusus TOKO BARU berlaku untuk cakupannya",
+        "tanggal": "2026-10-30",
+        "cakupanPerubahan": "TOKO BARU",
+        "kategoriBaru": "Minggu",
+        "kategoriEfektif30Oktober": "Minggu",
+        "kebutuhan": 47,
+        "rincianKebutuhan": "(5 × 5) + (1 × 8) + (2 × 7) = 47",
+        "stokTarget": 57,
+        "jumlahKirim": 37
+      },
+      {
+        "nama": "Perubahan kategori khusus SMB (toko acuan) tidak mengenai cakupan TOKO BARU",
+        "tanggal": "2026-10-30",
+        "cakupanPerubahan": "SMB",
+        "kategoriBaru": "Minggu",
+        "kategoriEfektif30Oktober": "Jumat",
+        "kebutuhan": 45,
+        "rincianKebutuhan": "(5 × 5) + (1 × 5) + (1 × 8) + (1 × 7) = 45",
+        "stokTarget": 54,
+        "jumlahKirim": 34
+      }
+    ]
+  },
+  "tokoAcuanTanpaVarian": {
+    "catatan": "Toko acuan tidak punya baris di impor aktif periode sumber: toko peminjam tampil dengan masalah ini dan tidak bisa difinalisasi.",
+    "toko": "TOKO BARU",
+    "tokoAcuan": "SMB",
+    "pesan": "Tidak ada varian dari periode sumber untuk toko acuan SMB."
+  }
+}

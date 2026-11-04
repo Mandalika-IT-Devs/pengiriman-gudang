@@ -17,7 +17,7 @@ Gerai penjualan yang muncul sebagai blok kolom di sheet penjualan (misalnya PMS,
 _Avoid_: outlet, store
 
 **Admin**:
-Peran yang mengelola gudang, toko, hubungan toko, jadwal tetap, penugasan operator, hak tindakan, ranking pusat, periode sumber, dan persetujuan. Admin tidak otomatis menjadi operator.
+Peran yang mengelola gudang, toko, hubungan toko, jadwal tetap, penugasan operator, hak tindakan, ranking pusat, periode sumber, dan persetujuan. Di setiap gudang aktif, admin juga memegang kelima hak tindakan tanpa penugasan, sehingga bisa bertindak sebagai operator. Gudang nonaktif tetap hanya-baca bagi admin.
 
 **Operator**:
 Pengguna yang ditugaskan ke gudang tertentu untuk mengusulkan pengiriman di luar jadwal, mengisi stok, menghitung, memfinalisasi, dan mengekspor sesuai hak tindakannya.
@@ -26,7 +26,7 @@ Pengguna yang ditugaskan ke gudang tertentu untuk mengusulkan pengiriman di luar
 Pengguna yang hanya melihat laporan sesuai haknya.
 
 **Hak tindakan**:
-Izin per operator per gudang untuk satu jenis tindakan (misalnya memfinalisasi atau mengekspor).
+Izin per operator per gudang untuk satu jenis tindakan (misalnya memfinalisasi atau mengekspor). Operator mendapatkannya dari penugasan. Admin memegang kelima hak tindakan di setiap gudang aktif.
 
 **Akun saya**:
 Halaman setiap pengguna yang sudah masuk untuk melihat akunnya dan mengganti kata sandinya sendiri.
@@ -117,8 +117,12 @@ Bulan laporan yang dipakai gudang sebagai dasar rata-rata. Ditetapkan admin per 
 _Avoid_: bulan ranking, filter Ringkasan
 
 **Jadwal tetap**:
-Pengaturan hari pengiriman rutin satu toko (pola, hari kirim, persiapan). Hanya satu yang aktif per toko. Diatur admin. Disebut "jadwal aktif" di teks lama.
+Pengaturan hari pengiriman rutin satu toko (pola, hari kirim, persiapan), ditambah pilihan tambah 3 hari cakupan dan toko acuan. Hanya satu yang aktif per toko. Diatur admin. Disebut "jadwal aktif" di teks lama.
 _Avoid_: template (kecuali menjelaskan ke pemilik), jadwal usulan
+
+**Toko acuan**:
+Toko yang varian dan rata-rata penjualannya dipinjam toko lain yang belum punya data penjualan, misalnya toko baru. Diatur admin di jadwal tetap toko peminjam. Satu toko acuan berlaku untuk semua kategori hari, harus aktif, dan tidak boleh berantai. Cakupan, kategori efektif, dan stok tetap milik toko peminjam.
+_Avoid_: tanggal acuan (istilah kalender), toko referensi, toko induk, toko pembanding
 
 **Pengiriman di luar jadwal**:
 Satu pengiriman untuk satu toko pada satu tanggal yang tidak mengubah jadwal tetap. Jenisnya **tambahan** (pengiriman rutin tetap berjalan) atau **pindah** (satu tanggal rutin dipindah ke tanggal lain). Diusulkan operator; di gudang selain Pusat berlaku setelah disetujui admin. Status: menunggu, berlaku, ditolak, ditarik, dibatalkan.
@@ -208,7 +212,8 @@ _Avoid_: SKU dan produk dipakai bergantian tanpa kode
 Varian berakhiran `-R`. SKU tersendiri dalam keluarga aroma yang sama.
 
 **Produk manual**:
-Display tester (kode `-T`) dan kertas tester (kategori `KTP`/`KTL`). Tanpa jumlah kirim dan tanpa buffer otomatis.
+Display (kategori `DISPLAY PRIA`/`DISPLAY WANITA`), display tester (kode `-T`), dan kertas tester (kategori `KTP`/`KTL`). Tanpa jumlah kirim dan tanpa buffer otomatis.
+_Avoid_: menganggap display dummy atau display rework sebagai produk otomatis (aturan lama, sebelum 2026-11-04)
 
 **Produk otomatis**:
 Semua produk selain produk manual.
