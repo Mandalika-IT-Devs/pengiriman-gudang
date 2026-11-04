@@ -49,7 +49,7 @@ function WaktuSingkat({ waktu }: { waktu: Date }) {
  * Tabel jadwal tetap per toko (T112, PRD A5 ▶ Revisi 2026-10-13) dengan tombol "Atur jadwal" per toko dan "Salin jadwal
  * ke beberapa toko". Keduanya membuka panel samping (DESIGN §11.2) tanpa memuat ulang halaman. Panel dirender di luar
  * tabel karena isinya tidak memakai portal (lihat `dialog.tsx`). Pola memuat penanda toko acuan (T149);
- * `pilihanTokoAcuan` diteruskan ke form jadwal tetap.
+ * `pilihanTokoAcuan` diteruskan ke form jadwal tetap dan form Salin jadwal (T150).
  */
 export function TabelJadwalTetap({
   idGudang,
@@ -143,7 +143,11 @@ export function TabelJadwalTetap({
       >
         {panel?.jenis === "salin" ? (
           <DialogIsi bentuk="samping" judul={JUDUL_SALIN_JADWAL}>
-            <FormSalinJadwal idGudang={idGudang} daftarToko={daftarToko.map((t) => ({ id: t.id, nama: t.nama }))} />
+            <FormSalinJadwal
+              idGudang={idGudang}
+              daftarToko={daftarToko.map((t) => ({ id: t.id, nama: t.nama }))}
+              pilihanTokoAcuan={pilihanTokoAcuan}
+            />
           </DialogIsi>
         ) : tokoTerbuka ? (
           <DialogIsi bentuk="samping" judul={`Jadwal tetap ${tokoTerbuka.nama}`}>

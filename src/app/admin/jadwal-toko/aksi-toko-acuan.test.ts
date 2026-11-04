@@ -9,7 +9,7 @@ import { bacaDraftRencana, hitungDraftRencana } from "@/server/gudang/draft-renc
 import { jadwalTokoGudang, pilihanTokoAcuan, riwayatJadwalTetapGudang } from "@/server/gudang/jadwal";
 import { simpanStokToko } from "@/server/gudang/stok-draft";
 import { bersihkanTokoSmbUji, siapkanTokoSmbUji } from "@/server/gudang/uji-bantu-cakupan";
-import { idGudangUji } from "@/server/gudang/uji-bantu";
+import { buatTokoUji, idGudangUji } from "@/server/gudang/uji-bantu";
 
 const kepala = vi.hoisted(() => ({ cookie: "" }));
 vi.mock("next/headers", () => ({
@@ -17,6 +17,7 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
+import { ubahStatusToko } from "../toko/aksi";
 import { aturJadwalTetapToko, salinJadwalTetap } from "./aksi";
 
 // T149 — PRD A5 ▶ Keputusan 2026-11-04 (toko acuan: Pengaturan, Perubahan dan peralihan); UAT U9.8–U9.10, U9.13. Admin
@@ -59,6 +60,7 @@ async function nonaktifkanJadwalUji(daftarIdToko: number[]) {
 
 afterAll(async () => {
   await nonaktifkanJadwalUji([ujiBaru.id]);
+  await db.update(toko).set({ aktif: true }).where(eq(toko.id, mkg));
   await db
     .update(toko)
     .set({ nama: `UJI-${crypto.randomUUID()}` })
@@ -164,6 +166,79 @@ describe("server memeriksa ulang toko acuan saat menyimpan", () => {
   });
 });
 
+// T150 — PRD A5 ▶ Keputusan 2026-11-04 (Pengaturan): Salin jadwal menerapkan toko acuannya ke setiap toko terpilih. Toko
+// yang melanggar aturan toko acuan ditolak per toko dengan pesan `validasiTokoAcuan`; toko lain tetap tersimpan.
+describe("Salin jadwal dengan toko acuan", () => {
+  it("toko acuan MKG ke beberapa toko Gudang Cibubur termasuk MKG → MKG ditolak, toko lain tersimpan dengan toko acuan MKG dan versi baru", async () => {
+    expect(gudangMkg).toBe(cibubur);
+    const lain = await buatTokoUji();
+    await db.insert(hubunganTokoGudang).values({ tokoId: lain.id, gudangId: cibubur });
+    await aturJadwalTetapToko({ idGudang: cibubur, idToko: lain.id, pola: "mingguan", hariKirim: [{ hari: "Senin", persiapan: "H" }] });
+    const [sebelumLain, sebelumUjiBaru, sebelumMkg] = [
+      await riwayatJadwal(lain.id),
+      await riwayatJadwal(ujiBaru.id),
+      await riwayatJadwal(mkg),
+    ];
+
+    await expect(
+      salinJadwalTetap({ idGudang: cibubur, daftarIdToko: [lain.id, mkg, ujiBaru.id], ...mingguanSelasa, idTokoAcuan: mkg }),
+    ).resolves.toEqual({
+      keadaan: "berhasil",
+      hasil: [
+        { idToko: lain.id, status: "berhasil" },
+        { idToko: mkg, status: "ditolak", pesan: "Toko acuan tidak boleh toko ini sendiri." },
+        { idToko: ujiBaru.id, status: "berhasil" },
+      ],
+    });
+
+    for (const [idToko, sebelum] of [
+      [lain.id, sebelumLain],
+      [ujiBaru.id, sebelumUjiBaru],
+    ] as const) {
+      const sesudah = await riwayatJadwal(idToko);
+      expect(sesudah).toHaveLength(sebelum.length + 1);
+      expect(sesudah.at(-1)).toMatchObject({
+        status: "aktif",
+        pola: "mingguan",
+        hariKirim: [{ hari: "Selasa", persiapanHari: 1 }],
+        tokoAcuanId: mkg,
+      });
+    }
+    expect(await riwayatJadwal(mkg)).toEqual(sebelumMkg);
+    const aktif = new Map((await jadwalTokoGudang(cibubur)).map((t) => [t.id, t.jadwal]));
+    expect([aktif.get(lain.id)?.tokoAcuan, aktif.get(ujiBaru.id)?.tokoAcuan]).toEqual([
+      { id: mkg, nama: "MKG" },
+      { id: mkg, nama: "MKG" },
+    ]);
+    await nonaktifkanJadwalUji([lain.id]);
+  });
+});
+
+// T150 — PRD A5 ▶ Keputusan 2026-11-04 ("Menonaktifkan toko"); UAT U9.10. Menonaktifkan toko yang sedang menjadi toko
+// acuan di jadwal tetap aktif toko lain ditolak di server dengan `nonaktifkanToko` (golden `nonaktifkanToko`).
+describe("menonaktifkan toko yang menjadi toko acuan", () => {
+  const aktifMkg = async () => (await db.select({ aktif: toko.aktif }).from(toko).where(eq(toko.id, mkg)))[0].aktif;
+
+  it("UAT U9.10: MKG toko acuan UJI BARU → nonaktifkan MKG ditolak dengan pesan PRD, MKG tetap aktif; toko acuan UJI BARU dikosongkan → MKG bisa dinonaktifkan", async () => {
+    await aturJadwalTetapToko({ idGudang: cibubur, idToko: ujiBaru.id, ...mingguanSelasa, idTokoAcuan: mkg });
+
+    await expect(ubahStatusToko({ idToko: mkg, aktif: false })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Toko MKG masih menjadi toko acuan untuk UJI BARU. Ganti atau hapus toko acuan itu di Jadwal toko dulu.",
+    });
+    expect(await aktifMkg()).toBe(true);
+
+    await aturJadwalTetapToko({ idGudang: cibubur, idToko: ujiBaru.id, ...mingguanSelasa });
+    try {
+      await expect(ubahStatusToko({ idToko: mkg, aktif: false })).resolves.toEqual({ keadaan: "berhasil" });
+      expect(await aktifMkg()).toBe(false);
+    } finally {
+      await expect(ubahStatusToko({ idToko: mkg, aktif: true })).resolves.toEqual({ keadaan: "berhasil" });
+    }
+    expect(await aktifMkg()).toBe(true);
+  });
+});
+
 describe("pilihan toko acuan", () => {
   it("toko aktif urut nama, termasuk yang belum terhubung ke gudang; tanpa toko nonaktif dan toko yang memakai toko acuan", async () => {
     const [nonaktif] = await db
@@ -219,7 +294,9 @@ describe("toko acuan dan versi jadwal", () => {
     ]);
   });
 
-  it("Salin jadwal belum mengatur toko acuan (T150): toko acuan jadwal aktif tetap terbawa ke versi baru", async () => {
+  // T150: isian Toko acuan Salin jadwal yang kosong diterapkan seperti checkbox "Tambah 3 hari cakupan" (T144), yaitu
+  // tanpa toko acuan. Menggantikan perilaku sementara T149 (toko acuan jadwal aktif terbawa).
+  it("Salin jadwal tanpa toko acuan → versi baru tanpa toko acuan, juga untuk toko yang sebelumnya memakai toko acuan", async () => {
     await aturJadwalTetapToko({ idGudang: cibubur, idToko: ujiBaru.id, ...mingguanSelasa, idTokoAcuan: mkg });
     await expect(
       salinJadwalTetap({
@@ -232,7 +309,7 @@ describe("toko acuan dan versi jadwal", () => {
     expect((await riwayatJadwal(ujiBaru.id)).at(-1)).toMatchObject({
       status: "aktif",
       hariKirim: [{ hari: "Rabu", persiapanHari: 1 }],
-      tokoAcuanId: mkg,
+      tokoAcuanId: null,
     });
   });
 

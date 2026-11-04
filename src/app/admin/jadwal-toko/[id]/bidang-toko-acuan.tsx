@@ -10,10 +10,11 @@ import type { TokoAcuan } from "@/server/gudang/jadwal";
 const NILAI_KOSONG = "kosong";
 
 /**
- * Isian "Toko acuan" di form jadwal tetap satu toko (PRD A5 ▶ Keputusan 2026-11-04, Pengaturan; T149): boleh kosong,
- * dengan keterangan yang selalu tampil. `pilihan` = toko yang boleh dipilih menurut server, urut nama (`pilihanTokoAcuan`);
- * toko yang sedang diatur (`idToko`) disaring di sini. Toko acuan yang tersimpan tetap tampil sebagai nilai walaupun kini
- * tidak lagi ada di pilihan; server memeriksanya ulang saat menyimpan.
+ * Isian "Toko acuan" di form jadwal tetap satu toko (PRD A5 ▶ Keputusan 2026-11-04, Pengaturan; T149) dan form Salin
+ * jadwal (T150): boleh kosong, dengan keterangan yang selalu tampil. `pilihan` = toko yang boleh dipilih menurut server,
+ * urut nama (`pilihanTokoAcuan`); toko yang sedang diatur (`idToko`, form satu toko) disaring di sini. Salin jadwal tidak
+ * menyaring: toko acuan yang ikut terpilih ditolak server per toko. Toko acuan yang tersimpan tetap tampil sebagai nilai
+ * walaupun kini tidak lagi ada di pilihan; server memeriksanya ulang saat menyimpan.
  */
 export function BidangTokoAcuan({
   idToko,
@@ -22,7 +23,7 @@ export function BidangTokoAcuan({
   ubah,
   nonaktif,
 }: {
-  idToko: number;
+  idToko?: number;
   nilai: TokoAcuan | null;
   pilihan: readonly TokoAcuan[];
   ubah: (baru: TokoAcuan | null) => void;

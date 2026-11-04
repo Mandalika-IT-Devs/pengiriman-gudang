@@ -16,12 +16,14 @@ import { salinJadwalKeToko, type HasilSalinToko } from "@/server/gudang/salin-ja
 // halaman Persetujuan jadwal ikut dimuat ulang.
 
 /**
- * Isian form jadwal tetap satu toko: jadwal ditambah toko acuan (PRD A5 ▶ Keputusan 2026-11-04, T149). Tidak dikirim =
+ * Isian toko acuan di form jadwal tetap (PRD A5 ▶ Keputusan 2026-11-04, T149) dan form Salin jadwal (T150). Tidak dikirim =
  * tanpa toko acuan. Aturan toko acuan diperiksa ulang di server (`validasiTokoAcuan`).
  */
-const skemaJadwalTetap = skemaJadwal.extend({
+const isianTokoAcuan = {
   idTokoAcuan: z.number({ error: "Toko acuan tidak dikenal." }).int({ error: "Toko acuan tidak dikenal." }).nullable().default(null),
-});
+};
+
+const skemaJadwalTetap = skemaJadwal.extend(isianTokoAcuan);
 
 const skemaSalin = z.object({
   idGudang: z.number().int(),
@@ -29,6 +31,7 @@ const skemaSalin = z.object({
     .array(z.number({ error: "Pilih toko." }).int({ error: "Pilih toko." }), { error: "Pilih minimal satu toko." })
     .min(1, "Pilih minimal satu toko."),
   ...isianJadwal,
+  ...isianTokoAcuan,
 });
 
 /** Halaman yang menampilkan jadwal tetap gudang ini. */
@@ -80,16 +83,24 @@ export type HasilSalinJadwal =
   { keadaan: "berhasil" | "tersimpanGagalMuatUlang"; hasil: HasilSalinToko[] } | { keadaan: "gagal"; pesan: string };
 
 /**
- * Menerapkan satu pengaturan jadwal tetap langsung ke beberapa toko gudang yang sama. Setiap toko diproses sendiri;
- * toko yang gagal tidak membatalkan toko lain. Halaman dimuat ulang bila ada toko yang (mungkin) tersimpan.
+ * Menerapkan satu pengaturan jadwal tetap, termasuk toko acuannya (T150), langsung ke beberapa toko gudang yang sama.
+ * Setiap toko diproses sendiri; toko yang gagal tidak membatalkan toko lain. Halaman dimuat ulang bila ada toko yang
+ * (mungkin) tersimpan.
  */
 export async function salinJadwalTetap(input: unknown): Promise<HasilSalinJadwal> {
   const admin = await wajibAdmin();
   const isian = skemaSalin.safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
-  const { idGudang, daftarIdToko, ...masukan } = isian.data;
-  const hasil = await salinJadwalKeToko({ idGudang, daftarIdToko, masukan, idPengguna: admin.id, hariIni: tanggalWib(new Date()) });
+  const { idGudang, daftarIdToko, idTokoAcuan, ...masukan } = isian.data;
+  const hasil = await salinJadwalKeToko({
+    idGudang,
+    daftarIdToko,
+    masukan,
+    idTokoAcuan,
+    idPengguna: admin.id,
+    hariIni: tanggalWib(new Date()),
+  });
   if (hasil.some((h) => h.status === "berhasil" || h.status === "belumPasti")) {
     try {
       muatUlangHalamanJadwal(idGudang);

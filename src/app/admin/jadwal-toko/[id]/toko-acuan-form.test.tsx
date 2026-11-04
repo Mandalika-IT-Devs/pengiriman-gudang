@@ -7,11 +7,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const aksi = vi.hoisted(() => ({
   aturJadwalTetapToko: vi.fn<(input: unknown) => Promise<{ keadaan: "berhasil" }>>(async () => ({ keadaan: "berhasil" })),
   nonaktifkanJadwalTetapToko: vi.fn(),
-  salinJadwalTetap: vi.fn(),
+  salinJadwalTetap: vi.fn<(input: unknown) => Promise<{ keadaan: "berhasil"; hasil: [] }>>(async () => ({
+    keadaan: "berhasil",
+    hasil: [],
+  })),
 }));
 vi.mock("../aksi", () => aksi);
 
 import { FormJadwalTetap } from "./form-jadwal-tetap";
+import { FormSalinJadwal } from "./form-salin-jadwal";
 import { RiwayatJadwalTetap } from "./riwayat-jadwal-tetap";
 import { TabelJadwalTetap, type TokoJadwalTetap } from "./tabel-jadwal-tetap";
 
@@ -55,6 +59,7 @@ function tampilkan(isi: ReactNode) {
 
 beforeEach(() => {
   aksi.aturJadwalTetapToko.mockClear();
+  aksi.salinJadwalTetap.mockClear();
 });
 
 afterEach(() => {
@@ -159,6 +164,73 @@ describe('isian "Toko acuan" di form jadwal tetap', () => {
       tambah3HariCakupan: false,
     });
     expect(aksi.aturJadwalTetapToko.mock.lastCall?.[0]).not.toHaveProperty("idTokoAcuan");
+  });
+});
+
+// T150 — PRD A5 ▶ Keputusan 2026-11-04 (Pengaturan): form Salin jadwal punya isian "Toko acuan" dan keterangan yang sama, dan
+// menerapkan toko acuannya ke setiap toko terpilih. Toko acuan yang ikut terpilih ditolak server per toko, jadi pilihannya
+// tidak disaring form.
+describe('isian "Toko acuan" di form Salin jadwal', () => {
+  const TOKO_GUDANG = [
+    { id: 24, nama: "MKG" },
+    { id: 30, nama: "UJI BARU" },
+  ];
+
+  function centang(wadah: HTMLElement, nama: string) {
+    const kotak = [...wadah.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find(
+      (k) => k.closest("label")?.textContent?.trim() === nama,
+    );
+    if (kotak === undefined) throw new Error(`Checkbox ${nama} tidak ada.`);
+    act(() => kotak.click());
+  }
+
+  it('tepat di bawah checkbox "Tambah 3 hari cakupan", awalnya kosong, dengan keterangan yang sama; pilihannya semua toko dari server', () => {
+    const wadah = tampilkan(<FormSalinJadwal idGudang={2} daftarToko={TOKO_GUDANG} pilihanTokoAcuan={PILIHAN} />);
+    const pemicu = kontrol(wadah, "Toko acuan");
+    const urutan = [...wadah.querySelectorAll<HTMLElement>("form button, form input")];
+    const centangTambah = wadah.querySelector<HTMLInputElement>('input[name="tambah3HariCakupan"]');
+    expect(urutan.indexOf(pemicu)).toBe(urutan.indexOf(centangTambah as HTMLElement) + 1);
+    expect(pemicu.textContent).toBe("Tanpa toko acuan");
+    expect(document.getElementById(pemicu.getAttribute("aria-describedby") ?? "")?.textContent).toBe(KETERANGAN);
+    expect([...selectTokoAcuan(wadah).options].map((o) => [o.value, o.textContent])).toEqual([
+      ["kosong", "Tanpa toko acuan"],
+      ["3", "DPM"],
+      ["24", "MKG"],
+      ["13", "SMB"],
+      ["30", "UJI BARU"],
+    ]);
+  });
+
+  it("memilih MKG lalu Terapkan mengirim toko acuannya untuk semua toko terpilih; dikosongkan → tanpa toko acuan", async () => {
+    const wadah = tampilkan(<FormSalinJadwal idGudang={2} daftarToko={TOKO_GUDANG} pilihanTokoAcuan={PILIHAN} />);
+    centang(wadah, "MKG");
+    centang(wadah, "UJI BARU");
+    centang(wadah, "Selasa");
+    pilihTokoAcuan(wadah, "24");
+    expect(kontrol(wadah, "Toko acuan").textContent).toBe("MKG");
+    await simpan(wadah);
+    expect(aksi.salinJadwalTetap).toHaveBeenLastCalledWith({
+      idGudang: 2,
+      daftarIdToko: [24, 30],
+      pola: "mingguan",
+      hariKirim: [{ hari: "Selasa", persiapan: "H" }],
+      tambah3HariCakupan: false,
+      idTokoAcuan: 24,
+    });
+
+    pilihTokoAcuan(wadah, "kosong");
+    await simpan(wadah);
+    expect(aksi.salinJadwalTetap).toHaveBeenCalledTimes(2);
+    expect(aksi.salinJadwalTetap.mock.lastCall?.[0]).not.toHaveProperty("idTokoAcuan");
+  });
+
+  it('tabel Jadwal toko meneruskan pilihan toko acuan ke panel "Salin jadwal ke beberapa toko"', () => {
+    const wadah = tampilkan(<TabelJadwalTetap idGudang={2} daftarToko={[tokoUjiBaru]} pilihanTokoAcuan={PILIHAN} />);
+    act(() => wadah.querySelector<HTMLElement>("[data-buka-salin-jadwal]")?.click());
+    const panel = document.querySelector<HTMLElement>('[data-slot="dialog-isi"]');
+    if (panel === null) throw new Error("Panel tidak terbuka.");
+    expect(kontrol(panel, "Toko acuan").textContent).toBe("Tanpa toko acuan");
+    expect([...selectTokoAcuan(panel).options].map((o) => o.textContent)).toEqual(["Tanpa toko acuan", "DPM", "MKG", "SMB", "UJI BARU"]);
   });
 });
 
