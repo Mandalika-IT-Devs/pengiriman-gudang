@@ -9,6 +9,7 @@ import { buatPenggunaUji, kepalaPenggunaUji } from "@/server/auth/uji-bantu";
 import { db } from "@/server/db";
 import { hubunganTokoGudang, jadwalToko, pengirimanDiLuarJadwal } from "@/server/db/schema";
 import type { HakTindakan } from "@/server/gudang/hak-tindakan";
+import { daftarUsulanMenungguPersetujuan } from "@/server/gudang/pengiriman-di-luar-jadwal";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { buatTokoUji, idGudangUji, rencanaFinalUji } from "@/server/gudang/uji-bantu";
 
@@ -25,7 +26,7 @@ vi.mock("next/cache", () => ({
 
 import * as aksi from "./aksi";
 
-const { batalkanPengirimanPusat, tarikPengiriman, usulkanPengiriman } = aksi;
+const { batalkanPengirimanGudang, tarikPengiriman, usulkanPengiriman } = aksi;
 
 // T113 — PRD A5 ▶ Revisi 2026-10-13: operator mengusulkan pengiriman di luar jadwal (tambahan atau pindah) untuk satu
 // toko pada satu tanggal, tanpa mengubah jadwal tetap. Hari ini dibuat tetap Kamis 2026-10-15 (WIB) agar contoh BOTANI
@@ -33,10 +34,12 @@ const { batalkanPengirimanPusat, tarikPengiriman, usulkanPengiriman } = aksi;
 
 let pusat: number;
 let cibubur: number;
+let bali: number;
 
 beforeAll(async () => {
   pusat = await idGudangUji("Pusat");
   cibubur = await idGudangUji("Gudang Cibubur");
+  bali = await idGudangUji("Gudang Bali");
 });
 
 beforeEach(() => {
@@ -229,11 +232,11 @@ describe("gudang Pusat", () => {
     const [p] = await pengirimanToko(t.id);
     expect(p).toMatchObject({ status: "berlaku", diusulkanOleh: operator.id, diputuskanOleh: null });
 
-    await expect(batalkanPengirimanPusat({ idGudang: pusat, id: p.id, alasan: "" })).resolves.toEqual({
+    await expect(batalkanPengirimanGudang({ idGudang: pusat, id: p.id, alasan: "" })).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Isi alasan pembatalan.",
     });
-    await expect(batalkanPengirimanPusat({ idGudang: pusat, id: p.id, alasan: "toko tutup" })).resolves.toEqual({ keadaan: "berhasil" });
+    await expect(batalkanPengirimanGudang({ idGudang: pusat, id: p.id, alasan: "toko tutup" })).resolves.toEqual({ keadaan: "berhasil" });
     const [batal] = await pengirimanToko(t.id);
     expect(batal).toMatchObject({ status: "dibatalkan", alasanPembatalan: "toko tutup", dibatalkanOleh: operator.id });
     expect(batal.dibatalkanPada).toBeInstanceOf(Date);
@@ -259,11 +262,112 @@ describe("gudang Pusat", () => {
       .returning();
     await masukOperator(cibubur);
 
-    await expect(batalkanPengirimanPusat({ idGudang: cibubur, id: p.id, alasan: "ingin batal" })).resolves.toEqual({
+    await expect(batalkanPengirimanGudang({ idGudang: cibubur, id: p.id, alasan: "ingin batal" })).resolves.toEqual({
       keadaan: "gagal",
       pesan: "Pengiriman di luar jadwal gudang ini hanya bisa dibatalkan admin.",
     });
     expect((await pengirimanToko(t.id))[0].status).toBe("berlaku");
+  });
+});
+
+// T148 — PRD A5 ▶ Keputusan 2026-11-04: pengiriman di luar jadwal yang dibuat admin langsung berlaku di semua gudang,
+// tanpa antrean persetujuan. Admin tercatat sebagai pengusul dan penyetuju, dengan waktu keputusan = waktu usul.
+describe("admin membuat pengiriman di luar jadwal (T148)", () => {
+  async function masukAdmin() {
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+    return admin;
+  }
+
+  it("admin tanpa penugasan, gudang selain Pusat: Tambahan langsung Berlaku, admin pengusul dan penyetuju, tidak masuk usulan menunggu", async () => {
+    const t = await tokoBotani(cibubur);
+    const jadwalAwal = await jadwalTetapToko(t.id);
+    const admin = await masukAdmin();
+
+    await expect(usulkanPengiriman(tambahan(cibubur, t.id))).resolves.toEqual({ keadaan: "berhasil" });
+
+    const [p] = await pengirimanToko(t.id);
+    expect(p).toMatchObject({
+      gudangId: cibubur,
+      jenis: "tambahan",
+      tanggalKirim: "2026-10-20",
+      persiapanHari: 1,
+      status: "berlaku",
+      diusulkanOleh: admin.id,
+      diputuskanOleh: admin.id,
+    });
+    expect(p.diputuskanPada).toEqual(p.diusulkanPada);
+    expect(await jadwalTetapToko(t.id)).toEqual(jadwalAwal);
+    expect((await daftarUsulanMenungguPersetujuan()).map((u) => u.id)).not.toContain(p.id);
+  });
+
+  it("admin di Pusat juga tercatat sebagai penyetuju; pengiriman operator Pusat tetap tanpa penyetuju", async () => {
+    const [milikAdmin, milikOperator] = [await tokoBotani(pusat), await tokoBotani(pusat)];
+    const admin = await masukAdmin();
+    await expect(usulkanPengiriman(tambahan(pusat, milikAdmin.id))).resolves.toEqual({ keadaan: "berhasil" });
+    const operator = await masukOperator(pusat);
+    await expect(usulkanPengiriman(tambahan(pusat, milikOperator.id))).resolves.toEqual({ keadaan: "berhasil" });
+
+    const [p] = await pengirimanToko(milikAdmin.id);
+    expect(p).toMatchObject({ status: "berlaku", diusulkanOleh: admin.id, diputuskanOleh: admin.id });
+    expect(p.diputuskanPada).toEqual(p.diusulkanPada);
+    expect(await pengirimanToko(milikOperator.id)).toMatchObject([
+      { status: "berlaku", diusulkanOleh: operator.id, diputuskanOleh: null, diputuskanPada: null },
+    ]);
+  });
+
+  it("admin membatalkan pengiriman berlaku di gudang selain Pusat dari halaman ini, dengan alasan wajib", async () => {
+    const t = await tokoBotani(cibubur);
+    await masukOperator(cibubur);
+    await usulkanPengiriman(tambahan(cibubur, t.id));
+    const [usulan] = await pengirimanToko(t.id);
+    // Usulan operator yang sudah disetujui admin lain di Persetujuan jadwal.
+    const penyetuju = await buatPenggunaUji("admin");
+    await db
+      .update(pengirimanDiLuarJadwal)
+      .set({ status: "berlaku", diputuskanOleh: penyetuju.id, diputuskanPada: new Date() })
+      .where(eq(pengirimanDiLuarJadwal.id, usulan.id));
+    const admin = await masukAdmin();
+
+    await expect(batalkanPengirimanGudang({ idGudang: cibubur, id: usulan.id, alasan: " " })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Isi alasan pembatalan.",
+    });
+    // Hanya pengiriman gudang halaman itu.
+    await expect(batalkanPengirimanGudang({ idGudang: bali, id: usulan.id, alasan: "Uji selesai" })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Pengiriman di luar jadwal tidak ditemukan.",
+    });
+    await expect(batalkanPengirimanGudang({ idGudang: cibubur, id: usulan.id, alasan: "Uji selesai" })).resolves.toEqual({
+      keadaan: "berhasil",
+    });
+    const [batal] = await pengirimanToko(t.id);
+    expect(batal).toMatchObject({ status: "dibatalkan", alasanPembatalan: "Uji selesai", dibatalkanOleh: admin.id });
+    expect(kepala.dimuatUlang).toContain(`/usulan-jadwal/${cibubur}`);
+  });
+
+  it("syarat pembatalan tidak berubah bagi admin: tanggal kirim yang sudah punya rencana final tidak bisa dibatalkan", async () => {
+    const t = await tokoBotani(cibubur);
+    const admin = await masukAdmin();
+    await usulkanPengiriman(tambahan(cibubur, t.id));
+    const [p] = await pengirimanToko(t.id);
+    await rencanaFinalUji({ idGudang: cibubur, idToko: t.id, tanggalKirim: "2026-10-20", idPengguna: admin.id });
+
+    await expect(batalkanPengirimanGudang({ idGudang: cibubur, id: p.id, alasan: "Uji selesai" })).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Tidak bisa dibatalkan: toko ini sudah punya rencana final untuk Selasa, 20-10-2026.",
+    });
+    expect((await pengirimanToko(t.id))[0].status).toBe("berlaku");
+  });
+
+  it("syarat sama seperti operator: tanggal yang sudah tanggal kirim rutin ditolak tanpa menulis data", async () => {
+    const t = await tokoBotani(bali);
+    await masukAdmin();
+    await expect(usulkanPengiriman(tambahan(bali, t.id, { tanggalKirim: "2026-10-19" }))).resolves.toEqual({
+      keadaan: "gagal",
+      pesan: "Syarat tidak terpenuhi: Senin, 19-10-2026 sudah menjadi tanggal kirim toko ini.",
+    });
+    expect(await pengirimanToko(t.id)).toEqual([]);
   });
 });
 
@@ -319,7 +423,7 @@ describe("kewenangan (diperiksa di server)", () => {
 
 describe("alur lama dihapus: operator tidak bisa lagi membuat atau mengubah jadwal tetap", () => {
   it("aksi operator hanya usulan, tarik, dan batal pengiriman di luar jadwal; aksi jadwal lama tidak ada", () => {
-    expect(Object.keys(aksi).sort()).toEqual(["batalkanPengirimanPusat", "tarikPengiriman", "usulkanPengiriman"]);
+    expect(Object.keys(aksi).sort()).toEqual(["batalkanPengirimanGudang", "tarikPengiriman", "usulkanPengiriman"]);
     expect(existsSync(join(import.meta.dirname, "../pengiriman-gudang/[id]/aksi.ts"))).toBe(false);
     expect(existsSync(join(import.meta.dirname, "../../server/gudang/usulan-jadwal.ts"))).toBe(false);
   });

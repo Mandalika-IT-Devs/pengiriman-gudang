@@ -167,10 +167,13 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 **Kirim di luar jadwal** (**Pekerjaan rutin › Kirim di luar jadwal**, atau tautan "Kirim di luar jadwal" di bawah tabel Jadwal toko):
 
 - Di gudang selain Pusat halamannya berjudul "Usulkan pengiriman di luar jadwal — <gudang>" dan usulan menunggu persetujuan admin. Di Pusat judulnya "Atur pengiriman di luar jadwal — Pusat" dan pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.
+- **Bagi admin**, di setiap gudang aktif tanpa penugasan, halamannya sama dengan halaman Pusat: judul "Atur pengiriman di luar jadwal — <gudang>", keterangan "Pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.", dan tombol "Simpan".
+  - Pengiriman yang dibuat admin langsung berlaku di semua gudang, termasuk gudang selain Pusat, tanpa masuk "Usulan menunggu" di Persetujuan jadwal.
+  - Admin tercatat sebagai pengusul **dan** penyetuju, dengan waktu yang sama. Kolom "Diputuskan" dan kolom "Penyetuju/penolak" di ekspor Riwayat berisi nama admin itu, juga di Pusat. "Langsung berlaku (Pusat)" tetap untuk pengiriman yang dibuat operator Pusat.
 - Isi Toko (hanya toko yang punya jadwal tetap aktif), lalu Jenis:
   - **Tambahan (pengiriman rutin tetap berjalan):** tanggal kirim tambahan. Contoh: BOTANI rutin Senin dan Kamis, ada kebutuhan mendesak hari Selasa.
   - **Pindah (satu tanggal rutin dipindah):** pilih "Tanggal rutin yang dipindah" dari tanggal kirim rutin toko itu yang akan datang. Persiapan awalnya mengikuti tanggal rutin itu. Tanggal rutin itu tidak lagi menjadi tanggal kirim.
-- Isi Tanggal kirim, Persiapan (H, H−1, H−2), dan **Alasan** (wajib). Lalu tekan "Kirim usulan", atau "Simpan" di Pusat.
+- Isi Tanggal kirim, Persiapan (H, H−1, H−2), dan **Alasan** (wajib). Lalu tekan "Kirim usulan", atau "Simpan" di Pusat dan bagi admin.
 - Syaratnya diperiksa saat diusulkan dan diperiksa ulang saat disetujui:
   - Tanggal kirim hari ini atau sesudahnya, dan belum menjadi tanggal kirim toko itu.
   - Untuk Pindah, tanggal rutinnya belum lewat, belum dipindah, dan belum punya rencana final.
@@ -179,6 +182,7 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 - Di bawah form, daftar "Perlu tindakan" (terbaru di atas) hanya berisi entri yang masih bisa ditindak di halaman ini:
   - Usulan berstatus Menunggu. Pengusulnya bisa menekan "Tarik"; entri usulan orang lain menampilkan "—".
   - Di Pusat, pengiriman berlaku yang tanggal kirimnya belum lewat dan belum punya rencana final. Operator berhak bisa membatalkannya dengan alasan. Di gudang lain pembatalan dilakukan admin.
+  - Bagi admin, di setiap gudang aktif: usulan Menunggu dari operator (tanpa "Tarik"; admin menyetujui atau menolaknya di Persetujuan jadwal), dan pengiriman berlaku yang tanggal kirimnya belum lewat dan belum punya rencana final, dengan "Batalkan". Pembatalan tetap wajib beralasan, dan tercatat dengan nama admin.
   - Jika kosong, tampil "Tidak ada pengiriman di luar jadwal yang perlu ditindak." beserta tautan ke menu Riwayat.
 - Catatan lengkap semua pengiriman di luar jadwal (Menunggu, Berlaku, Ditolak, Ditarik, Dibatalkan) ada di menu **Riwayat**, tab "Di luar jadwal".
 

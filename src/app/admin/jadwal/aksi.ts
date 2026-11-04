@@ -73,6 +73,6 @@ export async function batalkanPengiriman(input: unknown): Promise<HasilSimpan> {
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
   return selesai(
-    await batalkanPengirimanDiLuarJadwal({ ...isian.data, idPengguna: admin.id, hariIni: tanggalWib(new Date()), gudangOperator: null }),
+    await batalkanPengirimanDiLuarJadwal({ ...isian.data, idPengguna: admin.id, hariIni: tanggalWib(new Date()), dariGudang: null }),
   );
 }

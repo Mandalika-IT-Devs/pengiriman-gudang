@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DialogKonfirmasi } from "@/components/ui/dialog-konfirmasi";
 import { Input } from "@/components/ui/input";
 
-import { batalkanPengirimanPusat, tarikPengiriman } from "./aksi";
+import { batalkanPengirimanGudang, tarikPengiriman } from "./aksi";
 
 // Tindakan per baris riwayat pengiriman di luar jadwal (T113, PRD A5 ▶ Revisi 2026-10-13). Kewenangan dan syarat
 // diperiksa lagi di server; hasil yang belum pasti tidak diulang otomatis (usePenyimpanan).
@@ -38,7 +38,7 @@ export function TombolTarik({ idGudang, id, toko }: { idGudang: number; id: numb
 
 /**
  * Membatalkan pengiriman yang berlaku dengan alasan wajib, lalu dialog konfirmasi (DESIGN §11.3). `idGudang` = gudang
- * Pusat operator yang membatalkan; `null` = admin.
+ * halaman Kirim di luar jadwal (operator Pusat, atau admin di gudang mana pun, T148); `null` = halaman Persetujuan jadwal.
  */
 export function FormBatalkanPengiriman({
   id,
@@ -95,7 +95,7 @@ export function FormBatalkanPengiriman({
         labelTindakan="Batalkan pengiriman"
         destruktif
         konfirmasi={() =>
-          simpan(() => (idGudang === null ? batalkanPengiriman({ id, alasan }) : batalkanPengirimanPusat({ idGudang, id, alasan })))
+          simpan(() => (idGudang === null ? batalkanPengiriman({ id, alasan }) : batalkanPengirimanGudang({ idGudang, id, alasan })))
         }
       />
       {tampilan ? <PesanStatusSimpan keadaan={tampilan.keadaan} pesan={tampilan.pesan} /> : null}

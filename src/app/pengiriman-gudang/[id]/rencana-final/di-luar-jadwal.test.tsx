@@ -73,6 +73,7 @@ beforeAll(async () => {
     idGudang: cibubur,
     isian: { idToko: toko.id, jenis: "tambahan", tanggalKirim: SELASA, persiapanHari: 1, tanggalRutinDipindah: null, alasan: ALASAN },
     idPengguna: idOperator,
+    peranPengguna: "viewer",
     hariIni,
   });
   if (usul.keadaan !== "berhasil") throw new Error(usul.pesan);

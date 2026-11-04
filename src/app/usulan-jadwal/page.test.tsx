@@ -281,6 +281,96 @@ describe("/usulan-jadwal/[id]: judul, form, dan daftar Perlu tindakan (T128)", (
   });
 });
 
+// T148 — PRD A5 ▶ Keputusan 2026-11-04: bagi admin, form di semua gudang sama dengan form Pusat, dan "Perlu tindakan"
+// memuat usulan operator yang menunggu (tanpa Tarik) serta pengiriman berlaku yang masih bisa dibatalkan (dengan Batalkan).
+describe("/usulan-jadwal/[id] bagi admin (T148)", () => {
+  it('gudang selain Pusat: "Atur pengiriman di luar jadwal — <gudang>", keterangan langsung berlaku, tombol Simpan', async () => {
+    await tokoDi(cibubur);
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const html = await bukaGudang("usulan", cibubur);
+    expect(judulHalaman(html)).toBe("Atur pengiriman di luar jadwal — Gudang Cibubur");
+    expect(html).toContain("Pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.");
+    expect(html).toContain(">Simpan</button>");
+    expect(html).not.toContain("Kirim usulan");
+    expect(html).not.toContain("Usulan berlaku setelah disetujui admin.");
+    expect((await metadataUsulanJadwal({ params: Promise.resolve({ id: String(cibubur) }) })).title).toBe(
+      "Atur pengiriman di luar jadwal — Gudang Cibubur — Dashboard Penjualan MANDALIKA",
+    );
+  });
+
+  it("Perlu tindakan: berlaku yang masih bisa dibatalkan dengan Batalkan dan nama admin di Diputuskan; usulan Menunggu operator tanpa Tarik", async () => {
+    const t = await tokoDi(cibubur);
+    const operator = await buatPenggunaUji("viewer");
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+    const isi = { gudangId: cibubur, tokoId: t.id, jenis: "tambahan" as const, persiapanHari: 1 as const, alasan: "Uji admin M7" };
+    const waktu = new Date("2026-11-05T10:00:00+07:00");
+    const [milikAdmin, menunggu, sudahLewat] = await db
+      .insert(pengirimanDiLuarJadwal)
+      .values([
+        {
+          ...isi,
+          tanggalKirim: "2099-01-08",
+          status: "berlaku",
+          diusulkanOleh: admin.id,
+          diusulkanPada: waktu,
+          diputuskanOleh: admin.id,
+          diputuskanPada: waktu,
+        },
+        { ...isi, tanggalKirim: "2099-01-07", diusulkanOleh: operator.id },
+        { ...isi, tanggalKirim: "2000-01-04", status: "berlaku", diusulkanOleh: admin.id, diputuskanOleh: admin.id, diputuskanPada: waktu },
+      ])
+      .returning();
+
+    const html = await bukaGudang("usulan", cibubur);
+    const berlaku = barisPengiriman(html, milikAdmin.id);
+    expect(berlaku).toContain('data-status-pengiriman="berlaku"');
+    expect(berlaku).toContain("Kamis, 08-01-2099 (H−1)");
+    expect(berlaku).toContain("Batalkan");
+    expect(berlaku).not.toContain("Langsung berlaku (Pusat)");
+    // Kolom Diusulkan dan Diputuskan sama-sama berisi nama admin dengan waktu yang sama (UAT U9.5).
+    expect(
+      berlaku.match(/<span>Uji admin<\/span><span class="text-muted-foreground"><time dateTime="2026-11-05T03:00:00.000Z"/g),
+    ).toHaveLength(2);
+
+    const barisMenunggu = barisPengiriman(html, menunggu.id);
+    expect(barisMenunggu).toContain('data-status-pengiriman="menunggu"');
+    expect(barisMenunggu).not.toContain("Tarik");
+    expect(barisMenunggu).not.toContain("Batalkan");
+    expect(html).not.toContain(`data-pengiriman="${sudahLewat.id}"`);
+  });
+
+  it('gudang Pusat: pengiriman admin berisi nama admin di Diputuskan; pengiriman operator Pusat tetap "Langsung berlaku (Pusat)"', async () => {
+    const t = await tokoDi(pusat);
+    const operator = await buatPenggunaUji("viewer");
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+    const isi = {
+      gudangId: pusat,
+      tokoId: t.id,
+      jenis: "tambahan" as const,
+      persiapanHari: 1 as const,
+      alasan: "promo",
+      status: "berlaku" as const,
+    };
+    const [milikAdmin, milikOperator] = await db
+      .insert(pengirimanDiLuarJadwal)
+      .values([
+        { ...isi, tanggalKirim: "2099-01-06", diusulkanOleh: admin.id, diputuskanOleh: admin.id, diputuskanPada: new Date() },
+        { ...isi, tanggalKirim: "2099-01-07", diusulkanOleh: operator.id },
+      ])
+      .returning();
+
+    const html = await bukaGudang("usulan", pusat);
+    expect(judulHalaman(html)).toBe("Atur pengiriman di luar jadwal — Pusat");
+    expect(barisPengiriman(html, milikAdmin.id)).not.toContain("Langsung berlaku (Pusat)");
+    expect(barisPengiriman(html, milikAdmin.id)).toContain("Batalkan");
+    expect(barisPengiriman(html, milikOperator.id)).toContain("Langsung berlaku (Pusat)");
+    expect(barisPengiriman(html, milikOperator.id)).toContain("Batalkan");
+  });
+});
+
 // T103 — catatan peninjau T98: judul tab mengikuti jalur, dan urutan heading tanpa lompatan.
 describe("T103: judul tab /usulan-jadwal/[id]", () => {
   const judulTab = async (fungsi: typeof metadataUsulanJadwal, id: number) =>

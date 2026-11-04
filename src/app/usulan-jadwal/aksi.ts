@@ -75,7 +75,10 @@ function selesai(hasil: HasilPengirimanDiLuarJadwal): HasilSimpan {
   return { keadaan: "berhasil" };
 }
 
-/** Mengusulkan pengiriman di luar jadwal; di gudang Pusat langsung berlaku. Jadwal tetap tidak berubah. */
+/**
+ * Mengusulkan pengiriman di luar jadwal; di gudang Pusat, dan bila dibuat admin di gudang mana pun (T148), langsung
+ * berlaku. Jadwal tetap tidak berubah.
+ */
 export async function usulkanPengiriman(input: unknown): Promise<HasilSimpan> {
   const operator = await wajibKelola(input);
   const isian = skemaUsulan.safeParse(input);
@@ -93,6 +96,7 @@ export async function usulkanPengiriman(input: unknown): Promise<HasilSimpan> {
         tanggalRutinDipindah: jenis === "pindah" ? tanggalRutinDipindah : null,
       },
       idPengguna: operator.id,
+      peranPengguna: operator.peran,
       hariIni: tanggalWib(new Date()),
     }),
   );
@@ -107,9 +111,12 @@ export async function tarikPengiriman(input: unknown): Promise<HasilSimpan> {
   return selesai(await tarikPengirimanDiLuarJadwal({ ...isian.data, idPengguna: operator.id }));
 }
 
-/** Operator berhak di gudang Pusat membatalkan pengiriman yang berlaku, dengan alasan. */
-export async function batalkanPengirimanPusat(input: unknown): Promise<HasilSimpan> {
-  const operator = await wajibKelola(input);
+/**
+ * Membatalkan pengiriman yang berlaku di gudang ini, dengan alasan: operator berhak di gudang Pusat, dan admin di setiap
+ * gudang aktif (T148, PRD A5 ▶ Keputusan 2026-11-04).
+ */
+export async function batalkanPengirimanGudang(input: unknown): Promise<HasilSimpan> {
+  const pengguna = await wajibKelola(input);
   const isian = skemaBatalkan.safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
@@ -118,9 +125,9 @@ export async function batalkanPengirimanPusat(input: unknown): Promise<HasilSimp
     await batalkanPengirimanDiLuarJadwal({
       id,
       alasan,
-      idPengguna: operator.id,
+      idPengguna: pengguna.id,
       hariIni: tanggalWib(new Date()),
-      gudangOperator: idGudang,
+      dariGudang: { id: idGudang, peranPengguna: pengguna.peran },
     }),
   );
 }

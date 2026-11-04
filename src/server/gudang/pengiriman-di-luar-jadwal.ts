@@ -9,6 +9,7 @@ import {
   type PengirimanDiLuarJadwalBerlaku,
 } from "@/domain/jadwal";
 import { formatTanggal, geserHari, parseTanggalBisnis, type TanggalBisnis } from "@/domain/kalender";
+import type { Peran } from "@/server/auth/auth";
 import { db } from "@/server/db";
 import {
   gudang,
@@ -27,7 +28,8 @@ import { NAMA_GUDANG_PUSAT } from "./seed-master";
 
 // Pengiriman di luar jadwal (T113, PRD A5 ▶ Revisi 2026-10-13): operator dengan hak `kelola-usulan-jadwal` mengusulkan
 // satu pengiriman untuk satu toko pada satu tanggal (tambahan, atau pindah dari satu tanggal rutin) tanpa mengubah
-// jadwal tetap. Gudang selain Pusat menunggu persetujuan admin; Pusat langsung berlaku. Syarat diperiksa saat diusulkan
+// jadwal tetap. Gudang selain Pusat menunggu persetujuan admin; Pusat langsung berlaku. Yang dibuat admin langsung
+// berlaku di semua gudang (T148, A5 ▶ Keputusan 2026-11-04; `jalurPengirimanDiLuarJadwal`). Syarat diperiksa saat diusulkan
 // dan diperiksa ulang saat disetujui, di dalam transaksi setelah baris toko dikunci, sehingga usulan bersamaan untuk toko
 // yang sama berjalan bergantian. Kewenangan (peran dan hak) diperiksa pemanggil (server action). `hariIni` = tanggal
 // saat ini (WIB), dari pemanggil.
@@ -150,18 +152,33 @@ async function namaGudang(tx: Tx, idGudang: number) {
 }
 
 /**
- * Mengusulkan satu pengiriman di luar jadwal di gudang `idGudang`. Gudang Pusat: langsung berlaku tanpa persetujuan;
- * gudang lain: menunggu persetujuan admin. Jadwal tetap tidak berubah.
+ * Jalur pengiriman di luar jadwal pengguna berperan `peran` di gudang `namaGudang`:
+ * - `langsung`: yang dibuatnya langsung berlaku, dan pengiriman berlaku gudang itu boleh dibatalkannya dari halaman
+ *   Kirim di luar jadwal. Admin di semua gudang (A5 ▶ Keputusan 2026-11-04), operator di gudang Pusat;
+ * - `usulan`: menunggu persetujuan admin (operator gudang selain Pusat, A5 ▶ Revisi 2026-10-13).
+ * Hak `kelola-usulan-jadwal` di gudang itu diperiksa terpisah (`@/server/gudang/akses`).
+ */
+export function jalurPengirimanDiLuarJadwal(peran: Peran, namaGudang: string): "langsung" | "usulan" {
+  return peran === "admin" || namaGudang === NAMA_GUDANG_PUSAT ? "langsung" : "usulan";
+}
+
+/**
+ * Mengusulkan satu pengiriman di luar jadwal di gudang `idGudang`, sesuai `jalurPengirimanDiLuarJadwal`: jalur langsung
+ * berlaku tanpa persetujuan, jalur usulan menunggu persetujuan admin. Admin tercatat sebagai pengusul dan penyetuju,
+ * dengan waktu keputusan sama dengan waktu usul; operator Pusat tanpa penyetuju. Jadwal tetap tidak berubah.
+ * `peranPengguna` dibaca pemanggil dari sesi.
  */
 export async function usulkanPengirimanDiLuarJadwal({
   idGudang,
   isian,
   idPengguna,
+  peranPengguna,
   hariIni,
 }: {
   idGudang: number;
   isian: IsianPengirimanDiLuarJadwal;
   idPengguna: string;
+  peranPengguna: Peran;
   hariIni: TanggalBisnis;
 }): Promise<HasilPengirimanDiLuarJadwal> {
   return db.transaction(async (tx) => {
@@ -178,8 +195,11 @@ export async function usulkanPengirimanDiLuarJadwal({
       persiapanHari: isian.persiapanHari,
       tanggalRutinDipindah: isian.jenis === "pindah" ? isian.tanggalRutinDipindah : null,
       alasan: isian.alasan.trim(),
-      status: nama === NAMA_GUDANG_PUSAT ? "berlaku" : "menunggu",
+      status: jalurPengirimanDiLuarJadwal(peranPengguna, nama) === "langsung" ? "berlaku" : "menunggu",
       diusulkanOleh: idPengguna,
+      // now() tetap selama satu transaksi, jadi waktu keputusan sama persis dengan waktu usul.
+      diusulkanPada: sql`now()`,
+      ...(peranPengguna === "admin" ? { diputuskanOleh: idPengguna, diputuskanPada: sql`now()` } : {}),
     });
     return { keadaan: "berhasil", idGudang };
   });
@@ -277,29 +297,31 @@ export async function tarikPengirimanDiLuarJadwal({
 
 /**
  * Membatalkan pengiriman yang berlaku, dengan alasan wajib. Syarat: tanggal kirim belum lewat dan belum ada rencana final
- * toko itu untuk tanggal tersebut. `gudangOperator` diisi bila yang membatalkan operator: hanya pengiriman gudang itu,
- * dan hanya gudang Pusat (admin membatalkan di semua gudang). Membatalkan jenis pindah mengembalikan tanggal rutinnya.
+ * toko itu untuk tanggal tersebut. `dariGudang` diisi bila dibatalkan dari halaman Kirim di luar jadwal gudang `id`:
+ * hanya pengiriman gudang itu, dan hanya pada jalur langsung (`jalurPengirimanDiLuarJadwal`: admin di semua gudang,
+ * operator di Pusat). `null` = dari halaman Persetujuan jadwal (admin, semua gudang). Membatalkan jenis pindah
+ * mengembalikan tanggal rutinnya.
  */
 export async function batalkanPengirimanDiLuarJadwal({
   id,
   alasan,
   idPengguna,
   hariIni,
-  gudangOperator,
+  dariGudang,
 }: {
   id: number;
   alasan: string;
   idPengguna: string;
   hariIni: TanggalBisnis;
-  gudangOperator: number | null;
+  dariGudang: { id: number; peranPengguna: Peran } | null;
 }): Promise<HasilPengirimanDiLuarJadwal> {
   if (alasan.trim() === "") return gagal("Isi alasan pembatalan.");
   return db.transaction(async (tx) => {
     const p = await kunciPengiriman(tx, id);
     if (p === null) return gagal(PESAN_TIDAK_DITEMUKAN);
-    if (gudangOperator !== null) {
-      if (p.gudangId !== gudangOperator) return gagal(PESAN_TIDAK_DITEMUKAN);
-      if ((await namaGudang(tx, p.gudangId)) !== NAMA_GUDANG_PUSAT) {
+    if (dariGudang !== null) {
+      if (p.gudangId !== dariGudang.id) return gagal(PESAN_TIDAK_DITEMUKAN);
+      if (jalurPengirimanDiLuarJadwal(dariGudang.peranPengguna, (await namaGudang(tx, p.gudangId)) ?? "") !== "langsung") {
         return gagal("Pengiriman di luar jadwal gudang ini hanya bisa dibatalkan admin.");
       }
     }

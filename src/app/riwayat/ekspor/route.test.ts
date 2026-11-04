@@ -9,7 +9,7 @@ import { db } from "@/server/db";
 import { barisRencanaFinal, gudang as tabelGudang, pengirimanDiLuarJadwal, rencanaFinal } from "@/server/db/schema";
 import type { HakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
-import { buatGudangUji, buatTokoUji, hapusGudangUji, rencanaFinalUji } from "@/server/gudang/uji-bantu";
+import { buatGudangUji, buatTokoUji, hapusGudangUji, idGudangUji, rencanaFinalUji } from "@/server/gudang/uji-bantu";
 
 const kepala = vi.hoisted(() => ({ cookie: "" }));
 vi.mock("next/headers", () => ({
@@ -445,6 +445,37 @@ describe("ekspor Riwayat, tab Di luar jadwal", () => {
         formatWaktu(waktu(1, 4)),
         "mal batal tutup",
       ],
+    ]);
+  });
+
+  // T148 (PRD A5 ▶ Keputusan 2026-11-04): pengiriman yang dibuat admin berisi nama admin di Penyetuju/penolak, juga di
+  // Pusat, dengan waktu keputusan sama dengan waktu usul; pengiriman operator Pusat tetap "Langsung berlaku (Pusat)".
+  it("pengiriman yang dibuat admin: Penyetuju/penolak berisi nama admin, juga di Pusat; operator Pusat tetap Langsung berlaku (Pusat)", async () => {
+    const pusat = await idGudangUji("Pusat");
+    const toko = await buatTokoUji();
+    const admin = await buatPenggunaUji("admin");
+    const operator = await buatPenggunaUji("viewer");
+    const usul = waktu(20, 3);
+    const dasar = {
+      tokoId: toko.id,
+      jenis: "tambahan" as const,
+      persiapanHari: 1 as const,
+      alasan: "Uji admin M7",
+      status: "berlaku" as const,
+    };
+    const olehAdmin = { diusulkanOleh: admin.id, diusulkanPada: usul, diputuskanOleh: admin.id, diputuskanPada: usul };
+    await db.insert(pengirimanDiLuarJadwal).values([
+      { ...dasar, ...olehAdmin, gudangId: gudangA.id, tanggalKirim: "2099-02-05" },
+      { ...dasar, ...olehAdmin, gudangId: pusat, tanggalKirim: "2099-02-06", diusulkanPada: waktu(20, 4), diputuskanPada: waktu(20, 4) },
+      { ...dasar, gudangId: pusat, tanggalKirim: "2099-02-07", diusulkanOleh: operator.id, diusulkanPada: waktu(20, 5) },
+    ]);
+
+    const isi = await baca(await ekspor({ tab: "di-luar-jadwal", toko: String(toko.id) }), "Riwayat di luar jadwal");
+    const pelaku = isi.data.map((b) => [b[0], b[8], b[9], b[10], b[11]]);
+    expect(pelaku).toEqual([
+      ["Pusat", "Uji viewer", formatWaktu(waktu(20, 5)), "Langsung berlaku (Pusat)", "—"],
+      ["Pusat", "Uji admin", formatWaktu(waktu(20, 4)), "Uji admin", formatWaktu(waktu(20, 4))],
+      [gudangA.nama, "Uji admin", formatWaktu(usul), "Uji admin", formatWaktu(usul)],
     ]);
   });
 
