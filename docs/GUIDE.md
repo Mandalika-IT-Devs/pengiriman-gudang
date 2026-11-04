@@ -119,6 +119,10 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
   - Pilih Pola: Mingguan, 2× seminggu, 3× seminggu, Dua mingguan, atau 1× sebulan.
   - Centang hari kirim (Senin sampai Minggu), masing-masing dengan persiapan H, H−1, atau H−2. Contoh: kirim Minggu dengan persiapan H−1 berarti persiapan hari Sabtu.
   - Pola Dua mingguan hanya menentukan hari kirim dan persiapannya. Form menampilkan keterangan "Toko dikirim pada hari kirim ini. Operator memilih pekannya di draft, biasanya setiap 2 minggu." Setiap tanggal yang jatuh pada hari kirim itu, setiap pekan, adalah tanggal kirim rutin toko itu (lihat "Toko dua mingguan: Dikirim pekan ini" di bagian Operator).
+  - **Toko acuan** (di bawah "Tambah 3 hari cakupan", awalnya kosong): isi hanya untuk toko yang belum punya data penjualan, misalnya toko baru. Varian dan rata-rata penjualan diambil dari toko acuan, sedangkan jadwal, stok, dan kategori hari tetap milik toko ini.
+    - Pilihannya toko aktif dari gudang mana pun, termasuk toko yang belum terhubung ke gudang, urut nama. Toko ini sendiri dan toko yang memakai toko acuan sendiri tidak ada di pilihan. Pilih "Tanpa toko acuan" untuk mengosongkannya.
+    - Toko acuan tidak boleh berantai. Saat menyimpan, jadwal ditolak jika toko acuannya toko ini sendiri, nonaktif, atau memakai toko acuan sendiri, atau jika toko ini sudah menjadi toko acuan toko lain. Contoh: "Toko MKG menjadi toko acuan untuk UJI BARU, jadi tidak bisa memakai toko acuan sendiri." Jadwal yang ditolak tidak berubah.
+    - Mengisi, mengganti, atau menghapus toko acuan membuat versi jadwal baru di riwayat. Pola toko itu tertulis misalnya "Mingguan · toko acuan MKG", atau "Mingguan · +3 hari cakupan · toko acuan MKG". Draft yang belum final ditandai perlu dihitung ulang ("Jadwal toko") dengan stok yang sudah diisi tetap ada. Pengiriman di luar jadwal tidak dibatalkan.
   - "Simpan jadwal" langsung berlaku, tanpa persetujuan, untuk semua gudang termasuk Pusat.
   - "Nonaktifkan jadwal" meminta konfirmasi lebih dulu.
   - Di bawah form ada "Riwayat jadwal tetap" toko itu, terbaru di atas.

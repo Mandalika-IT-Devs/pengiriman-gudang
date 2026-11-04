@@ -15,6 +15,14 @@ import { salinJadwalKeToko, type HasilSalinToko } from "@/server/gudang/salin-ja
 // domain (`periksaJadwal`, T54). Pengiriman di luar jadwal yang tidak lagi sesuai dibatalkan otomatis (T113), sehingga
 // halaman Persetujuan jadwal ikut dimuat ulang.
 
+/**
+ * Isian form jadwal tetap satu toko: jadwal ditambah toko acuan (PRD A5 ▶ Keputusan 2026-11-04, T149). Tidak dikirim =
+ * tanpa toko acuan. Aturan toko acuan diperiksa ulang di server (`validasiTokoAcuan`).
+ */
+const skemaJadwalTetap = skemaJadwal.extend({
+  idTokoAcuan: z.number({ error: "Toko acuan tidak dikenal." }).int({ error: "Toko acuan tidak dikenal." }).nullable().default(null),
+});
+
 const skemaSalin = z.object({
   idGudang: z.number().int(),
   daftarIdToko: z
@@ -41,14 +49,20 @@ function selesai(idGudang: number, hasil: HasilJadwal): HasilSimpan {
   return { keadaan: "berhasil" };
 }
 
-/** Membuat atau mengubah jadwal tetap satu toko; jadwal lama dinonaktifkan dan tetap tersimpan sebagai riwayat. */
+/**
+ * Membuat atau mengubah jadwal tetap satu toko, termasuk toko acuannya (T149); jadwal lama dinonaktifkan dan tetap
+ * tersimpan sebagai riwayat.
+ */
 export async function aturJadwalTetapToko(input: unknown): Promise<HasilSimpan> {
   const admin = await wajibAdmin();
-  const isian = skemaJadwal.safeParse(input);
+  const isian = skemaJadwalTetap.safeParse(input);
   if (!isian.success) return { keadaan: "gagal", pesan: isian.error.issues[0].message };
 
-  const { idGudang, idToko, ...masukan } = isian.data;
-  return selesai(idGudang, await aturJadwalTetap({ idGudang, idToko, masukan, idPengguna: admin.id, hariIni: tanggalWib(new Date()) }));
+  const { idGudang, idToko, idTokoAcuan, ...masukan } = isian.data;
+  return selesai(
+    idGudang,
+    await aturJadwalTetap({ idGudang, idToko, masukan, idTokoAcuan, idPengguna: admin.id, hariIni: tanggalWib(new Date()) }),
+  );
 }
 
 /** Menonaktifkan jadwal tetap satu toko. */

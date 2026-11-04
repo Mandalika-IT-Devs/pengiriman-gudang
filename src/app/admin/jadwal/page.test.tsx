@@ -195,6 +195,42 @@ describe("/admin/jadwal", () => {
     expect(kartu(html, biasa.nama)).not.toContain("+3 hari cakupan");
   });
 
+  // T149 — PRD A5 ▶ Keputusan 2026-11-04 (toko acuan, Tampilan): jadwal tetap pembanding toko dengan toko acuan menulis
+  // "<pola> · toko acuan <B>"; toko tanpa toko acuan tetap menulis pola saja.
+  it('jadwal tetap pembanding dengan toko acuan: "Mingguan · toko acuan <B>"; tanpa toko acuan "Mingguan"', async () => {
+    const [peminjam, biasa] = [await tokoDiBandung(), await tokoDiBandung()];
+    const acuan = await buatTokoUji();
+    const operator = await buatPenggunaUji("viewer");
+    const admin = await buatPenggunaUji("admin");
+    await db.insert(jadwalToko).values([
+      {
+        tokoId: peminjam.id,
+        pola: "mingguan",
+        hariKirim: [{ hari: "Selasa", persiapanHari: 1 }],
+        tokoAcuanId: acuan.id,
+        dibuatOleh: admin.id,
+      },
+      { tokoId: biasa.id, pola: "mingguan", hariKirim: [{ hari: "Selasa", persiapanHari: 2 }], dibuatOleh: admin.id },
+    ]);
+    const usulan = {
+      gudangId: bandung,
+      jenis: "tambahan" as const,
+      persiapanHari: 1 as const,
+      alasan: "uji T149",
+      diusulkanOleh: operator.id,
+    };
+    await db.insert(pengirimanDiLuarJadwal).values([
+      { ...usulan, tokoId: peminjam.id, tanggalKirim: "2099-01-09" },
+      { ...usulan, tokoId: biasa.id, tanggalKirim: "2099-01-09" },
+    ]);
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const html = await buka();
+    expect(kartu(html, peminjam.nama)).toContain(`Mingguan · toko acuan ${acuan.nama}: Selasa (H−1)`);
+    expect(kartu(html, biasa.nama)).toContain("Mingguan: Selasa (H−2)");
+    expect(kartu(html, biasa.nama)).not.toContain("toko acuan");
+  });
+
   it("riwayat keputusan gudang nonaktif tanpa penanda Nonaktif (penanda hanya di halaman Riwayat, T128)", async () => {
     const nonaktif = await buatGudangUji({ aktif: false });
     try {

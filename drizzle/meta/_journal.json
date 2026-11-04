@@ -239,6 +239,13 @@
       "when": 1793815442283,
       "tag": "0033_produk_display_manual",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793827405960,
+      "tag": "0034_toko_acuan",
+      "breakpoints": true
     }
   ]
 }

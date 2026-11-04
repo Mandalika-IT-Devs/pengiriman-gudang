@@ -356,6 +356,31 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(tabelJadwal(html).match(/<th\b/g)).toHaveLength(7);
   });
 
+  // T149 — PRD A5 ▶ Keputusan 2026-11-04 (toko acuan, Tampilan): Pola toko dengan toko acuan ditulis "<pola> · toko acuan
+  // <B>", sesudah penanda "+3 hari cakupan" bila ada, tanpa kolom baru.
+  it('jadwal dengan toko acuan tampil "Mingguan · toko acuan <B>"; toko tanpa toko acuan tetap "Mingguan"', async () => {
+    const pembuat = await buatPenggunaUji("viewer");
+    const [peminjam, bertanda, biasa, acuan] = [await buatTokoUji(), await buatTokoUji(), await buatTokoUji(), await buatTokoUji()];
+    await db.insert(hubunganTokoGudang).values([peminjam, bertanda, biasa].map((t) => ({ tokoId: t.id, gudangId: pusat })));
+    const kamis = { pola: "mingguan" as const, hariKirim: [{ hari: "Kamis" as const, persiapanHari: 1 as const }], dibuatOleh: pembuat.id };
+    await db.insert(jadwalToko).values([
+      { ...kamis, tokoId: peminjam.id, tokoAcuanId: acuan.id },
+      { ...kamis, tokoId: bertanda.id, tambah3HariCakupan: true, tokoAcuanId: acuan.id },
+      { ...kamis, tokoId: biasa.id },
+    ]);
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+
+    const html = await buka(pusat);
+    expect(barisJadwal(html, peminjam.id)).toMatch(
+      new RegExp(`<td[^>]*>Mingguan · toko acuan ${acuan.nama}</td><td[^>]*>Kamis \\(H−1\\)</td>`),
+    );
+    expect(barisJadwal(html, bertanda.id)).toMatch(
+      new RegExp(`<td[^>]*>Mingguan · \\+3 hari cakupan · toko acuan ${acuan.nama}</td><td[^>]*>Kamis \\(H−1\\)</td>`),
+    );
+    expect(barisJadwal(html, biasa.id)).toMatch(/<td[^>]*>Mingguan<\/td><td[^>]*>Kamis \(H−1\)<\/td>/);
+    expect(tabelJadwal(html).match(/<th\b/g)).toHaveLength(7);
+  });
+
   it("jadwal dengan hari Minggu tampil dengan urutan hari Senin–Minggu (T106)", async () => {
     const pembuat = await buatPenggunaUji("viewer");
     const t = await buatTokoUji();

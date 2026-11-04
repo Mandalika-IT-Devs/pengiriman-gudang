@@ -23,7 +23,7 @@ import {
   type StatusPengirimanDiLuarJadwal,
 } from "@/server/db/schema";
 
-import { bacaJadwalAktif, jadwalTokoGudang, type TokoDenganJadwal, type Tx } from "./jadwal";
+import { bacaJadwalAktif, jadwalTokoGudang, tokoAcuanDari, type TokoAcuan, type TokoDenganJadwal, type Tx } from "./jadwal";
 import { NAMA_GUDANG_PUSAT } from "./seed-master";
 
 // Pengiriman di luar jadwal (T113, PRD A5 ▶ Revisi 2026-10-13): operator dengan hak `kelola-usulan-jadwal` mengusulkan
@@ -504,8 +504,11 @@ export async function riwayatKeputusanPengirimanDiLuarJadwal() {
   return bacaEntri(ne(pengirimanDiLuarJadwal.status, "menunggu"), [sql`${waktuTerakhir} desc`, desc(pengirimanDiLuarJadwal.id)]);
 }
 
-/** Usulan menunggu beserta jadwal tetap toko saat ini (dengan pilihan "Tambah 3 hari cakupan", T144) sebagai pembanding. */
-export type UsulanMenungguPersetujuan = EntriPengirimanDiLuarJadwal & { jadwalTetap: Jadwal | null };
+/**
+ * Usulan menunggu beserta jadwal tetap toko saat ini (dengan pilihan "Tambah 3 hari cakupan", T144, dan toko acuan, T149)
+ * sebagai pembanding.
+ */
+export type UsulanMenungguPersetujuan = EntriPengirimanDiLuarJadwal & { jadwalTetap: (Jadwal & { tokoAcuan?: TokoAcuan }) | null };
 
 /** Semua usulan menunggu (semua gudang), yang terlama dulu. Hanya admin. */
 export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguPersetujuan[]> {
@@ -514,14 +517,18 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
     asc(pengirimanDiLuarJadwal.id),
   ]);
   if (daftar.length === 0) return [];
+  const acuan = alias(toko, "toko_acuan");
   const jadwal = await db
     .select({
       idToko: jadwalToko.tokoId,
       pola: jadwalToko.pola,
       hariKirim: jadwalToko.hariKirim,
       tambah3HariCakupan: jadwalToko.tambah3HariCakupan,
+      idTokoAcuan: acuan.id,
+      namaTokoAcuan: acuan.nama,
     })
     .from(jadwalToko)
+    .leftJoin(acuan, eq(acuan.id, jadwalToko.tokoAcuanId))
     .where(
       and(
         eq(jadwalToko.status, "aktif"),
@@ -532,7 +539,15 @@ export async function daftarUsulanMenungguPersetujuan(): Promise<UsulanMenungguP
       ),
     );
   const perToko = new Map(
-    jadwal.map((j) => [j.idToko, { pola: j.pola, hariKirim: j.hariKirim, tambah3HariCakupan: j.tambah3HariCakupan }]),
+    jadwal.map((j) => [
+      j.idToko,
+      {
+        pola: j.pola,
+        hariKirim: j.hariKirim,
+        tambah3HariCakupan: j.tambah3HariCakupan,
+        ...tokoAcuanDari(j.idTokoAcuan, j.namaTokoAcuan),
+      },
+    ]),
   );
   return daftar.map((d) => ({ ...d, jadwalTetap: perToko.get(d.idToko) ?? null }));
 }

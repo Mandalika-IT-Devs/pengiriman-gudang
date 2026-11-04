@@ -59,7 +59,8 @@ function SelDiLuarJadwal({ daftar }: { daftar: EntriPengirimanDiLuarJadwal[] | u
  * `tautan` = pengguna punya hak `kelola-usulan-jadwal` di gudang ini: tampil tautan "Kirim di luar jadwal". Hak diperiksa
  * lagi di halaman tujuan dan server action. T118 (DESIGN §11.5): kolom Status toko menggantikan tabel "Toko terhubung"
  * yang terpisah; bagian ini bisa dibuka-tutup dan awalnya tertutup. T135 (PRD A5 ▶ Revisi 2026-10-19): tanpa kolom
- * tanggal jangkar. T144 (PRD A5 ▶ Keputusan 2026-10-27): Pola toko bertanda ditulis "<pola> · +3 hari cakupan".
+ * tanggal jangkar. T144 (PRD A5 ▶ Keputusan 2026-10-27): Pola toko bertanda ditulis "<pola> · +3 hari cakupan". T149 (PRD
+ * A5 ▶ Keputusan 2026-11-04): toko dengan toko acuan mendapat penanda "· toko acuan <B>" sesudahnya.
  */
 export function BagianJadwal({
   idGudang,
@@ -108,7 +109,9 @@ export function BagianJadwal({
                   <BadgeStatusToko aktif={t.aktif} />
                 </TableCell>
                 <TableCell>{t.jadwal ? <BadgeStatus status="aktif" /> : <BadgeTanpaJadwal />}</TableCell>
-                <TableCell>{t.jadwal ? labelPolaJadwal(t.jadwal.pola, t.jadwal.tambah3HariCakupan === true) : "—"}</TableCell>
+                <TableCell>
+                  {t.jadwal ? labelPolaJadwal(t.jadwal.pola, t.jadwal.tambah3HariCakupan === true, t.jadwal.tokoAcuan?.nama) : "—"}
+                </TableCell>
                 <TableCell className="whitespace-normal">{t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}</TableCell>
                 <TableCell className="whitespace-normal text-muted-foreground">
                   {t.jadwal ? (

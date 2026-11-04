@@ -253,3 +253,56 @@ test("Admin: centang Tambah 3 hari cakupan di Jadwal toko dan Salin jadwal → P
     page.locator(`tr[data-jadwal-toko="${lain.id}"]`).getByRole("cell", { name: "Mingguan · +3 hari cakupan", exact: true }),
   ).toBeVisible();
 });
+
+// T149 — UAT U9.9 dan U9.13 (PRD A5 ▶ Keputusan 2026-11-04, toko acuan): admin mengisi toko acuan di form jadwal tetap satu
+// toko, termasuk toko yang belum terhubung ke gudang. Pola toko itu menjadi "<pola> · toko acuan <B>"; mengosongkannya
+// membuat versi baru tanpa toko acuan.
+test("Admin: isi toko acuan di Jadwal toko → Pola bertanda toko acuan; kosongkan → versi baru tanpa toko acuan", async ({ page }) => {
+  const idGudang = await idGudangUji("Gudang Cibubur");
+  const [baru, acuan] = [await buatTokoUji(), await buatTokoUji()];
+  await db.insert(hubunganTokoGudang).values({ tokoId: baru.id, gudangId: idGudang });
+  const admin = await buatPenggunaUji("admin");
+  await masuk(page, admin.email);
+  await page.goto(`/admin/jadwal-toko/${idGudang}`);
+
+  await page.getByRole("button", { name: `Atur jadwal ${baru.nama}` }).click();
+  const panel = page.getByRole("dialog", { name: `Jadwal tetap ${baru.nama}` });
+  await panel.getByRole("checkbox", { name: "Selasa" }).check();
+  await panel.getByRole("combobox", { name: "Persiapan hari Selasa" }).click();
+  await page.getByRole("option", { name: "H−1", exact: true }).click();
+
+  const tokoAcuan = panel.getByRole("combobox", { name: "Toko acuan" });
+  await expect(tokoAcuan).toHaveText("Tanpa toko acuan");
+  await expect(tokoAcuan).toHaveAccessibleDescription(
+    "Isi hanya untuk toko yang belum punya data penjualan. Varian dan rata-rata diambil dari toko acuan, sedangkan jadwal, stok, dan kategori hari tetap milik toko ini.",
+  );
+  await tokoAcuan.click();
+  await expect(page.getByRole("option", { name: baru.nama, exact: true })).toHaveCount(0);
+  await page.getByRole("option", { name: acuan.nama, exact: true }).click();
+  await expect(tokoAcuan).toHaveText(acuan.nama);
+  await panel.getByRole("button", { name: "Simpan jadwal" }).click();
+  await expect(panel.getByText("Berhasil disimpan")).toBeVisible();
+  const riwayat = panel.locator("[data-riwayat-jadwal]");
+  await expect(riwayat).toHaveCount(1);
+  await expect(riwayat.first()).toContainText(`Mingguan · toko acuan ${acuan.nama}`);
+  await panel.getByRole("button", { name: "Tutup" }).click();
+
+  const barisBaru = page.locator(`tr[data-jadwal-toko="${baru.id}"]`);
+  await expect(barisBaru.getByRole("cell", { name: `Mingguan · toko acuan ${acuan.nama}`, exact: true })).toBeVisible();
+  await expect(barisBaru.getByRole("cell", { name: "Selasa (H−1)", exact: true })).toBeVisible();
+
+  // UAT U9.13: toko acuan dikosongkan → versi baru "Mingguan" (Aktif), versi lama "Mingguan · toko acuan <B>" (Diganti).
+  await page.getByRole("button", { name: `Atur jadwal ${baru.nama}` }).click();
+  await expect(tokoAcuan).toHaveText(acuan.nama);
+  await tokoAcuan.click();
+  await page.getByRole("option", { name: "Tanpa toko acuan", exact: true }).click();
+  await panel.getByRole("button", { name: "Simpan jadwal" }).click();
+  await expect(panel.getByText("Berhasil disimpan")).toBeVisible();
+  await expect(riwayat).toHaveCount(2);
+  await expect(riwayat.first()).toContainText("Aktif");
+  await expect(riwayat.first()).not.toContainText("toko acuan");
+  await expect(riwayat.nth(1)).toContainText("Diganti");
+  await expect(riwayat.nth(1)).toContainText(`Mingguan · toko acuan ${acuan.nama}`);
+  await panel.getByRole("button", { name: "Tutup" }).click();
+  await expect(barisBaru.getByRole("cell", { name: "Mingguan", exact: true })).toBeVisible();
+});

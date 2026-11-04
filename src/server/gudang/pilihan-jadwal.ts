@@ -28,11 +28,15 @@ export const labelPola: Record<PolaJadwal, string> = {
 };
 
 /**
- * Teks pola beserta penanda "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27), mis. `Mingguan · +3 hari cakupan`;
- * pola tanpa tanda tetap `labelPola`.
+ * Teks pola beserta penanda "Tambah 3 hari cakupan" (PRD A5 ▶ Keputusan 2026-10-27), mis. `Mingguan · +3 hari cakupan`,
+ * lalu penanda toko acuan sesudahnya (PRD A5 ▶ Keputusan 2026-11-04, T149), mis. `Mingguan · +3 hari cakupan · toko acuan
+ * SMB`; pola tanpa tanda tetap `labelPola`.
  */
-export function labelPolaJadwal(pola: PolaJadwal, tambah3HariCakupan: boolean) {
-  return tambah3HariCakupan ? `${labelPola[pola]} · +3 hari cakupan` : labelPola[pola];
+export function labelPolaJadwal(pola: PolaJadwal, tambah3HariCakupan: boolean, namaTokoAcuan?: string) {
+  const bagian = [labelPola[pola]];
+  if (tambah3HariCakupan) bagian.push("+3 hari cakupan");
+  if (namaTokoAcuan !== undefined) bagian.push(`toko acuan ${namaTokoAcuan}`);
+  return bagian.join(" · ");
 }
 
 /** Persiapan tersimpan (jumlah hari) → pilihan form `H` / `H-1` / `H-2`. */
