@@ -393,6 +393,8 @@ const labelAlasan: Record<AlasanHitungUlang, string> = {
   jadwal: "Jadwal toko",
   ranking: "Ranking pusat",
   pemetaan: "Pemetaan keluarga aroma",
+  // PRD A6 ▶ Keputusan 2026-11-04 (T146).
+  "aturan-produk": "Aturan produk manual",
 };
 
 type HitungUlangDraft = { idGudang: number; tanggalKirim: TanggalBisnis } | null;

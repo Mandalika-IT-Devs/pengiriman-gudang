@@ -1,7 +1,8 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 
 import { kirimanSebelumnyaBelumSampai, kirimanSebelumnyaBelumSampaiToko, tanggalKirimMenurutToko } from "@/domain/jadwal";
 import type { TanggalBisnis } from "@/domain/kalender";
+import { klasifikasiProduk } from "@/domain/produk";
 import { db } from "@/server/db";
 import { barisDraftRencana, perubahanKategori, produk, tokoDraftRencana, type JenisPengiriman } from "@/server/db/schema";
 import type { Tx } from "@/server/impor/antrean";
@@ -22,9 +23,17 @@ type Klien = typeof db | Tx;
  * Dasar yang berubah sejak draft dihitung, dalam urutan tampilan (urutan issue T61): periode sumber gudang, impor aktif,
  * kategori efektif (perubahan kalender yang mengenai cakupan draft), jadwal toko yang mengirim (termasuk pengiriman di
  * luar jadwal, T114), ranking pusat berlaku,
- * pemetaan keluarga aroma.
+ * pemetaan keluarga aroma, lalu aturan produk manual (klasifikasi produk, T146).
  */
-const URUTAN_ALASAN_HITUNG_ULANG = ["periode-sumber", "impor-aktif", "kategori-efektif", "jadwal", "ranking", "pemetaan"] as const;
+const URUTAN_ALASAN_HITUNG_ULANG = [
+  "periode-sumber",
+  "impor-aktif",
+  "kategori-efektif",
+  "jadwal",
+  "ranking",
+  "pemetaan",
+  "aturan-produk",
+] as const;
 export type AlasanHitungUlang = (typeof URUTAN_ALASAN_HITUNG_ULANG)[number];
 
 export type TokoKirim = {
@@ -201,6 +210,35 @@ async function pemetaanBerubah({ idDraft }: DasarTersimpan, klien: Klien) {
   return new Set(baris.map((b) => b.tokoId));
 }
 
+/**
+ * Toko di draft yang punya baris dengan klasifikasi tersimpan berbeda dari `klasifikasiProduk` untuk kode dan kategori
+ * master produk saat ini (PRD A6 ▶ Keputusan 2026-11-04, ADR-0012; T146), misalnya produk display yang dihitung otomatis
+ * sebelum aturan itu berlaku. Kode tanpa master produk diklasifikasi dengan kategori kosong, sama seperti saat menghitung.
+ * Klasifikasi diperiksa per pasangan kode–klasifikasi yang berbeda di draft, lalu toko dicari hanya untuk pasangan yang
+ * berubah.
+ */
+async function aturanProdukBerubah({ idDraft }: DasarTersimpan, klien: Klien) {
+  const tersimpan = await klien
+    .selectDistinct({ kodeProduk: barisDraftRencana.kodeProduk, klasifikasi: barisDraftRencana.klasifikasi, kategori: produk.kategori })
+    .from(barisDraftRencana)
+    .innerJoin(tokoDraftRencana, eq(tokoDraftRencana.id, barisDraftRencana.tokoDraftId))
+    .leftJoin(produk, eq(produk.kode, barisDraftRencana.kodeProduk))
+    .where(eq(tokoDraftRencana.draftId, idDraft));
+  const berubah = tersimpan.filter((b) => klasifikasiProduk(b.kodeProduk, b.kategori ?? "").klasifikasi !== b.klasifikasi);
+  if (berubah.length === 0) return new Set<number>();
+  const baris = await klien
+    .selectDistinct({ tokoId: tokoDraftRencana.tokoId })
+    .from(barisDraftRencana)
+    .innerJoin(tokoDraftRencana, eq(tokoDraftRencana.id, barisDraftRencana.tokoDraftId))
+    .where(
+      and(
+        eq(tokoDraftRencana.draftId, idDraft),
+        or(...berubah.map((b) => and(eq(barisDraftRencana.kodeProduk, b.kodeProduk), eq(barisDraftRencana.klasifikasi, b.klasifikasi)))),
+      ),
+    );
+  return new Set(baris.map((b) => b.tokoId));
+}
+
 /** Hasil pemeriksaan dasar perhitungan draft terhadap dasar yang berlaku. */
 export type HitungUlang = {
   /**
@@ -210,8 +248,9 @@ export type HitungUlang = {
   alasan: AlasanHitungUlang[];
   /**
    * Per toko di draft: dasar berubah yang mengenai toko itu, dalam urutan tampilan. Perubahan periode sumber, impor
-   * aktif, dan ranking mengenai semua toko; kategori efektif, jadwal, dan pemetaan hanya toko yang terkena. Toko dengan
-   * daftar tidak kosong tertahan finalisasinya; toko lain tetap bisa difinalisasi (PRD A7 ▶ Keputusan 2026-10-11, T62).
+   * aktif, dan ranking mengenai semua toko; kategori efektif, jadwal, pemetaan, dan aturan produk manual hanya toko yang
+   * terkena. Toko dengan daftar tidak kosong tertahan finalisasinya; toko lain tetap bisa difinalisasi (PRD A7
+   * ▶ Keputusan 2026-10-11, T62).
    */
   perToko: Map<number, AlasanHitungUlang[]>;
 };
@@ -239,13 +278,14 @@ export async function periksaHitungUlang(dasar: DasarTersimpan, klien: Klien = d
     })
     .from(tokoDraftRencana)
     .where(eq(tokoDraftRencana.draftId, dasar.idDraft));
-  const [periode, kunci, ranking, kategori, jadwal, pemetaan] = await Promise.all([
+  const [periode, kunci, ranking, kategori, jadwal, pemetaan, aturanProduk] = await Promise.all([
     bacaPeriodeSumber(dasar.idGudang, klien),
     bacaKunciVersi(klien),
     rankingBerlaku(klien),
     kategoriBerubah(tersimpan, klien),
     jadwalBerubah(dasar, tersimpan, klien),
     pemetaanBerubah(dasar, klien),
+    aturanProdukBerubah(dasar, klien),
   ]);
   const { imporAktif } = dasar;
   const periodeBerubah = periode?.versi !== dasar.versiPeriodeSumber;
@@ -259,6 +299,7 @@ export async function periksaHitungUlang(dasar: DasarTersimpan, klien: Klien = d
     jadwal: jadwal.toko.size > 0 || jadwal.adaTokoBaru,
     ranking: rankingBerubah,
     pemetaan: pemetaan.size > 0,
+    "aturan-produk": aturanProduk.size > 0,
   };
   const mengenai: Record<AlasanHitungUlang, (tokoId: number) => boolean> = {
     "periode-sumber": () => periodeBerubah,
@@ -267,6 +308,7 @@ export async function periksaHitungUlang(dasar: DasarTersimpan, klien: Klien = d
     jadwal: (tokoId) => jadwal.toko.has(tokoId),
     ranking: () => rankingBerubah,
     pemetaan: (tokoId) => pemetaan.has(tokoId),
+    "aturan-produk": (tokoId) => aturanProduk.has(tokoId),
   };
   return {
     alasan: URUTAN_ALASAN_HITUNG_ULANG.filter((a) => berubah[a]),
