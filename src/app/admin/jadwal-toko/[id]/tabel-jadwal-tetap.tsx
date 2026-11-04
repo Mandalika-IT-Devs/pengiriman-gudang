@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogIsi } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatTanggal } from "@/domain/kalender";
-import type { EntriRiwayatJadwal, TokoDenganJadwal } from "@/server/gudang/jadwal";
+import type { EntriRiwayatJadwal, TokoAcuan, TokoDenganJadwal } from "@/server/gudang/jadwal";
 import { isianDariJadwal, labelHariKirim, labelPolaJadwal } from "@/server/gudang/pilihan-jadwal";
 
 import { FormJadwalTetap } from "./form-jadwal-tetap";
@@ -48,9 +48,18 @@ function WaktuSingkat({ waktu }: { waktu: Date }) {
 /**
  * Tabel jadwal tetap per toko (T112, PRD A5 ▶ Revisi 2026-10-13) dengan tombol "Atur jadwal" per toko dan "Salin jadwal
  * ke beberapa toko". Keduanya membuka panel samping (DESIGN §11.2) tanpa memuat ulang halaman. Panel dirender di luar
- * tabel karena isinya tidak memakai portal (lihat `dialog.tsx`).
+ * tabel karena isinya tidak memakai portal (lihat `dialog.tsx`). Pola memuat penanda toko acuan (T149);
+ * `pilihanTokoAcuan` diteruskan ke form jadwal tetap.
  */
-export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; daftarToko: TokoJadwalTetap[] }) {
+export function TabelJadwalTetap({
+  idGudang,
+  daftarToko,
+  pilihanTokoAcuan = [],
+}: {
+  idGudang: number;
+  daftarToko: TokoJadwalTetap[];
+  pilihanTokoAcuan?: readonly TokoAcuan[];
+}) {
   const [panel, setPanel] = useState<Panel>(null);
   const tokoTerbuka = panel?.jenis === "toko" ? daftarToko.find((t) => t.id === panel.idToko) : undefined;
 
@@ -96,7 +105,9 @@ export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; d
                 <BadgeStatusToko aktif={t.aktif} />
               </TableCell>
               <TableCell>{t.jadwal ? <BadgeStatus status="aktif" /> : <BadgeTanpaJadwal />}</TableCell>
-              <TableCell>{t.jadwal ? labelPolaJadwal(t.jadwal.pola, t.jadwal.tambah3HariCakupan === true) : "—"}</TableCell>
+              <TableCell>
+                {t.jadwal ? labelPolaJadwal(t.jadwal.pola, t.jadwal.tambah3HariCakupan === true, t.jadwal.tokoAcuan?.nama) : "—"}
+              </TableCell>
               <TableCell className="whitespace-normal">{t.jadwal ? labelHariKirim(t.jadwal.hariKirim) : "—"}</TableCell>
               <TableCell className="whitespace-normal text-muted-foreground">
                 {t.jadwal ? (
@@ -143,7 +154,9 @@ export function TabelJadwalTetap({ idGudang, daftarToko }: { idGudang: number; d
                 id: tokoTerbuka.id,
                 nama: tokoTerbuka.nama,
                 jadwal: tokoTerbuka.jadwal ? isianDariJadwal(tokoTerbuka.jadwal) : null,
+                ...(tokoTerbuka.jadwal?.tokoAcuan ? { tokoAcuan: tokoTerbuka.jadwal.tokoAcuan } : {}),
               }}
+              pilihanTokoAcuan={pilihanTokoAcuan}
             />
             <RiwayatJadwalTetap riwayat={tokoTerbuka.riwayat} />
           </DialogIsi>

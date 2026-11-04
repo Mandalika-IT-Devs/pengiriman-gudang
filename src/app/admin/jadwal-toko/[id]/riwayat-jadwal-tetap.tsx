@@ -22,8 +22,8 @@ function BadgeRiwayat({ berakhir }: { berakhir: EntriRiwayatJadwal["berakhir"] }
 }
 
 /**
- * Daftar riwayat jadwal tetap: pola (dengan penanda "+3 hari cakupan", T144) dan hari, diatur oleh dan kapan,
- * diganti/dinonaktifkan oleh dan kapan.
+ * Daftar riwayat jadwal tetap: pola (dengan penanda "+3 hari cakupan", T144, dan "toko acuan <B>", T149) dan hari, diatur
+ * oleh dan kapan, diganti/dinonaktifkan oleh dan kapan.
  */
 export function RiwayatJadwalTetap({ riwayat }: { riwayat: EntriRiwayatJadwal[] }) {
   return (
@@ -40,7 +40,7 @@ export function RiwayatJadwalTetap({ riwayat }: { riwayat: EntriRiwayatJadwal[] 
             <li key={r.id} data-riwayat-jadwal={r.id} className="flex flex-col gap-1 rounded-2xl border border-border/60 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <BadgeRiwayat berakhir={r.berakhir} />
-                <span className="font-semibold">{labelPolaJadwal(r.pola, r.tambah3HariCakupan)}</span>
+                <span className="font-semibold">{labelPolaJadwal(r.pola, r.tambah3HariCakupan, r.tokoAcuan?.nama)}</span>
               </div>
               <span>{labelHariKirim(r.hariKirim)}</span>
               <span className="text-muted-foreground">

@@ -22,7 +22,10 @@ export const metadata: Metadata = {
   title: "Persetujuan jadwal — Dashboard Penjualan MANDALIKA",
 };
 
-/** Jadwal tetap toko saat ini sebagai pembanding usulan; Pola toko bertanda ditulis "<pola> · +3 hari cakupan" (T144). */
+/**
+ * Jadwal tetap toko saat ini sebagai pembanding usulan; Pola toko bertanda ditulis "<pola> · +3 hari cakupan" (T144),
+ * lalu "· toko acuan <B>" bila memakai toko acuan (T149).
+ */
 function JadwalTetap({ usulan }: { usulan: UsulanMenungguPersetujuan }) {
   const j = usulan.jadwalTetap;
   return (
@@ -31,7 +34,7 @@ function JadwalTetap({ usulan }: { usulan: UsulanMenungguPersetujuan }) {
       <dd>
         {j === null
           ? "Tidak ada jadwal tetap aktif"
-          : `${labelPolaJadwal(j.pola, j.tambah3HariCakupan === true)}: ${labelHariKirim(j.hariKirim)}`}
+          : `${labelPolaJadwal(j.pola, j.tambah3HariCakupan === true, j.tokoAcuan?.nama)}: ${labelHariKirim(j.hariKirim)}`}
       </dd>
       <dt className="font-semibold">Usulan</dt>
       <dd>

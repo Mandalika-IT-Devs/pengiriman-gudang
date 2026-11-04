@@ -747,7 +747,8 @@ export type StatusJadwal = (typeof daftarStatusJadwal)[number];
  * Mengubah = baris baru; baris aktif sebelumnya menjadi `nonaktif` (riwayat tidak dihapus). Menonaktifkan mencatat siapa
  * dan kapan. Id baris aktif menjadi versi jadwal toko itu (sinyal perubahan jadwal). `tambah_3_hari_cakupan` = tanda
  * "Tambah 3 hari cakupan" untuk seluruh jadwal tetap itu (PRD A5 ▶ Keputusan 2026-10-27, T143); jadwal yang sudah ada
- * tidak dicentang.
+ * tidak dicentang. `toko_acuan_id` = toko acuan jadwal tetap itu, kosong = tanpa toko acuan (PRD A5 ▶ Keputusan
+ * 2026-11-04, T149); jadwal yang sudah ada tanpa toko acuan. Aturannya diperiksa `validasiTokoAcuan` saat menyimpan.
  */
 export const jadwalToko = pgTable(
   "jadwal_toko",
@@ -760,6 +761,7 @@ export const jadwalToko = pgTable(
     hariKirim: jsonb("hari_kirim").$type<{ hari: HariKirim; persiapanHari: 0 | 1 | 2 }[]>().notNull(),
     tanggalJangkar: date("tanggal_jangkar", { mode: "string" }),
     tambah3HariCakupan: boolean("tambah_3_hari_cakupan").notNull().default(false),
+    tokoAcuanId: integer("toko_acuan_id").references(() => toko.id),
     status: text("status").$type<StatusJadwal>().notNull().default("aktif"),
     dibuatOleh: text("dibuat_oleh")
       .notNull()

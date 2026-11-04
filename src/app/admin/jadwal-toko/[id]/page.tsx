@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { tautanTombolVariants } from "@/components/ui/button";
 import { AksesDitolakError, wajibAdmin } from "@/server/auth/kewenangan";
-import { jadwalTokoGudang, riwayatJadwalTetapGudang } from "@/server/gudang/jadwal";
+import { jadwalTokoGudang, pilihanTokoAcuan, riwayatJadwalTetapGudang } from "@/server/gudang/jadwal";
 import { daftarGudangKelola } from "@/server/gudang/kelola-gudang";
 
 import { TabelJadwalTetap } from "./tabel-jadwal-tetap";
@@ -35,12 +35,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * Jadwal toko satu gudang (T112, PRD A5 ▶ Revisi 2026-10-13): tabel toko terhubung beserta jadwal tetapnya. Admin
- * mengatur, mengubah, atau menonaktifkan jadwal satu toko dan melihat riwayatnya di panel samping, atau menyalin satu
- * pengaturan ke beberapa toko. Semua langsung berlaku tanpa usulan, termasuk di Pusat. Zona kerja (DESIGN §1).
+ * mengatur, mengubah, atau menonaktifkan jadwal satu toko (termasuk toko acuannya, T149) dan melihat riwayatnya di panel
+ * samping, atau menyalin satu pengaturan ke beberapa toko. Semua langsung berlaku tanpa usulan, termasuk di Pusat. Zona
+ * kerja (DESIGN §1).
  */
 export default async function HalamanJadwalTokoGudang({ params }: Props) {
   const gudang = await muatGudang((await params).id);
-  const [daftarToko, riwayat] = await Promise.all([jadwalTokoGudang(gudang.id), riwayatJadwalTetapGudang(gudang.id)]);
+  const [daftarToko, riwayat, pilihan] = await Promise.all([
+    jadwalTokoGudang(gudang.id),
+    riwayatJadwalTetapGudang(gudang.id),
+    pilihanTokoAcuan(),
+  ]);
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 text-sm sm:px-6 md:py-8 lg:px-8">
@@ -52,7 +57,11 @@ export default async function HalamanJadwalTokoGudang({ params }: Props) {
       <p className="text-muted-foreground">
         Jadwal tetap langsung berlaku setelah disimpan. Setiap toko punya paling banyak satu jadwal tetap aktif.
       </p>
-      <TabelJadwalTetap idGudang={gudang.id} daftarToko={daftarToko.map((t) => ({ ...t, riwayat: riwayat.get(t.id) ?? [] }))} />
+      <TabelJadwalTetap
+        idGudang={gudang.id}
+        daftarToko={daftarToko.map((t) => ({ ...t, riwayat: riwayat.get(t.id) ?? [] }))}
+        pilihanTokoAcuan={pilihan}
+      />
     </main>
   );
 }

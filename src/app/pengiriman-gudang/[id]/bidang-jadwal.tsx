@@ -42,17 +42,20 @@ export function isianTerkirim(isian: IsianJadwal): IsianJadwal {
  * (T57). `bidangAwal` tampil di baris yang sama dengan pola (mis. pilihan toko). Tanpa tanggal jangkar; pola dua mingguan
  * menampilkan keterangan pemilihan pekannya (PRD A5 ▶ Revisi 2026-10-19, T135). Tepat di bawah Pola, checkbox "Tambah 3
  * hari cakupan" untuk semua pola dengan keterangan yang selalu tampil (PRD A5 ▶ Keputusan 2026-10-27, T144).
+ * `bidangTokoAcuan` tampil di bawah checkbox itu (isian Toko acuan, PRD A5 ▶ Keputusan 2026-11-04, T149).
  */
 export function BidangJadwal({
   isian,
   ubah,
   nonaktif,
   bidangAwal,
+  bidangTokoAcuan,
 }: {
   isian: IsianJadwal;
   ubah: (baru: Partial<IsianJadwal>) => void;
   nonaktif: boolean;
   bidangAwal?: ReactNode;
+  bidangTokoAcuan?: ReactNode;
 }) {
   const id = useId();
   const persiapanHari = new Map(isian.hariKirim.map((h) => [h.hari, h.persiapan]));
@@ -101,6 +104,7 @@ export function BidangJadwal({
           <p id={`${id}-tambah-3-hari`} data-keterangan-tambah-3-hari className="font-normal text-muted-foreground">
             Cakupan setiap pengiriman toko ini diperpanjang 3 hari sesudah hari terakhirnya.
           </p>
+          {bidangTokoAcuan}
         </div>
       </div>
 
