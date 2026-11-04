@@ -1,10 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { parseTanggalBisnis, type KategoriDasar } from "@/domain/kalender";
 import { buatPenggunaUji } from "@/server/auth/uji-bantu";
+import { db } from "@/server/db";
+import { draftRencana, tokoDraftRencana } from "@/server/db/schema";
 import { batalkanPerubahanKategori, buatPerubahanKategori } from "@/server/kalender/perubahan-kategori";
 
 import { bacaDraftRencana, bacaRingkasanDraft, hitungDraftRencana } from "./draft-rencana";
@@ -162,6 +165,43 @@ describe("LMK (toko acuan SMB) yang sudah punya data penjualan sendiri di period
     expect(
       await finalisasiRencanaToko({ idGudang: cibubur, tanggalKirim: KAMIS, tokoId: data.lmk.id, idPengguna: idOperator, versiDilihat }),
     ).toMatchObject({ keadaan: "berhasil" });
+  });
+});
+
+// PRD A5 ▶ Keputusan 2026-11-04 (Perubahan dan peralihan): toko acuan bagian dari jadwal tetap, jadi toko acuan tersimpan
+// di draft yang berbeda dari toko acuan jadwal tetap aktif menandai toko itu perlu dihitung ulang dengan dasar "Jadwal
+// toko". Ini menutup draft yang dihitung sebelum T151 (toko acuan tersimpan kosong) untuk toko yang sudah memakai toko
+// acuan.
+describe('toko acuan tersimpan berbeda dari jadwal tetap aktif → "Jadwal toko"', () => {
+  /** Mengosongkan toko acuan tersimpan TOKO BARU, seperti draft yang dihitung sebelum T151. */
+  const jadikanDraftSebelumT151 = async () => {
+    const [draft] = await db
+      .select({ id: draftRencana.id })
+      .from(draftRencana)
+      .where(and(eq(draftRencana.gudangId, cibubur), eq(draftRencana.tanggalKirim, KAMIS)));
+    await db
+      .update(tokoDraftRencana)
+      .set({ tokoAcuanId: null })
+      .where(and(eq(tokoDraftRencana.draftId, draft.id), eq(tokoDraftRencana.tokoId, data.tokoBaru.id)));
+  };
+  const tandaPerToko = async () =>
+    Object.fromEntries((await bacaDraftRencana(cibubur, KAMIS))?.toko.map((t) => [t.id, t.perluDihitungUlang]) ?? []);
+
+  it("toko acuan tersimpan sama dengan jadwal tetap aktif → tidak ditandai", async () => {
+    await hitung();
+    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual([]);
+    expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: [], [data.lmk.id]: [] });
+  });
+
+  it("toko acuan tersimpan kosong, jadwal tetap aktif memakai SMB → hanya TOKO BARU ditandai jadwal; hilang setelah dihitung ulang", async () => {
+    await jadikanDraftSebelumT151();
+    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual(["jadwal"]);
+    expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: ["jadwal"], [data.lmk.id]: [] });
+
+    await hitung();
+    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual([]);
+    expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: [], [data.lmk.id]: [] });
+    expect((await tokoDi(data.tokoBaru.id))?.tokoAcuan).toMatchObject({ id: data.smb.id });
   });
 });
 

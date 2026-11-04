@@ -109,6 +109,7 @@ type TokoTersimpan = Pick<
   | "persiapanHari"
   | "panjangCakupan"
   | "tambah3HariCakupan"
+  | "tokoAcuanId"
   | "jenisPengiriman"
   | "pengirimanDiLuarJadwalId"
   | "kirimanSebelumnyaBelumSampai"
@@ -118,10 +119,13 @@ type TokoTersimpan = Pick<
 
 /**
  * Toko di draft yang tanggal kirim tokonya berubah (T61, T114): versi jadwal aktifnya berbeda, tidak lagi mengirim pada
- * tanggal itu, atau p, L, tanda "Tambah 3 hari cakupan" (T143), pengiriman di luar jadwal acuannya, maupun peringatan
- * "kiriman sebelumnya belum sampai"-nya berbeda dari saat dihitung. Versi jadwal tetap saja tidak cukup: pengiriman di
- * luar jadwal yang mulai berlaku atau dibatalkan mengubah draft tanggal kirimnya, draft tanggal rutin yang dipindah, draft
- * pengiriman sebelumnya (L), dan draft pengiriman berikutnya (peringatan). `adaTokoBaru` = ada toko yang kini mengirim
+ * tanggal itu, atau p, L, tanda "Tambah 3 hari cakupan" (T143), toko acuan (T151), pengiriman di luar jadwal acuannya,
+ * maupun peringatan "kiriman sebelumnya belum sampai"-nya berbeda dari saat dihitung. Toko acuan bagian dari jadwal tetap
+ * (PRD A5 ▶ Keputusan 2026-11-04, Perubahan dan peralihan): perubahannya membuat versi jadwal baru, dan perbandingan ini
+ * juga menandai draft sebelum T151 (toko acuan tersimpan kosong) untuk toko yang jadwal tetapnya sudah memakai toko acuan.
+ * Versi jadwal tetap saja tidak cukup: pengiriman di luar jadwal yang mulai berlaku atau dibatalkan mengubah draft tanggal
+ * kirimnya, draft tanggal rutin yang dipindah, draft pengiriman sebelumnya (L), dan draft pengiriman berikutnya
+ * (peringatan). `adaTokoBaru` = ada toko yang kini mengirim
  * tetapi belum ada di draft (draft perlu dihitung ulang, tanpa menahan toko yang sudah ada di draft).
  */
 async function jadwalBerubah({ idGudang, tanggalKirim }: DasarTersimpan, tersimpan: readonly TokoTersimpan[], klien: Klien) {
@@ -138,6 +142,7 @@ async function jadwalBerubah({ idGudang, tanggalKirim }: DasarTersimpan, tersimp
       toko.persiapanHari !== t.persiapanHari ||
       toko.panjangCakupan !== t.panjangCakupan ||
       toko.tambah3HariCakupan !== t.tambah3HariCakupan ||
+      toko.tokoAcuanId !== t.tokoAcuanId ||
       toko.kirimanSebelumnyaBelumSampai !== peringatanTersimpan
     );
   };
@@ -276,6 +281,7 @@ export async function periksaHitungUlang(dasar: DasarTersimpan, klien: Klien = d
       persiapanHari: tokoDraftRencana.persiapanHari,
       panjangCakupan: tokoDraftRencana.panjangCakupan,
       tambah3HariCakupan: tokoDraftRencana.tambah3HariCakupan,
+      tokoAcuanId: tokoDraftRencana.tokoAcuanId,
       jenisPengiriman: tokoDraftRencana.jenisPengiriman,
       pengirimanDiLuarJadwalId: tokoDraftRencana.pengirimanDiLuarJadwalId,
       kirimanSebelumnyaBelumSampai: tokoDraftRencana.kirimanSebelumnyaBelumSampai,
