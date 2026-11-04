@@ -2,13 +2,13 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { auth, type Peran } from "@/server/auth/auth";
-import { daftarGudangDapatDilihat, type GudangDapatDilihat } from "@/server/gudang/akses";
+import { daftarGudangDapatDilihat, punyaHakTindakan, type GudangDapatDilihat } from "@/server/gudang/akses";
 import type { HakTindakan } from "@/server/gudang/hak-tindakan";
-import { punyaHakTindakan } from "@/server/gudang/penugasan";
 
 // CODING_STANDARDS "Kewenangan": setiap server action dan route memeriksa peran di server,
 // sebelum membaca atau menulis data. Menyembunyikan tombol di UI hanya tambahan.
-// "Admin" tidak memberi hak operator; hak operator berasal dari penugasan gudang.
+// Hak tindakan dibaca dari satu aturan di `@/server/gudang/akses` (PRD A3 ▶ Keputusan 2026-11-04): operator dari
+// penugasan gudang; admin memegang kelima hak di setiap gudang aktif tanpa penugasan; gudang nonaktif hanya-baca.
 
 export type PenggunaMasuk = { id: string; nama: string; email: string; peran: Peran };
 
@@ -46,20 +46,21 @@ export async function wajibAdmin(): Promise<PenggunaMasuk> {
 }
 
 /**
- * Seperti `wajibMasuk`, lalu menolak dengan `AksesDitolakError` jika pengguna tidak ditugaskan di `idGudang`
- * dengan hak `tindakan`. Peran admin tidak dipertimbangkan: admin tanpa penugasan ditolak (PRD A3).
+ * Seperti `wajibMasuk`, lalu menolak dengan `AksesDitolakError` jika pengguna tidak memegang hak `tindakan` di
+ * `idGudang` (`punyaHakTindakan`): admin lolos di setiap gudang aktif tanpa penugasan; operator hanya dengan hak dari
+ * penugasannya. Gudang nonaktif atau yang tidak ada ditolak untuk siapa pun (PRD A3 ▶ Keputusan 2026-11-04).
  */
 export async function wajibHakTindakan(idGudang: number, tindakan: HakTindakan): Promise<PenggunaMasuk> {
   const pengguna = await wajibMasuk();
-  if (!(await punyaHakTindakan(pengguna.id, idGudang, tindakan))) {
+  if (!(await punyaHakTindakan(pengguna, idGudang, tindakan))) {
     throw new AksesDitolakError("Anda tidak punya hak tindakan ini di gudang tersebut.");
   }
   return pengguna;
 }
 
 /**
- * Seperti `wajibMasuk`, lalu mengembalikan gudang yang boleh dilihat di halaman Pengiriman Gudang.
- * Menolak dengan `AksesDitolakError` jika tidak ada (viewer tanpa penugasan). Akses lihat tidak memberi tindakan.
+ * Seperti `wajibMasuk`, lalu mengembalikan gudang yang boleh dilihat di halaman Pengiriman Gudang beserta hak tindakan
+ * pengguna di setiap gudang. Menolak dengan `AksesDitolakError` jika tidak ada (viewer tanpa penugasan).
  */
 export async function wajibAksesPengirimanGudang(): Promise<{ pengguna: PenggunaMasuk; daftarGudang: GudangDapatDilihat[] }> {
   const pengguna = await wajibMasuk();
@@ -70,7 +71,8 @@ export async function wajibAksesPengirimanGudang(): Promise<{ pengguna: Pengguna
 
 /**
  * Seperti `wajibMasuk`, lalu menolak dengan `AksesDitolakError` jika pengguna tidak boleh melihat Pengiriman Gudang
- * `idGudang`: tidak punya penugasan di gudang itu dan bukan admin (PRD A3). Tindakan tetap lewat `wajibHakTindakan`.
+ * `idGudang`: tidak punya penugasan di gudang itu dan bukan admin (PRD A3). Tindakan tetap diperiksa lagi lewat
+ * `wajibHakTindakan`.
  * `daftarGudang` = semua gudang yang boleh dilihat pengguna (untuk `gudangLangsungMasuk`).
  */
 export async function wajibAksesLihatGudang(
@@ -84,9 +86,9 @@ export async function wajibAksesLihatGudang(
 }
 
 /**
- * Seperti `wajibMasuk`, lalu mengembalikan gudang tempat pengguna ditugaskan dengan hak `tindakan` (T98: halaman
- * Usulkan jadwal toko). Menolak dengan `AksesDitolakError` jika tidak ada. Peran admin tidak
- * dipertimbangkan: admin tanpa penugasan ditolak (PRD A3).
+ * Seperti `wajibMasuk`, lalu mengembalikan gudang tempat pengguna memegang hak `tindakan` (T98: halaman Kirim di luar
+ * jadwal), dengan aturan `daftarGudangDapatDilihat`: bagi admin, setiap gudang aktif (PRD A3 ▶ Keputusan 2026-11-04).
+ * Menolak dengan `AksesDitolakError` jika tidak ada.
  */
 export async function wajibGudangDenganHak(tindakan: HakTindakan): Promise<GudangDapatDilihat[]> {
   const pengguna = await wajibMasuk();

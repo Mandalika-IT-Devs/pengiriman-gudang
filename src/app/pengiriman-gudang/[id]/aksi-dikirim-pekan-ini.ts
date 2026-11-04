@@ -10,7 +10,8 @@ import { simpanPilihanDikirimPekanIni } from "@/server/gudang/dikirim-pekan-ini"
 
 // Pilihan "Dikirim pekan ini" toko dua mingguan di draft (T134, PRD A5 ▶ Revisi 2026-10-19). Pilihan ini menentukan
 // apakah toko ikut difinalisasi, jadi hak `finalisasi` di gudang itu diperiksa di server sebelum membaca atau menulis
-// data; admin, viewer, dan operator tanpa hak itu ditolak (hanya melihat).
+// data (admin memegangnya di setiap gudang aktif tanpa penugasan, PRD A3 ▶ Keputusan 2026-11-04); viewer dan operator
+// tanpa hak itu ditolak (hanya melihat).
 
 const skemaGudang = z.object({ idGudang: z.number().int() });
 

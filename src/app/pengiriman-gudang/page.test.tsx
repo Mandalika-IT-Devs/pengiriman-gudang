@@ -77,16 +77,15 @@ describe("/pengiriman-gudang", () => {
     expect(html).not.toContain("blur-3xl");
   });
 
-  it("admin tanpa penugasan melihat kelima gudang, semuanya hanya-baca", async () => {
+  it("admin tanpa penugasan melihat daftar kelima gudang aktif, tanpa Hanya-baca (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const nama = ["Pusat", "Gudang Bali", "Gudang Bandung", "Gudang Cibubur", "Gudang Jabodetabek"];
     const kartu = kartuGudang(await buka());
-    expect(kartu.map((k) => /^(.*?) Hanya-baca /.exec(k.teks)?.[1])).toEqual([
-      "Pusat",
-      "Gudang Bali",
-      "Gudang Bandung",
-      "Gudang Cibubur",
-      "Gudang Jabodetabek",
-    ]);
+    expect(kartu.map((k) => k.id)).toEqual(await Promise.all(nama.map(idGudangUji)));
+    kartu.forEach((k, i) => {
+      expect(k.teks.startsWith(`${nama[i]} `)).toBe(true);
+      expect(k.teks).not.toContain("Hanya-baca");
+    });
   });
 
   // T118 (DESIGN §11.5): operator dengan tepat satu gudang langsung masuk; dua gudang atau admin melihat daftar.

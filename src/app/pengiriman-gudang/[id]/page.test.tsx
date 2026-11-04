@@ -7,7 +7,7 @@ import { db } from "@/server/db";
 import { hubunganTokoGudang, jadwalToko, pengirimanDiLuarJadwal, periodeSumberGudang, toko } from "@/server/db/schema";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
 import { bacaPeriodeSumber, tetapkanPeriodeSumber } from "@/server/gudang/periode-sumber";
-import { buatTokoUji, idGudangUji } from "@/server/gudang/uji-bantu";
+import { buatGudangUji, buatTokoUji, hapusGudangUji, idGudangUji } from "@/server/gudang/uji-bantu";
 import { siapkanBulanTersediaUji } from "@/server/laporan/uji-bantu";
 import { tanpaBantuanIstilah } from "@/components/uji-bantu-bantuan-istilah";
 
@@ -106,13 +106,32 @@ describe("/pengiriman-gudang/[id]", () => {
     expect(html).not.toContain("data-hanya-baca");
   });
 
-  it("admin tanpa penugasan bisa membuka semua gudang hanya-baca", async () => {
+  it("admin tanpa penugasan membuka setiap gudang aktif tanpa Hanya-baca, dengan Hitung kebutuhan (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     for (const nama of ["Pusat", "Gudang Bali", "Gudang Bandung", "Gudang Cibubur", "Gudang Jabodetabek"]) {
-      const html = await buka(await idGudangUji(nama));
+      const id = await idGudangUji(nama);
+      const html = await buka(id);
       expect(html).toContain(`Pengiriman Gudang — ${nama}`);
+      expect(html).not.toContain("data-hanya-baca");
+      expect(html).not.toContain("Hanya-baca");
+      expect(html).toMatch(/<button[^>]*type="submit"[^>]*>Hitung kebutuhan<\/button>/);
+      expect(html).toMatch(new RegExp(`<a (?=[^>]*data-tautan-jadwal)(?=[^>]*href="/usulan-jadwal/${id}")[^>]*>Kirim di luar jadwal<`));
+      // Admin tetap melihat daftar gudang lebih dulu (tautan kembali ke daftar).
+      expect(html).toContain('href="/pengiriman-gudang"');
+    }
+  });
+
+  it("gudang nonaktif tetap Hanya-baca bagi admin, tanpa tombol tindakan", async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const nonaktif = await buatGudangUji({ aktif: false });
+    try {
+      const html = await buka(nonaktif.id);
+      expect(html).toContain(`Pengiriman Gudang — ${nonaktif.nama}`);
       expect(html).toContain("data-hanya-baca");
       expect(tanpaBantuanIstilah(html)).not.toMatch(/<(button|input|select|form)\b/);
+      expect(html).not.toContain("Kirim di luar jadwal");
+    } finally {
+      await hapusGudangUji(nonaktif.id);
     }
   });
 
@@ -369,14 +388,14 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(tanpaBantuanIstilah(sebelumBagianDraft(html))).not.toMatch(/<(button|input|select|form)\b/);
   });
 
-  it("admin tanpa penugasan melihat jadwal Pusat hanya-baca", async () => {
+  it("admin tanpa penugasan melihat jadwal Pusat tanpa tombol ubah, dengan tautan Kirim di luar jadwal (T147)", async () => {
     const { berjadwal } = await siapkanTokoPusat();
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
 
     const html = await buka(pusat);
     expect(barisJadwal(html, berjadwal.id)).toContain("Dua mingguan");
-    expect(tanpaBantuanIstilah(html)).not.toMatch(/<(button|input|select|form)\b/);
-    expect(tautanJadwal(html)).toEqual([]);
+    expect(tanpaBantuanIstilah(tabelJadwal(html))).not.toMatch(/<(button|input|select|form)\b/);
+    expect(tautanJadwal(html)).toEqual([[`/usulan-jadwal/${pusat}`, "Kirim di luar jadwal"]]);
   });
 
   // T113 — PRD A5 ▶ Revisi 2026-10-13, Catatan aktivitas: tabel jadwal = jadwal tetap ditambah pengiriman di luar jadwal
@@ -429,18 +448,16 @@ describe("/pengiriman-gudang/[id]: bagian Jadwal", () => {
     expect(html).not.toContain("/salin-jadwal");
   });
 
-  it("operator tanpa kelola-usulan-jadwal dan admin melihat tabel jadwal hanya-baca, tanpa tautan Kirim di luar jadwal", async () => {
+  it("operator tanpa kelola-usulan-jadwal melihat tabel jadwal hanya-baca, tanpa tautan Kirim di luar jadwal", async () => {
     const t = await buatTokoUji();
     await db.insert(hubunganTokoGudang).values({ tokoId: t.id, gudangId: cibubur });
     const operator = await kepalaPenggunaUji("viewer");
     await tugaskanOperator({ idPengguna: operator.id, idGudang: cibubur, hakTindakan: ["input-stok"] });
-    for (const cookie of [operator.cookie, (await kepalaPenggunaUji("admin")).cookie]) {
-      kepala.cookie = cookie;
-      const html = await buka(cibubur);
-      expect(html).toContain("Di luar jadwal (akan datang)");
-      expect(html).not.toContain("Kirim di luar jadwal");
-      expect(tanpaBantuanIstilah(html)).not.toMatch(/<(button|input|select|form)\b/);
-      expect(tautanJadwal(html)).toEqual([]);
-    }
+    kepala.cookie = operator.cookie;
+    const html = await buka(cibubur);
+    expect(html).toContain("Di luar jadwal (akan datang)");
+    expect(html).not.toContain("Kirim di luar jadwal");
+    expect(tanpaBantuanIstilah(html)).not.toMatch(/<(button|input|select|form)\b/);
+    expect(tautanJadwal(html)).toEqual([]);
   });
 });

@@ -204,9 +204,12 @@ describe("GET ekspor rencana final: kewenangan (diperiksa di server)", () => {
     expect(await ditolak(await ekspor(), 401)).toContain("belum masuk");
   });
 
-  it("admin tanpa penugasan ditolak (403), walaupun boleh melihat rencana final", async () => {
+  it("admin tanpa penugasan boleh mengekspor rencana final gudang aktif (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    expect(await ditolak(await ekspor(), 403)).toContain("hak ekspor");
+    const respons = await ekspor();
+    expect(respons.status).toBe(200);
+    expect(respons.headers.get("content-type")).toBe(JENIS_XLSX);
+    expect(respons.headers.get("content-disposition")).toMatch(/^attachment; filename="rencana-final-[A-Za-z0-9-]+-2026-06-08-v1\.xlsx"$/);
   });
 
   it("operator gudang itu tanpa hak ekspor ditolak (403), walaupun punya semua hak lain", async () => {
@@ -442,18 +445,20 @@ describe("tombol ekspor di rincian dan riwayat rencana final (zona kerja; halama
     );
   });
 
-  it("tanpa hak ekspor (operator lain atau admin tanpa penugasan) tombol tidak tampil", async () => {
+  it("tanpa hak ekspor (operator gudang itu tanpa hak ekspor) tombol tidak tampil", async () => {
     await masukOperator(
       cibubur,
       daftarHakTindakan.filter((h) => h !== "ekspor"),
     );
     expect(await bukaRincian()).not.toContain("data-ekspor-url");
     expect(await bukaDaftar()).not.toContain("data-ekspor-url");
+  });
 
-    // Admin tanpa penugasan hanya punya tombol ekspor halaman Riwayat (T129), bukan ekspor per rencana final.
+  it("admin tanpa penugasan melihat tombol Ekspor (.xlsx) rencana final gudang aktif di rincian dan di baris riwayat (T147)", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    expect(await bukaRincian()).not.toContain("data-ekspor-url");
-    expect(await bukaDaftar()).not.toContain('data-ekspor-url="/pengiriman-gudang/');
+    expect(await bukaRincian()).toMatch(tombol());
+    const daftar = await bukaDaftar();
+    expect(new RegExp(`<tr[^>]*data-rencana-final="${idRencana}".*?</tr>`).exec(daftar)?.[0] ?? "").toMatch(tombol());
   });
 
   it("T127, T136: hak ekspor di gudang lain tidak memunculkan tombol untuk rencana Cibubur dan rinciannya 404; viewer tanpa penugasan 404", async () => {

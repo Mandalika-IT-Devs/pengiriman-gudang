@@ -9,7 +9,8 @@ import { wajibHakTindakan } from "@/server/auth/kewenangan";
 import { hitungDraftRencana } from "@/server/gudang/draft-rencana";
 
 // Draft rencana (T58, PRD A6 ▶ Keputusan perencanaan M2–M3). Hak `hitung-kebutuhan` di gudang itu diperiksa di server
-// sebelum membaca atau menulis data; admin tanpa penugasan berhak ditolak (hanya melihat).
+// sebelum membaca atau menulis data; admin memegangnya di setiap gudang aktif tanpa penugasan (PRD A3 ▶ Keputusan
+// 2026-11-04).
 
 const skemaGudang = z.object({ idGudang: z.number().int() });
 

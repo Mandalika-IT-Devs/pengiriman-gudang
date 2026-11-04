@@ -9,7 +9,7 @@ import { finalisasiRencanaToko } from "@/server/gudang/rencana-final";
 
 // Finalisasi rencana per toko per tanggal kirim (T62; PRD A7 ▶ Keputusan perencanaan M2–M3 dan 2026-10-11), termasuk
 // finalisasi ulang dengan alasan wajib. Hak `finalisasi` di gudang itu diperiksa di server sebelum membaca atau menulis
-// data; admin tanpa penugasan berhak ditolak (hanya melihat).
+// data; admin memegangnya di setiap gudang aktif tanpa penugasan (PRD A3 ▶ Keputusan 2026-11-04).
 
 /** Hasil untuk form finalisasi: `idRencana` membuka layar berhasil. */
 export type HasilAksiFinalisasi =

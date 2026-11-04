@@ -54,8 +54,9 @@ function AsalPilihan({ keadaan }: { keadaan: DikirimPekanIni }) {
 }
 
 /**
- * Kirim terakhir dan pilihan "Dikirim pekan ini" toko dua mingguan yang dibuka di draft. `ubah` = operator dengan hak
- * `finalisasi` (diperiksa lagi di server); `null` = hanya-baca (admin, viewer, operator tanpa hak itu). Toko yang sudah
+ * Kirim terakhir dan pilihan "Dikirim pekan ini" toko dua mingguan yang dibuka di draft. `ubah` = pengguna dengan hak
+ * `finalisasi` (operator berhak, atau admin di gudang aktif; diperiksa lagi di server); `null` = hanya-baca (viewer gudang,
+ * operator tanpa hak itu, gudang nonaktif). Toko yang sudah
  * final untuk tanggal ini selalu Dikirim dan pilihannya tidak bisa diubah. Toko tanpa pilihan tidak menampilkan apa pun.
  */
 export function BagianDikirimPekanIni({

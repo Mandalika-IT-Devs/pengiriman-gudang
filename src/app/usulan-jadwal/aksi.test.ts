@@ -293,11 +293,9 @@ describe("menarik usulan", () => {
 });
 
 describe("kewenangan (diperiksa di server)", () => {
-  it("operator tanpa hak kelola-usulan-jadwal dan admin tanpa penugasan ditolak tanpa menulis data", async () => {
+  it("operator tanpa hak kelola-usulan-jadwal ditolak tanpa menulis data", async () => {
     const t = await tokoBotani(cibubur);
     await masukOperator(cibubur, ["input-stok"]);
-    await expect(usulkanPengiriman(tambahan(cibubur, t.id))).rejects.toBeInstanceOf(AksesDitolakError);
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
     await expect(usulkanPengiriman(tambahan(cibubur, t.id))).rejects.toBeInstanceOf(AksesDitolakError);
     expect(await pengirimanToko(t.id)).toEqual([]);
   });

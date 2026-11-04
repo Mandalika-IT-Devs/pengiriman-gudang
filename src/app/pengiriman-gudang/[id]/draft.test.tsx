@@ -47,7 +47,8 @@ import { simpanStok } from "./aksi-stok";
 import HalamanPengirimanGudang from "./page";
 import HalamanRingkasan from "../../ringkasan/page";
 
-// T58: hak `hitung-kebutuhan` diperiksa di server; admin hanya melihat. Halaman menampilkan draft yang tersimpan.
+// T58: hak `hitung-kebutuhan` diperiksa di server; admin memegangnya di setiap gudang aktif tanpa penugasan (T147, PRD A3
+// ▶ Keputusan 2026-11-04). Halaman menampilkan draft yang tersimpan.
 // T66: jumlah kirim, daftar masalah per baris, dan ringkasan baris tertahan per toko.
 // T59: hak `input-stok` diperiksa di server; stok kosong tampil "—" belum diketahui; setelah disimpan jumlah kirim tampil.
 // T60: rincian perhitungan per baris draft (DESIGN §8), dibuka lewat `?rincian=<id toko>|<kode produk>`.
@@ -196,10 +197,16 @@ describe("kewenangan menghitung draft rencana (diperiksa di server)", () => {
     expect(await draftGudang(cibubur)).toEqual([]);
   });
 
-  it("admin tanpa penugasan ditolak tanpa membuat draft", async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    await expect(hitungDraft({ idGudang: cibubur, tanggalKirim: TANGGAL_KIRIM })).rejects.toBeInstanceOf(AksesDitolakError);
-    expect(await draftGudang(cibubur)).toEqual([]);
+  it("admin tanpa penugasan menghitung draft atas namanya sendiri (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+    try {
+      await expect(hitungDraft({ idGudang: cibubur, tanggalKirim: TANGGAL_KIRIM })).resolves.toEqual({ keadaan: "berhasil" });
+      expect(await draftGudang(cibubur)).toEqual([expect.objectContaining({ tanggalKirim: TANGGAL_KIRIM, dihitungOleh: admin.id })]);
+    } finally {
+      // Bagian berikutnya mulai tanpa draft.
+      await db.delete(draftRencana).where(eq(draftRencana.gudangId, cibubur));
+    }
   });
 
   it("hak hitung-kebutuhan di gudang lain tidak berlaku", async () => {
@@ -331,8 +338,8 @@ describe("draft rencana di halaman Pengiriman Gudang", () => {
     }
   });
 
-  it("admin melihat draft tersimpan hanya-baca, tanpa form hitung", async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+  it("pengguna tanpa hak tindakan melihat draft tersimpan hanya-baca, tanpa form hitung", async () => {
+    await masukOperator(cibubur, []);
     const html = await buka(cibubur, TANGGAL_KIRIM, { toko: String(tokoContoh.id) });
     expect(html).toContain("data-hanya-baca");
     expect(html).toContain(`data-draft-tanggal="${TANGGAL_KIRIM}"`);
@@ -468,9 +475,6 @@ describe("input stok di draft rencana (T59)", () => {
     );
     await expect(simpanStok(isian(20))).rejects.toBeInstanceOf(AksesDitolakError);
 
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    await expect(simpanStok(isian(20))).rejects.toBeInstanceOf(AksesDitolakError);
-
     await masukOperator(await idGudangUji("Gudang Bali"), ["input-stok"]);
     await expect(simpanStok(isian(20))).rejects.toBeInstanceOf(AksesDitolakError);
 
@@ -487,7 +491,7 @@ describe("input stok di draft rencana (T59)", () => {
   it('stok kosong tampil "—" belum diketahui; operator berhak mengisi stok → simpan → jumlah kirim tampil', async () => {
     // Pengguna tanpa hak input-stok melihat "—" dengan ikon belum diketahui (DESIGN §7), tanpa isian stok. Baris ringkas
     // (T117; DESIGN §11.4): tanpa badge bertumpuk; status "Stok belum diisi" cukup di kolom Masalah.
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    await masukOperator(cibubur, ["hitung-kebutuhan"]);
     const baris = (html: string, k: string) => new RegExp(`<tr[^>]*data-kode-produk="${k}".*?</tr>`).exec(html)?.[0] ?? "";
     const hanyaBaca = await bukaToko(tokoContoh.id);
     const selStok = /data-stok-akhir="kosong"[^>]*>(.*?)<\/td>/.exec(baris(hanyaBaca, kode.contoh))?.[1] ?? "";
@@ -513,7 +517,7 @@ describe("input stok di draft rencana (T59)", () => {
     expect(kepala.dimuatUlang).toEqual([`/pengiriman-gudang/${cibubur}`]);
     expect(await stokContoh()).toBe(contoh.stokAkhir);
 
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    await masukOperator(cibubur, ["hitung-kebutuhan"]);
     const sesudah = await bukaToko(tokoContoh.id);
     expect(baris(sesudah, kode.contoh)).toMatch(new RegExp(`data-stok-akhir="${contoh.stokAkhir}"[^>]*>${contoh.stokAkhir}<`));
     expect(baris(sesudah, kode.contoh)).toMatch(new RegExp(`data-jumlah-kirim="${contoh.jumlahKirim}"[^>]*>${contoh.jumlahKirim}<`));
@@ -674,8 +678,8 @@ describe("rincian perhitungan per baris draft (T60)", () => {
 describe("draft perlu dihitung ulang (T61)", () => {
   const penanda = (html: string) => /<div[^>]*data-perlu-dihitung-ulang.*?<\/ul>/.exec(html)?.[0] ?? "";
 
-  it('penanda "Perlu dihitung ulang" (ikon + teks warning) beserta yang berubah; tampil juga untuk admin, tanpa tombol', async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+  it('penanda "Perlu dihitung ulang" (ikon + teks warning) beserta yang berubah; tampil juga untuk pengguna tanpa hak tindakan, tanpa tombol', async () => {
+    await masukOperator(cibubur, []);
     const html = await buka(cibubur, TANGGAL_KIRIM);
     expect(penanda(html)).toMatch(/data-status="perluDihitungUlang".*?lucide-triangle-alert.*?Perlu dihitung ulang/);
     expect(penanda(html)).toMatch(/data-alasan-hitung-ulang="jadwal"[^>]*>Jadwal toko</);

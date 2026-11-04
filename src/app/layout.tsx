@@ -32,7 +32,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const daftarGudang = pengguna === null ? [] : await daftarGudangDapatDilihat(pengguna);
   // Akses lihat Pengiriman Gudang: admin, atau punya penugasan di suatu gudang (PRD A3).
   const aksesPengirimanGudang = daftarGudang.length > 0;
-  // Halaman jadwal toko (T98): hak kelola-usulan-jadwal di sedikitnya satu gudang, dari penugasan yang sama.
+  // Kirim di luar jadwal (T98): hak kelola-usulan-jadwal di sedikitnya satu gudang. Admin memegangnya di setiap gudang
+  // aktif (PRD A3 ▶ Keputusan 2026-11-04), jadi item ini tampil bagi admin selama ada gudang aktif.
   const aksesJadwalToko = daftarGudang.some((g) => g.hakTindakan.includes("kelola-usulan-jadwal"));
   // Peran yang ditampilkan di sidebar (GLOSSARY.md): operator = bukan admin, tetapi ditugaskan ke gudang.
   const penggunaSidebar: ComponentProps<typeof Navigasi>["pengguna"] =
