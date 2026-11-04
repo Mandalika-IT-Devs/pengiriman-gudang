@@ -159,3 +159,14 @@ describe("teks bantuan istilah File stok (PRD A6 ▶ Keputusan 2026-10-22)", () 
     );
   });
 });
+
+// T145 — PRD A6 ▶ Keputusan 2026-11-04 (Teks yang tampil): produk display menjadi produk manual.
+describe('teks bantuan istilah "Produk otomatis dan manual" (PRD A6 ▶ Keputusan 2026-11-04)', () => {
+  it("judul dan teks persis PRD", () => {
+    expect(TEKS_BANTUAN_ISTILAH.klasifikasiProduk).toEqual({
+      judul: "Produk otomatis dan manual",
+      penjelasan:
+        "Produk manual adalah display (kategori DISPLAY PRIA/DISPLAY WANITA), display tester (kode berakhiran -T), dan kertas tester (kategori KTP/KTL), tanpa jumlah kirim dan tanpa buffer otomatis. Semua produk lain adalah produk otomatis.",
+    });
+  });
+});

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -28,6 +31,11 @@ import { seedDataMaster } from "./seed-data-master";
 // produk yang sudah ada dipulihkan.
 
 const KODE_BERKAS = berkasProduk.map((p) => p.kode);
+
+/** Hitungan data awal dengan aturan produk manual ADR-0012 (PRD A6 ▶ Keputusan 2026-11-04). */
+const { dataAwal } = JSON.parse(
+  readFileSync(join(import.meta.dirname, "../../../tests/golden/klasifikasi-produk-2026-11-04.json"), "utf8"),
+) as { dataAwal: { jumlahProduk: number; manualSesudah: number; otomatisSesudah: number } };
 const NAMA_KELUARGA_BERKAS = berkasKeluarga.map((k) => k.nama);
 const ALIAS_STOK_BERKAS = berkasAliasStok.map((a) => a.alias);
 
@@ -196,6 +204,18 @@ describe("seedDataMaster", () => {
       klasifikasi: "manual",
       alasanManual: "display-tester",
     });
+    // T145 (ADR-0012): produk display menjadi produk manual; 154 manual dan 205 otomatis (golden `dataAwal`). Seed tidak
+    // mengubah produk berkas yang sudah dibuat berkas test lain; produk itu (mis. PW110P-GOR) bukan display, KTP, atau
+    // KTL di berkas test tersebut maupun di berkas data awal, jadi hitungannya sama dengan database kosong.
+    expect(daftarProduk).toHaveLength(dataAwal.jumlahProduk);
+    expect(daftarProduk.filter((p) => p.klasifikasi === "manual")).toHaveLength(dataAwal.manualSesudah);
+    expect(daftarProduk.filter((p) => p.klasifikasi === "otomatis")).toHaveLength(dataAwal.otomatisSesudah);
+    for (const kode of ["DP120E-24H", "DD-GS15-B", "DP120E-ONL-R"]) {
+      expect(
+        daftarProduk.find((p) => p.kode === kode),
+        kode,
+      ).toMatchObject({ klasifikasi: "manual", alasanManual: "display" });
+    }
 
     // Produk yang ditambahkan seed: isi persis berkas, tanpa impor pendaftar.
     const kodeLama = new Set(sebelumSeed.produk.map((p) => p.kode));

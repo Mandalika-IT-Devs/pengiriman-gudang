@@ -232,6 +232,13 @@
       "when": 1793087792725,
       "tag": "0032_tambah_3_hari_cakupan",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793815442283,
+      "tag": "0033_produk_display_manual",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,7 @@ import {
 import { daftarRumusJumlahKirim, RUMUS_JUMLAH_KIRIM_BERLAKU, type RumusJumlahKirim } from "@/domain/angka";
 import { daftarKategoriDasar, type KategoriDasar } from "@/domain/kalender";
 import { daftarJenisLibur, type JenisLibur } from "@/domain/libur";
+import type { AlasanManual } from "@/domain/produk";
 import type { ErrorRanking } from "@/domain/ranking";
 import { daftarHakTindakan, type HakTindakan } from "@/server/gudang/hak-tindakan";
 import { daftarPolaJadwal, type HariKirim, type PolaJadwal } from "@/server/gudang/pilihan-jadwal";
@@ -284,7 +285,7 @@ export type StatusKeluargaAroma = (typeof daftarStatusKeluargaAroma)[number];
 /**
  * Master produk (ADR-0006): kode produk = identitas varian; nama hanya label.
  * Kode baru didaftarkan saat impor diaktifkan, dengan status keluarga aroma `belum-dipetakan`.
- * Klasifikasi dari klasifikasiProduk (T06, ADR-0007).
+ * Klasifikasi dari klasifikasiProduk (T06; ADR-0012 sejak T145, menggantikan ADR-0007).
  */
 export const produk = pgTable(
   "produk",
@@ -294,7 +295,7 @@ export const produk = pgTable(
     ukuran: text("ukuran").notNull(),
     kategori: text("kategori").notNull(),
     klasifikasi: text("klasifikasi").$type<"manual" | "otomatis">().notNull(),
-    alasanManual: text("alasan_manual").$type<"display-tester" | "kertas-tester">(),
+    alasanManual: text("alasan_manual").$type<AlasanManual>(),
     statusKeluargaAroma: text("status_keluarga_aroma").$type<StatusKeluargaAroma>().notNull().default("belum-dipetakan"),
     /** Keluarga hasil konfirmasi admin (T45); terisi persis saat status `terpetakan`. */
     keluargaAromaId: integer("keluarga_aroma_id").references((): AnyPgColumn => keluargaAroma.id),
@@ -305,7 +306,7 @@ export const produk = pgTable(
     check("produk_klasifikasi_dikenal", sql`${tabel.klasifikasi} in ('manual', 'otomatis')`),
     check(
       "produk_alasan_manual_sesuai",
-      sql`(${tabel.klasifikasi} = 'manual' and ${tabel.alasanManual} in ('display-tester', 'kertas-tester')) or (${tabel.klasifikasi} = 'otomatis' and ${tabel.alasanManual} is null)`,
+      sql`(${tabel.klasifikasi} = 'manual' and ${tabel.alasanManual} in ('display-tester', 'kertas-tester', 'display')) or (${tabel.klasifikasi} = 'otomatis' and ${tabel.alasanManual} is null)`,
     ),
     check("produk_status_keluarga_aroma_dikenal", sql`${tabel.statusKeluargaAroma} in (${daftarSql(daftarStatusKeluargaAroma)})`),
     check(

@@ -40,7 +40,7 @@ export const TEKS_BANTUAN_ISTILAH = {
   klasifikasiProduk: {
     judul: "Produk otomatis dan manual",
     penjelasan:
-      "Produk manual adalah display tester (kode berakhiran -T) dan kertas tester (kategori KTP/KTL), tanpa jumlah kirim dan tanpa buffer otomatis. Semua produk lain adalah produk otomatis.",
+      "Produk manual adalah display (kategori DISPLAY PRIA/DISPLAY WANITA), display tester (kode berakhiran -T), dan kertas tester (kategori KTP/KTL), tanpa jumlah kirim dan tanpa buffer otomatis. Semua produk lain adalah produk otomatis.",
   },
   buffer: {
     judul: "Buffer",
