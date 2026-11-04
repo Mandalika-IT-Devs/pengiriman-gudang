@@ -7,8 +7,8 @@ import { buatPenggunaUji, emailUnik, masukUji, sandiUji } from "@/server/auth/uj
 import { db } from "@/server/db";
 import { gudang, penugasanOperator, periodeSumberGudang, user } from "@/server/db/schema";
 
+import { punyaHakTindakan } from "./akses";
 import { daftarHakTindakan } from "./hak-tindakan";
-import { punyaHakTindakan } from "./penugasan";
 import { adminPertama } from "./seed-hubungan-jadwal";
 import { OPERATOR_UAT, PERIODE_UAT, seedUat } from "./seed-uat";
 
@@ -152,7 +152,7 @@ describe("seedUat", () => {
 
       const penugasan = await db.select().from(penugasanOperator).where(eq(penugasanOperator.userId, akun.id));
       expect(penugasan).toEqual([expect.objectContaining({ gudangId: g.id, hakTindakan: [...daftarHakTindakan] })]);
-      for (const hak of daftarHakTindakan) expect(await punyaHakTindakan(akun.id, g.id, hak), hak).toBe(true);
+      for (const hak of daftarHakTindakan) expect(await punyaHakTindakan({ id: akun.id, peran: "viewer" }, g.id, hak), hak).toBe(true);
     }
   });
 

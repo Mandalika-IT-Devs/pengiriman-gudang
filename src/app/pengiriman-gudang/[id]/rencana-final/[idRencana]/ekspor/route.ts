@@ -5,9 +5,10 @@ import { bacaRencanaFinal } from "@/server/gudang/rencana-final";
 import { buatBerkasEkspor, namaBerkasEkspor } from "./berkas";
 
 // Ekspor rencana final (T64; PRD A7 ▶ Keputusan 2026-10-09): hanya rencana final (draft tidak punya route ekspor),
-// termasuk versi lama dari riwayat, dan hanya untuk pengguna dengan hak tindakan `ekspor` di gudang itu. Hak berasal
-// dari penugasan; admin tanpa penugasan ditolak (CODING_STANDARDS "Kewenangan"). Sesi dan hak diperiksa di server
-// sebelum rencana dibaca. Isinya dari snapshot finalisasi, bukan data terkini.
+// termasuk versi lama dari riwayat, dan hanya untuk pengguna dengan hak tindakan `ekspor` di gudang itu: operator dari
+// penugasan, admin di setiap gudang aktif tanpa penugasan (PRD A3 ▶ Keputusan 2026-11-04; CODING_STANDARDS
+// "Kewenangan"). Gudang nonaktif tidak memberi hak. Sesi dan hak diperiksa di server sebelum rencana dibaca. Isinya dari
+// snapshot finalisasi, bukan data terkini.
 
 const ID_VALID = /^\d{1,9}$/;
 

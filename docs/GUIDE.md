@@ -54,7 +54,7 @@ Bagian ini menjelaskan cara memakai aplikasi sehari-hari. Teks di antara tanda k
 
 ### Peran dan menu
 
-Aplikasi hanya menyimpan dua peran: **Admin** dan **Bukan admin**. Pengguna yang bukan admin menjadi **operator** jika admin menugaskannya ke gudang di **Pengaturan › Penugasan**. Pengguna tanpa penugasan adalah **viewer**. Sidebar dan halaman Pengguna menampilkan perannya sebagai Admin, Operator, atau Viewer. Admin tidak otomatis punya hak operator.
+Aplikasi hanya menyimpan dua peran: **Admin** dan **Bukan admin**. Pengguna yang bukan admin menjadi **operator** jika admin menugaskannya ke gudang di **Pengaturan › Penugasan**. Pengguna tanpa penugasan adalah **viewer**. Sidebar dan halaman Pengguna menampilkan perannya sebagai Admin, Operator, atau Viewer. Admin memegang kelima hak tindakan di setiap gudang aktif tanpa penugasan, jadi admin bisa bertindak sebagai operator. Gudang nonaktif tetap hanya-baca bagi admin.
 
 Isi sidebar per peran (kelompok bisa dibuka-tutup):
 
@@ -62,12 +62,12 @@ Isi sidebar per peran (kelompok bisa dibuka-tutup):
 |---|---|---|---|
 | Beranda | Beranda | Beranda | Beranda |
 | Riwayat | Riwayat | Riwayat | — |
-| Pekerjaan rutin | Impor penjualan, Ranking pusat, Persetujuan jadwal, Pengiriman Gudang | Pengiriman Gudang, Kirim di luar jadwal | — |
+| Pekerjaan rutin | Impor penjualan, Ranking pusat, Persetujuan jadwal, Pengiriman Gudang, Kirim di luar jadwal | Pengiriman Gudang, Kirim di luar jadwal | — |
 | Laporan | Ringkasan, Kalender | Ringkasan, Kalender | Ringkasan, Kalender |
 | Data Master | Jadwal toko, Keluarga aroma, Pemetaan produk, Alias nama stok, Libur | — | — |
 | Pengaturan | Gudang, Toko, Pengguna, Penugasan | — | — |
 
-Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah Beranda. Riwayat hanya untuk admin dan operator (pengguna yang punya penugasan di gudang aktif), sama seperti Pengiriman Gudang. "Kirim di luar jadwal" hanya tampil bagi operator yang punya hak "Usulkan pengiriman di luar jadwal" di sedikitnya satu gudang. Operator tanpa hak tindakan apa pun tetap bisa membuka Pengiriman Gudang gudangnya, tetapi hanya-baca.
+Beranda dan Riwayat adalah item tunggal tanpa kelompok; Riwayat tepat di bawah Beranda. Riwayat hanya untuk admin dan operator (pengguna yang punya penugasan di gudang aktif), sama seperti Pengiriman Gudang. "Kirim di luar jadwal" tampil bagi admin selama ada gudang aktif, dan bagi operator yang punya hak "Usulkan pengiriman di luar jadwal" di sedikitnya satu gudang. Operator tanpa hak tindakan apa pun tetap bisa membuka Pengiriman Gudang gudangnya, tetapi hanya-baca.
 
 ### Akun saya (semua peran)
 
@@ -151,7 +151,7 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 
 **Penugasan** (**Pengaturan › Penugasan**): tugaskan operator ke gudang dengan hak tindakan "Usulkan pengiriman di luar jadwal", "Input stok", "Hitung kebutuhan", "Finalisasi", dan "Ekspor". Penugasan tanpa hak memberi akses hanya-baca.
 
-Admin bisa membuka halaman Pengiriman Gudang semua gudang, tetapi **hanya-baca**. Menghitung, mengisi stok, dan memfinalisasi adalah pekerjaan operator.
+**Admin bertindak sebagai operator.** Di setiap gudang aktif, admin memegang kelima hak tindakan dengan akunnya sendiri, tanpa penugasan. Halaman Pengiriman Gudang gudang aktif tampil tanpa label "Hanya-baca": admin bisa menghitung kebutuhan, mengisi dan mengunggah stok, memfinalisasi, mengekspor rencana final, dan mengubah pilihan "Dikirim pekan ini". Admin tetap melihat daftar gudang lebih dulu. Setiap tindakan tercatat atas nama admin itu apa adanya, misalnya "Difinalisasi oleh Admin" atau "Dipilih Admin pada …". Gudang nonaktif tetap **hanya-baca** bagi admin.
 
 ### Operator
 

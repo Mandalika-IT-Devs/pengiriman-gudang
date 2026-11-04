@@ -1,4 +1,4 @@
-import { and, arrayContains, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import { gudang, penugasanOperator, user } from "@/server/db/schema";
@@ -54,24 +54,4 @@ export async function cabutPenugasan({ idPengguna, idGudang }: Omit<Penugasan, "
     .where(and(eq(penugasanOperator.userId, idPengguna), eq(penugasanOperator.gudangId, idGudang)))
     .returning({ userId: penugasanOperator.userId });
   return baris.length === 0 ? { keadaan: "gagal", pesan: pesanTidakDitemukan } : { keadaan: "berhasil" };
-}
-
-/**
- * Apakah pengguna ditugaskan di gudang ini dengan hak `tindakan`. Peran global tidak dipertimbangkan. Penugasan ke
- * gudang nonaktif tidak memberi hak (T110).
- */
-export async function punyaHakTindakan(idPengguna: string, idGudang: number, tindakan: HakTindakan) {
-  const baris = await db
-    .select({ userId: penugasanOperator.userId })
-    .from(penugasanOperator)
-    .innerJoin(gudang, eq(gudang.id, penugasanOperator.gudangId))
-    .where(
-      and(
-        eq(penugasanOperator.userId, idPengguna),
-        eq(penugasanOperator.gudangId, idGudang),
-        eq(gudang.aktif, true),
-        arrayContains(penugasanOperator.hakTindakan, [tindakan]),
-      ),
-    );
-  return baris.length > 0;
 }

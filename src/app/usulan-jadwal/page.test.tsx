@@ -103,10 +103,9 @@ for (const jenis of ["usulan"] as const) {
       expect(html).toContain("text-2xl font-bold md:text-3xl");
     });
 
-    it("tanpa hak kelola-usulan-jadwal di gudang mana pun → 404 (termasuk admin tanpa penugasan dan viewer)", async () => {
+    it("tanpa hak kelola-usulan-jadwal di gudang mana pun → 404 (termasuk viewer)", async () => {
       for (const cookie of [
         (await masukOperator([bali, ["input-stok", "hitung-kebutuhan", "finalisasi", "ekspor"]])).cookie,
-        (await kepalaPenggunaUji("admin")).cookie,
         (await kepalaPenggunaUji("viewer")).cookie,
       ]) {
         kepala.cookie = cookie;
@@ -126,9 +125,17 @@ for (const jenis of ["usulan"] as const) {
       await expect(bukaGudang(jenis, pusat)).rejects.toMatchObject({ digest: expect.stringContaining("404") });
     });
 
-    it("admin tanpa penugasan → 404", async () => {
+    it("admin tanpa penugasan membuka gudang aktif mana pun; gudang nonaktif → 404 (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
       kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-      await expect(bukaGudang(jenis, pusat)).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+      for (const id of [pusat, bali, cibubur]) {
+        expect(await bukaGudang(jenis, id)).toContain(`id="judul-halaman-jadwal"`);
+      }
+      const nonaktif = await buatGudangUji({ aktif: false });
+      try {
+        await expect(bukaGudang(jenis, nonaktif.id)).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+      } finally {
+        await hapusGudangUji(nonaktif.id);
+      }
     });
 
     it("id gudang tidak dikenal atau bukan angka → 404", async () => {

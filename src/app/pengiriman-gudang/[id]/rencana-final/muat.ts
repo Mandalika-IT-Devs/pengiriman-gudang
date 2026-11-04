@@ -8,7 +8,7 @@ import { AksesDitolakError, wajibAksesLihatGudang } from "@/server/auth/kewenang
 
 const ID_VALID = /^\d{1,9}$/;
 
-/** Gudang `id` yang boleh dilihat pengguna (admin hanya-baca, atau operator yang ditugaskan di gudang itu). */
+/** Gudang `id` yang boleh dilihat pengguna (admin, atau operator yang ditugaskan di gudang itu). */
 async function muatGudangLihat(id: string) {
   if (!ID_VALID.test(id)) notFound();
   try {

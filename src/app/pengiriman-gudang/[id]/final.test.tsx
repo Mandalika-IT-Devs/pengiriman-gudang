@@ -36,14 +36,17 @@ vi.mock("next/navigation", async (asli) => ({
   useRouter: () => ({ refresh: () => {}, push: () => {} }),
 }));
 
+import { hitungDraft } from "./aksi-draft";
 import { finalisasiRencana } from "./aksi-final";
+import { simpanStok } from "./aksi-stok";
 import HalamanPengirimanGudang from "./page";
 import HalamanRencanaFinal from "./rencana-final/[idRencana]/page";
 
-// T62: finalisasi rencana per toko per tanggal kirim. Hak `finalisasi` diperiksa di server (admin tanpa penugasan
-// ditolak). Halaman draft menampilkan form finalisasi per toko yang siap, alasan bila belum bisa, dan status Final
-// beserta versinya (DESIGN §7). Toko yang sudah final bisa difinalisasi ulang dengan alasan wajib; toko tanpa varian
-// tampil sebagai masalah; perlu dihitung ulang hanya menahan toko yang terdampak (PRD A7 ▶ Keputusan 2026-10-11, T62).
+// T62: finalisasi rencana per toko per tanggal kirim. Hak `finalisasi` diperiksa di server (T147, PRD A3 ▶ Keputusan
+// 2026-11-04: admin memegangnya di setiap gudang aktif tanpa penugasan). Halaman draft menampilkan form finalisasi per
+// toko yang siap, alasan bila belum bisa, dan status Final beserta versinya (DESIGN §7). Toko yang sudah final bisa
+// difinalisasi ulang dengan alasan wajib; toko tanpa varian tampil sebagai masalah; perlu dihitung ulang hanya menahan
+// toko yang terdampak (PRD A7 ▶ Keputusan 2026-10-11, T62).
 // Layar berhasil memakai zona suasana (DESIGN §1), menandai versi baru, dan menjelaskan bahwa finalisasi bukan
 // konfirmasi pengiriman fisik (PRD A7).
 
@@ -192,14 +195,11 @@ const bagianToko = (html: string, tokoId: number) =>
   new RegExp(`<section[^>]*data-draft-toko="${tokoId}".*?</section>`).exec(html)?.[0] ?? "";
 
 describe("kewenangan finalisasi (diperiksa di server)", () => {
-  it("operator tanpa hak finalisasi, admin tanpa penugasan, dan hak finalisasi di gudang lain ditolak tanpa membuat rencana final", async () => {
+  it("operator tanpa hak finalisasi dan hak finalisasi di gudang lain ditolak tanpa membuat rencana final", async () => {
     await masukOperator(
       jabodetabek,
       daftarHakTindakan.filter((h) => h !== "finalisasi"),
     );
-    await expect(finalisasiRencana(await isian(tokoSiap.id))).rejects.toBeInstanceOf(AksesDitolakError);
-
-    await masukAdmin();
     await expect(finalisasiRencana(await isian(tokoSiap.id))).rejects.toBeInstanceOf(AksesDitolakError);
 
     await masukOperator(await idGudangUji("Gudang Bali"), ["finalisasi"]);
@@ -310,7 +310,7 @@ describe("finalisasi di halaman Pengiriman Gudang", () => {
     expect(siap).toMatch(/<button[^>]*type="submit"[^>]*>Finalisasi ulang/);
 
     // Tanpa hak finalisasi: badge Final dan versi tampil, tanpa form.
-    await masukAdmin();
+    await masukOperator(jabodetabek, ["input-stok"]);
     const lihat = bagianToko(await bukaDraft(tokoSiap.id), tokoSiap.id);
     expect(lihat).toMatch(/data-status="final".*?Final.*?Versi 1/);
     expect(lihat).not.toContain("data-finalisasi-toko");
@@ -374,5 +374,44 @@ describe("finalisasi di halaman Pengiriman Gudang", () => {
     await ditolak(bukaFinal(rencana.id, await idGudangUji("Gudang Bali")));
     await ditolak(bukaFinal("bukan-angka"));
     await ditolak(bukaFinal(999_999_999));
+  });
+});
+
+describe("admin bertindak sebagai operator (T147, PRD A3 ▶ Keputusan 2026-11-04)", () => {
+  it("admin tanpa penugasan menghitung kebutuhan, menyimpan stok, dan memfinalisasi satu toko atas namanya sendiri", async () => {
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+
+    // Halaman draft tanpa label Hanya-baca, dengan Hitung kebutuhan, form stok, unggah stok, dan "Isi 0 …".
+    const sebelum = await bukaDraft(tokoTertahan.id);
+    expect(sebelum).not.toContain("data-hanya-baca");
+    expect(sebelum).toMatch(/<button[^>]*type="submit"[^>]*>Hitung kebutuhan<\/button>/);
+    const tertahan = bagianToko(sebelum, tokoTertahan.id);
+    expect(tertahan).toMatch(new RegExp(`<input[^>]*aria-label="Stok akhir ${kode.tertahan}"`));
+    expect(tertahan).toMatch(/<input[^>]*type="file"[^>]*aria-label="Unggah file stok"/);
+    expect(tertahan).toMatch(/<button[^>]*type="button"[^>]*>Isi 0 untuk 1 stok yang kosong<\/button>/);
+    expect(tertahan).toMatch(/<button[^>]*type="submit"[^>]*>Simpan stok</);
+
+    await expect(hitungDraft({ idGudang: jabodetabek, tanggalKirim: TANGGAL_KIRIM })).resolves.toEqual({ keadaan: "berhasil" });
+    await expect(
+      simpanStok({
+        idGudang: jabodetabek,
+        tanggalKirim: TANGGAL_KIRIM,
+        tokoId: tokoTertahan.id,
+        stok: [{ kodeProduk: kode.tertahan, stokAkhir: 0 }],
+      }),
+    ).resolves.toEqual({ keadaan: "berhasil" });
+    expect(bagianToko(await bukaDraft(tokoTertahan.id), tokoTertahan.id)).toMatch(
+      /data-finalisasi-toko.*?<button[^>]*type="submit"[^>]*>Finalisasi rencana/,
+    );
+
+    const hasil = await finalisasiRencana(await isian(tokoTertahan.id));
+    const rencana = (await rencanaGudang()).find((r) => r.tokoId === tokoTertahan.id);
+    expect(rencana).toMatchObject({ versi: 1 });
+    expect(hasil).toEqual({ keadaan: "berhasil", idRencana: rencana?.id });
+
+    // Tercatat atas nama admin apa adanya, tanpa penanda tambahan.
+    expect(await bukaFinal(rencana?.id ?? 0)).toMatch(/Difinalisasi oleh<\/dt><dd[^>]*>Uji admin<\/dd>/);
+    expect(bagianToko(await bukaDraft(tokoTertahan.id), tokoTertahan.id)).toMatch(/data-status="final".*?Final.*?Versi 1/);
   });
 });

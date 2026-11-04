@@ -1,9 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { kepalaPenggunaUji } from "@/server/auth/uji-bantu";
+import { punyaHakTindakan } from "@/server/gudang/akses";
 import { daftarHakTindakan } from "@/server/gudang/hak-tindakan";
 import { tugaskanOperator } from "@/server/gudang/penugasan";
-import { idGudangUji } from "@/server/gudang/uji-bantu";
+import { buatGudangUji, hapusGudangUji, idGudangUji } from "@/server/gudang/uji-bantu";
 
 const kepala = vi.hoisted(() => ({ cookie: "" }));
 vi.mock("next/headers", () => ({
@@ -72,10 +73,28 @@ describe("wajibHakTindakan", () => {
     });
   });
 
-  it("admin tanpa penugasan ditolak (admin tidak otomatis operator)", async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+  it("admin tanpa penugasan lolos kelima hak tindakan di gudang aktif (PRD A3 ▶ Keputusan 2026-11-04)", async () => {
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
     for (const tindakan of daftarHakTindakan) {
-      await expect(wajibHakTindakan(gudangX, tindakan)).rejects.toBeInstanceOf(AksesDitolakError);
+      await expect(wajibHakTindakan(gudangX, tindakan)).resolves.toMatchObject({ id: admin.id, peran: "admin" });
+      await expect(punyaHakTindakan({ id: admin.id, peran: "admin" }, gudangX, tindakan)).resolves.toBe(true);
+    }
+  });
+
+  it("admin ditolak di gudang nonaktif dan di id gudang yang tidak ada", async () => {
+    const admin = await kepalaPenggunaUji("admin");
+    kepala.cookie = admin.cookie;
+    const nonaktif = await buatGudangUji({ aktif: false });
+    try {
+      for (const idGudang of [nonaktif.id, 0, 999_999]) {
+        for (const tindakan of daftarHakTindakan) {
+          await expect(wajibHakTindakan(idGudang, tindakan)).rejects.toBeInstanceOf(AksesDitolakError);
+          await expect(punyaHakTindakan({ id: admin.id, peran: "admin" }, idGudang, tindakan)).resolves.toBe(false);
+        }
+      }
+    } finally {
+      await hapusGudangUji(nonaktif.id);
     }
   });
 
@@ -103,13 +122,15 @@ describe("wajibHakTindakan", () => {
     await expect(wajibHakTindakan(gudangX, "kelola-usulan-jadwal")).rejects.toBeInstanceOf(AksesDitolakError);
   });
 
-  it("admin yang ditugaskan sebagai operator lolos sesuai hak penugasannya", async () => {
+  it("penugasan akun admin tidak mengurangi kelima hak tindakannya di gudang aktif", async () => {
     const admin = await kepalaPenggunaUji("admin");
     await tugaskanOperator({ idPengguna: admin.id, idGudang: gudangY, hakTindakan: ["finalisasi"] });
     kepala.cookie = admin.cookie;
 
-    await expect(wajibHakTindakan(gudangY, "finalisasi")).resolves.toMatchObject({ id: admin.id });
-    await expect(wajibHakTindakan(gudangX, "finalisasi")).rejects.toBeInstanceOf(AksesDitolakError);
+    for (const tindakan of daftarHakTindakan) {
+      await expect(wajibHakTindakan(gudangY, tindakan)).resolves.toMatchObject({ id: admin.id });
+      await expect(wajibHakTindakan(gudangX, tindakan)).resolves.toMatchObject({ id: admin.id });
+    }
   });
 });
 
@@ -155,28 +176,27 @@ describe("akses lihat Pengiriman Gudang (T50)", () => {
     await expect(wajibAksesLihatGudang(gudangX)).rejects.toBeInstanceOf(AksesDitolakError);
   });
 
-  it("admin tanpa penugasan bisa membuka semua gudang hanya-baca, dan ditolak saat memanggil tindakan operasional", async () => {
+  it("admin tanpa penugasan membuka semua gudang aktif dengan kelima hak tindakan", async () => {
     kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
 
     const { daftarGudang } = await wajibAksesPengirimanGudang();
     expect(daftarGudang.map((g) => g.nama)).toEqual(namaGudang);
     for (const g of daftarGudang) {
-      await expect(wajibAksesLihatGudang(g.id)).resolves.toMatchObject({ gudang: { id: g.id, hakTindakan: [] } });
-      for (const tindakan of daftarHakTindakan) {
-        await expect(wajibHakTindakan(g.id, tindakan)).rejects.toBeInstanceOf(AksesDitolakError);
-      }
+      await expect(wajibAksesLihatGudang(g.id)).resolves.toMatchObject({
+        gudang: { id: g.id, aktif: true, hakTindakan: [...daftarHakTindakan] },
+      });
     }
   });
 
-  it("admin yang ditugaskan tetap melihat semua gudang; hak tindakan hanya dari penugasannya", async () => {
+  it("admin yang ditugaskan tetap melihat semua gudang dengan kelima hak tindakan", async () => {
     const admin = await kepalaPenggunaUji("admin");
     await tugaskanOperator({ idPengguna: admin.id, idGudang: gudangY, hakTindakan: ["finalisasi"] });
     kepala.cookie = admin.cookie;
 
     const { daftarGudang } = await wajibAksesPengirimanGudang();
     expect(daftarGudang.map((g) => g.nama)).toEqual(namaGudang);
-    expect(daftarGudang.find((g) => g.id === gudangY)?.hakTindakan).toEqual(["finalisasi"]);
-    expect(daftarGudang.find((g) => g.id === gudangX)?.hakTindakan).toEqual([]);
+    expect(daftarGudang.find((g) => g.id === gudangY)?.hakTindakan).toEqual([...daftarHakTindakan]);
+    expect(daftarGudang.find((g) => g.id === gudangX)?.hakTindakan).toEqual([...daftarHakTindakan]);
   });
 
   it("viewer tanpa penugasan ditolak", async () => {

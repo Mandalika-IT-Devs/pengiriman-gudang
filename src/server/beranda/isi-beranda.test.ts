@@ -259,6 +259,15 @@ describe("Mulai di sini: admin", () => {
     ]);
   });
 
+  it("admin tanpa penugasan: hanya langkah dan kartu admin, tanpa daftar atau kartu operator per gudang (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
+    // Admin memegang kelima hak tindakan di setiap gudang aktif, tetapi Beranda admin tidak berubah.
+    const isi = await muatIsiBeranda(admin, hariIni);
+    expect(isi.peran).toBe("admin");
+    expect(isi.gudangDitugaskan).toEqual([]);
+    expect(isi.mulaiDiSini?.map((d) => d.untuk)).toEqual(["admin"]);
+    expect(isi.kartu?.filter((k) => k.gudang !== undefined)).toEqual([]);
+  });
+
   it("viewer tidak mendapat kartu Mulai di sini", async () => {
     const { id, email } = await buatPenggunaUji("viewer");
     const isi = await muatIsiBeranda({ id, nama: "Uji viewer", email, peran: "viewer" }, hariIni);

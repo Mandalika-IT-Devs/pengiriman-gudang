@@ -11,8 +11,8 @@ import { simpanStokToko } from "@/server/gudang/stok-draft";
 import { bacaStokTokoDariFile, type HasilUnggahStok } from "@/server/gudang/unggah-stok";
 
 // Input stok akhir per toko–varian di draft rencana (T59; PRD A6, A7). Hak `input-stok` di gudang itu diperiksa di server
-// sebelum membaca atau menulis data; admin tanpa penugasan berhak ditolak (hanya melihat). Stok kosong = `null` (belum
-// diketahui), bukan nol; stok negatif boleh disimpan.
+// sebelum membaca atau menulis data; admin memegangnya di setiap gudang aktif tanpa penugasan (PRD A3 ▶ Keputusan
+// 2026-11-04). Stok kosong = `null` (belum diketahui), bukan nol; stok negatif boleh disimpan.
 // Unggah file stok satu toko (T83): dibaca di server action tanpa storage dan tanpa menulis stok; klien menerapkan
 // hasilnya sebagai isian yang belum disimpan.
 

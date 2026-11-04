@@ -108,8 +108,10 @@ describe('peringatan "kiriman sebelumnya belum sampai" di draft per toko', () =>
     expect(html).not.toContain("belum sampai saat persiapan");
   });
 
-  it("pengguna hanya-baca (admin) juga melihat peringatan", async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+  it("pengguna hanya-baca (operator tanpa hak tindakan) juga melihat peringatan", async () => {
+    const pengamat = await kepalaPenggunaUji("viewer");
+    await tugaskanOperator({ idPengguna: pengamat.id, idGudang: bandung, hakTindakan: [] });
+    kepala.cookie = pengamat.cookie;
     const html = await bukaToko(tokoA.id);
     expect(html).toContain("data-hanya-baca");
     expect(html).toContain(PERINGATAN_A);

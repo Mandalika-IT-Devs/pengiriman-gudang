@@ -34,7 +34,8 @@ import HalamanPengirimanGudang from "./page";
 
 // T134 (PRD A5 ▶ Revisi 2026-10-19, "Dikirim pekan ini"; DESIGN §7 ikon + teks): di draft, toko dua mingguan pada tanggal
 // kirim rutinnya menampilkan kirim terakhir dan pilihan Dikirim / Tidak dikirim pekan ini. Pilihan diubah lewat server action
-// dengan hak `finalisasi` (diperiksa di server); admin, viewer, dan operator tanpa hak itu hanya melihat. Toko Tidak dikirim
+// dengan hak `finalisasi` (diperiksa di server; admin memegangnya di setiap gudang aktif tanpa penugasan, T147); viewer
+// gudang dan operator tanpa hak itu hanya melihat. Toko Tidak dikirim
 // pekan ini diberi penanda di ringkasan per toko dan kepala toko, tidak menampilkan form finalisasi, tetapi kebutuhan, stok,
 // dan jumlah kirimnya tetap tampil dan stok tetap bisa diisi. Contoh BXC: dua mingguan Rabu (H−1), tanpa tanggal jangkar
 // (T135: setiap Rabu tanggal kirim rutin), draft Rabu 28-10-2026.
@@ -144,14 +145,17 @@ describe("draft: kirim terakhir dan pilihan Dikirim pekan ini", () => {
     expect(html).toMatch(new RegExp(`<input[^>]*aria-label="Stok akhir ${kodeProduk}"`));
   });
 
-  it("admin, viewer gudang (tanpa hak), dan operator tanpa hak finalisasi hanya melihat pilihannya, tanpa form", async () => {
-    for (const masuk of [
-      async () => {
-        kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-      },
-      () => masukOperator([]),
-      () => masukOperator(daftarHakTindakan.filter((h) => h !== "finalisasi")),
-    ]) {
+  it("admin tanpa penugasan melihat pilihan yang bisa diubah beserta Simpan pilihan (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const html = await bukaToko();
+    const bagian = bagianPilihan(html);
+    expect(html).toContain("data-form-dikirim-pekan-ini");
+    expect(bagian).toMatch(/<input[^>]*data-pilihan-dikirim="tidak"[^>]*checked=""/);
+    expect(bagian).toContain("Simpan pilihan");
+  });
+
+  it("viewer gudang (tanpa hak) dan operator tanpa hak finalisasi hanya melihat pilihannya, tanpa form", async () => {
+    for (const masuk of [() => masukOperator([]), () => masukOperator(daftarHakTindakan.filter((h) => h !== "finalisasi"))]) {
       await masuk();
       const html = await bukaToko();
       const bagian = bagianPilihan(html);
@@ -189,9 +193,7 @@ describe("draft: teks cakupan toko dua mingguan", () => {
 });
 
 describe("server action ubahDikirimPekanIni: hak finalisasi diperiksa di server", () => {
-  it("admin tanpa penugasan, viewer tanpa penugasan, operator tanpa hak finalisasi, dan hak finalisasi di gudang lain ditolak tanpa menyimpan", async () => {
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    await expect(ubahDikirimPekanIni(pilihan(true))).rejects.toThrow(AksesDitolakError);
+  it("viewer tanpa penugasan, operator tanpa hak finalisasi, dan hak finalisasi di gudang lain ditolak tanpa menyimpan", async () => {
     kepala.cookie = (await kepalaPenggunaUji("viewer")).cookie;
     await expect(ubahDikirimPekanIni(pilihan(true))).rejects.toThrow(AksesDitolakError);
     await masukOperator(daftarHakTindakan.filter((h) => h !== "finalisasi"));
@@ -229,5 +231,15 @@ describe("server action ubahDikirimPekanIni: hak finalisasi diperiksa di server"
     const bagian = bagianPilihan(html);
     expect(bagian).toMatch(/<input[^>]*data-pilihan-dikirim="ya"[^>]*checked=""/);
     expect(teks(bagian)).toContain(`Dipilih Uji viewer pada ${formatTanggal(tanggalWib(new Date()))}`);
+  });
+
+  it("admin tanpa penugasan menyimpan pilihan atas namanya sendiri: tampil Dipilih <nama admin> pada … (T147)", async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    expect(await ubahDikirimPekanIni(pilihan(false))).toEqual({ keadaan: "berhasil" });
+    expect(await pilihanTersimpan()).toMatchObject([{ tokoId: bxc.id, tanggalKirim: RABU_28, dikirim: false }]);
+
+    const bagian = bagianPilihan(await bukaToko());
+    expect(bagian).toMatch(/<input[^>]*data-pilihan-dikirim="tidak"[^>]*checked=""/);
+    expect(teks(bagian)).toContain(`Dipilih Uji admin pada ${formatTanggal(tanggalWib(new Date()))}`);
   });
 });

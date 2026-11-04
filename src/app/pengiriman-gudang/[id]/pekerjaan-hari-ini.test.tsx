@@ -163,9 +163,11 @@ describe("T118: tanggal yang dibuka pertama kali", () => {
     expect(htmlUrl).not.toContain("data-ajakan-hitung");
   });
 
-  it("pengguna tanpa hak hitung-kebutuhan (admin) tidak mendapat ajakan, hanya keterangan", async () => {
+  it("pengguna tanpa hak hitung-kebutuhan (operator tanpa hak tindakan) tidak mendapat ajakan, hanya keterangan", async () => {
     await db.delete(draftRencana).where(eq(draftRencana.gudangId, gudangUji.id));
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const operator = await kepalaPenggunaUji("viewer");
+    await tugaskanOperator({ idPengguna: operator.id, idGudang: gudangUji.id, hakTindakan: [] });
+    kepala.cookie = operator.cookie;
     const html = await buka();
     expect(html).toContain("Belum ada draft rencana untuk Kamis, 15-10-2026.");
     expect(html).not.toContain("data-ajakan-hitung");

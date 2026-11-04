@@ -55,10 +55,12 @@ function bacaTokoDiminta(nilai: string | string[] | undefined): number | null {
 
 /**
  * Zona kerja (DESIGN §1). Halaman Pengiriman Gudang satu gudang (T50) dengan kartu Periode sumber (T51) dan bagian
- * Jadwal (T55): jadwal tetap ditambah pengiriman di luar jadwal yang akan datang (T113). Operator dengan hak
+ * Jadwal (T55): jadwal tetap ditambah pengiriman di luar jadwal yang akan datang (T113). Pengguna dengan hak
  * `kelola-usulan-jadwal` mendapat tautan "Kirim di luar jadwal" (PRD A5 ▶ Revisi 2026-10-13). Bagian Draft rencana (T58)
  * menampilkan draft yang tersimpan tanpa menghitung saat halaman dibuka (PRD C1), sebagai ringkasan per toko; `?toko=<id>`
- * membuka baris satu toko (T73) dan `?rincian=<id toko>|<kode produk>` membuka rincian perhitungan satu barisnya (T60). Operator dengan hak `finalisasi` memfinalisasi rencana per toko (T62).
+ * membuka baris satu toko (T73) dan `?rincian=<id toko>|<kode produk>` membuka rincian perhitungan satu barisnya (T60). Pengguna dengan hak `finalisasi` memfinalisasi rencana per toko (T62).
+ * Hak tindakan dari `wajibAksesLihatGudang`: operator dari penugasan, admin kelima hak di setiap gudang aktif (PRD A3 ▶
+ * Keputusan 2026-11-04); tanpa hak tindakan apa pun (termasuk gudang nonaktif) halaman berlabel "Hanya-baca".
  * Riwayat rencana final tidak ditautkan dari sini; riwayat ada di halaman Riwayat (T127, PRD A7 ▶ Keputusan 2026-10-14).
  *
  * T118 (DESIGN §11.5): urutan isi = kepala (gudang dan ringkasan periode sumber), Draft rencana, Jadwal toko (dengan status

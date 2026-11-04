@@ -17,8 +17,9 @@ import {
 import { daftarPersiapan } from "@/server/gudang/pilihan-jadwal";
 
 // Pengiriman di luar jadwal oleh operator (T113, PRD A5 ▶ Revisi 2026-10-13). Hak `kelola-usulan-jadwal` di gudang itu
-// diperiksa di server sebelum membaca atau menulis data; admin tanpa penugasan berhak ditolak. Operator tidak lagi
-// membuat, mengubah, atau menonaktifkan jadwal tetap: aksi itu hanya ada di halaman admin Jadwal toko (T112).
+// diperiksa di server sebelum membaca atau menulis data; admin memegangnya di setiap gudang aktif tanpa penugasan (PRD
+// A3 ▶ Keputusan 2026-11-04). Operator tidak lagi membuat, mengubah, atau menonaktifkan jadwal tetap: aksi itu hanya ada
+// di halaman admin Jadwal toko (T112).
 
 const PERSIAPAN_HARI = { H: 0, "H-1": 1, "H-2": 2 } as const;
 

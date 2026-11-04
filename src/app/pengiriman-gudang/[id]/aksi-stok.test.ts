@@ -176,19 +176,22 @@ beforeEach(() => {
 });
 
 describe("kewenangan unggah stok (diperiksa di server)", () => {
-  it("tanpa hak input-stok ditolak: operator tanpa hak itu, admin tanpa penugasan, operator gudang lain", async () => {
+  it("tanpa hak input-stok ditolak: operator tanpa hak itu, operator gudang lain", async () => {
     await masukOperator(
       cibubur,
       daftarHakTindakan.filter((h) => h !== "input-stok"),
     );
     await expect(kirim("stok.csv", FILE_CONTOH)).rejects.toBeInstanceOf(AksesDitolakError);
 
-    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
-    await expect(kirim("stok.csv", FILE_CONTOH)).rejects.toBeInstanceOf(AksesDitolakError);
-
     await masukOperator(await idGudangUji("Gudang Bali"), ["input-stok"]);
     await expect(kirim("stok.csv", FILE_CONTOH)).rejects.toBeInstanceOf(AksesDitolakError);
 
+    expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
+  });
+
+  it("admin tanpa penugasan boleh mengunggah file stok; stok tidak ditulis (T147, PRD A3 ▶ Keputusan 2026-11-04)", async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    expect(await kirim("stok.csv", FILE_CONTOH)).toEqual(HASIL_CONTOH);
     expect(await stokTersimpan()).toEqual({ [kode.pw110p]: null, [kode.a10mGor]: null });
   });
 
