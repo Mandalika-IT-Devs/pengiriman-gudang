@@ -114,7 +114,7 @@ function DasarPerhitungan({ rencana }: { rencana: RincianRencanaFinal }) {
         <BagianDasar nama="jadwal" judul="Jadwal toko">
           <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-[auto_1fr]">
             <dt className="text-muted-foreground">Pola</dt>
-            <dd>{labelPolaJadwal(jadwal.pola, jadwal.tambah3HariCakupan === true)}</dd>
+            <dd>{labelPolaJadwal(jadwal.pola, jadwal.tambah3HariCakupan === true, jadwal.tokoAcuan?.nama)}</dd>
             <dt className="text-muted-foreground">Hari kirim</dt>
             <dd>{labelHariKirim(jadwal.hariKirim)}</dd>
             {jadwal.tanggalJangkar === null ? null : (
