@@ -153,6 +153,8 @@ Saya ingin menambahkan beberapa toko sekaligus dengan memilih toko lalu menekan 
 >   - Persetujuan jadwal untuk usulan operator.
 >   - Hak operator, yang tetap berasal dari penugasan.
 
+> ▶ Keputusan (2026-11-05, pemilik): **teks "Dikirim pekan ini" yang belum dipilih.** Karena admin juga bisa memilih "Dikirim pekan ini" (▶ Keputusan 2026-11-04 di atas), keterangan pilihan yang masih mengikuti nilai awal otomatis menjadi "Otomatis dari kirim terakhir, belum ada yang memilih." (sebelumnya "… belum dipilih operator."). Bantuan istilah "Hanya-baca" ("… Hak tindakan diberikan admin lewat penugasan gudang.") tidak berubah, karena tetap benar untuk operator dan bagi admin hanya muncul di gudang nonaktif.
+
 ### A4. Ketika saya menentukan sumber perhitungan gudang
 
 Halaman Pengiriman Gudang harus memiliki kartu Periode sumber penjualan yang jelas dan mudah ditemukan. Pilihan bulan di sini harus mandiri dari filter Ringkasan. Mengubah bulan pada Ringkasan tidak boleh mengubah dasar perhitungan gudang secara diam-diam.
@@ -415,6 +417,8 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 >   - pengiriman berlaku yang masih bisa dibatalkan, dengan tombol Batalkan. Syarat dan alasan wajib pembatalan tidak berubah.
 > - Usulan operator di gudang selain Pusat tetap menunggu persetujuan admin. Aturan operator Pusat tidak berubah.
 
+> ▶ Keputusan (2026-11-05, pemilik): bagi admin, halaman pilih gudang **Kirim di luar jadwal** (sebelum form satu gudang dibuka) berjudul **"Atur pengiriman di luar jadwal"**, sama dengan judul form admin, karena bagi admin pengiriman selalu langsung berlaku. Bagi operator, judulnya tetap "Usulkan pengiriman di luar jadwal".
+
 > ▶ Keputusan (2026-11-04, pemilik): **toko acuan pada jadwal tetap.** Toko yang belum punya data penjualan, misalnya toko baru, meminjam varian dan rata-rata penjualan dari toko lain yang dipilih admin. Jadwal tetapnya tetap diatur sendiri.
 >
 > **Pengaturan**
@@ -470,6 +474,11 @@ Pembuatan, perubahan, dan penonaktifan jadwal empat gudang selain Pusat memerluk
 >   - Di rincian baris, rata-rata per kategori diberi keterangan yang sama. Tautan penelusurannya membuka Ringkasan toko acuan.
 >   - Jika toko itu sudah punya data penjualan sendiri di periode sumber (minimal satu baris di impor aktif periode sumber), kepala toko juga menampilkan catatan: "Toko ini sudah punya data penjualan sendiri di periode sumber. Rata-rata tetap dipinjam dari toko acuan sampai admin menghapusnya di Jadwal toko." Catatan ini tidak menahan finalisasi.
 > - Tabel Riwayat, ekspor satu rencana final, ekspor Riwayat, Ringkasan, Kalender, dan Beranda tidak berubah.
+
+> ▶ Keputusan (2026-11-05, pemilik): tiga rincian toko acuan yang dikonfirmasi setelah M7 dibangun.
+> - Pilihan kosong di isian "Toko acuan" (form jadwal tetap dan Salin jadwal) bertuliskan **"Tanpa toko acuan"**. Pilihan ini menjadi item pertama dan nilai awal, dan dipakai untuk menghapus toko acuan.
+> - **Salin jadwal** menerapkan seluruh isian form ke setiap toko terpilih, termasuk Toko acuan. Jadi menyalin jadwal dengan isian "Tanpa toko acuan" menghapus toko acuan toko-toko terpilih, dan masing-masing mendapat versi jadwal baru, sama seperti checkbox "Tambah 3 hari cakupan".
+> - Rincian rencana final menyebut toko acuan hanya di Pola ("<pola> · toko acuan <B>"). Panel rincian baris rencana final **tidak** menampilkan keterangan "Rata-rata dipinjam dari toko acuan <B>"; keterangan itu hanya di draft.
 
 
 Jika jadwal atau dasar perhitungan berubah, draft terkait harus dihitung ulang. Input stok tetap dipertahankan. Rencana yang sudah final tidak berubah mengikuti aturan baru.
