@@ -219,6 +219,12 @@ export async function finalisasiRencanaToko({
     const [namaToko] = await tx.select({ nama: toko.nama }).from(toko).where(eq(toko.id, tokoId));
     const [pemfinalisasi] = await tx.select({ nama: user.name }).from(user).where(eq(user.id, idPengguna));
     if (!namaToko || !pemfinalisasi) return gagal(PESAN_DRAFT_BERUBAH_FINALISASI);
+    // Toko acuan yang dipakai draft (T151) beserta namanya saat ini, disalin ke snapshot jadwal (T152).
+    let tokoAcuan: JadwalRencanaFinal["tokoAcuan"];
+    if (tokoDraft.tokoAcuanId !== null) {
+      [tokoAcuan] = await tx.select({ id: toko.id, nama: toko.nama }).from(toko).where(eq(toko.id, tokoDraft.tokoAcuanId));
+      if (!tokoAcuan) return gagal(PESAN_PERLU_DIHITUNG_ULANG);
+    }
 
     // Sumber penjualan: impor aktif pembentuk cache yang dipakai draft, untuk bulan impor yang masuk bulan periode sumber.
     const bulanImpor = bulanImporUntuk(bulanSumber);
@@ -261,11 +267,13 @@ export async function finalisasiRencanaToko({
         versiJadwal: tokoDraft.versiJadwal,
         // Tanggal jangkar dihapus (PRD A5 ▶ Revisi 2026-10-19, T135): snapshot baru selalu `null`; snapshot lama tetap.
         // Tanda "Tambah 3 hari cakupan" = tanda yang dipakai draft untuk cakupan ini (PRD A5 ▶ Keputusan 2026-10-27, T143).
+        // Toko acuan hanya disimpan bila draft memakainya (PRD A5 ▶ Keputusan 2026-11-04, T152).
         jadwal: {
           pola: jadwal.pola,
           hariKirim: jadwal.hariKirim,
           tanggalJangkar: null,
           tambah3HariCakupan: tokoDraft.tambah3HariCakupan,
+          ...(tokoAcuan === undefined ? {} : { tokoAcuan }),
         },
         persiapanHari: tokoDraft.persiapanHari,
         panjangCakupan: tokoDraft.panjangCakupan,
@@ -316,7 +324,10 @@ export type RencanaFinal = {
   difinalisasiPada: Date;
   sumber: { bulanSumber: string[]; versiPeriodeSumber: number; impor: ImporRencanaFinal[] };
   ranking: { id: number; bulanRanking: string; versi: number };
-  /** `tambah3HariCakupan` tidak ada di snapshot sebelum T143 (= tidak bertanda). */
+  /**
+   * `tambah3HariCakupan` tidak ada di snapshot sebelum T143 (= tidak bertanda); `tokoAcuan` (nama saat finalisasi) tidak
+   * ada untuk rencana tanpa toko acuan dan snapshot sebelum T152.
+   */
   jadwal: JadwalRencanaFinal & { versi: number; persiapanHari: 0 | 1 | 2; panjangCakupan: number };
   /** Pengiriman di luar jadwal yang menjadi dasar rencana ini (snapshot, T114); `null` = pengiriman rutin. */
   diLuarJadwal: KeteranganDiLuarJadwal | null;

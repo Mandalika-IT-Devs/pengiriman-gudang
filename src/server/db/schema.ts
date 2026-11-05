@@ -1123,12 +1123,15 @@ export type DiLuarJadwalRencanaFinal = {
  * Isi jadwal aktif toko saat difinalisasi (PRD A7). `tanggalJangkar` hanya terisi di snapshot dua mingguan lama (sebelum
  * PRD A5 ▶ Revisi 2026-10-19); snapshot baru selalu `null` (T135). `tambah3HariCakupan` = tanda "Tambah 3 hari cakupan"
  * yang dipakai draft (PRD A5 ▶ Keputusan 2026-10-27, T143); tidak ada di snapshot sebelum T143 (= tidak bertanda).
+ * `tokoAcuan` = toko acuan yang dipakai draft, dengan namanya saat finalisasi (PRD A5 ▶ Keputusan 2026-11-04, T152);
+ * tidak ada = tanpa toko acuan, termasuk snapshot sebelum T152.
  */
 export type JadwalRencanaFinal = {
   pola: PolaJadwal;
   hariKirim: { hari: HariKirim; persiapanHari: 0 | 1 | 2 }[];
   tanggalJangkar: string | null;
   tambah3HariCakupan?: boolean;
+  tokoAcuan?: { id: number; nama: string };
 };
 
 /**
