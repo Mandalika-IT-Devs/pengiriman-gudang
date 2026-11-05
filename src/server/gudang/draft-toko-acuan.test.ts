@@ -16,11 +16,13 @@ import { tetapkanPeriodeSumber } from "./periode-sumber";
 import { finalisasiRencanaToko, PESAN_TANPA_VARIAN } from "./rencana-final";
 import { simpanStokToko } from "./stok-draft";
 import { bersihkanTokoAcuanUji, siapkanTokoAcuanUji } from "./uji-bantu-toko-acuan";
-import { idGudangUji } from "./uji-bantu";
+import { buatGudangUji, hapusGudangUji } from "./uji-bantu";
 
 // T151 — PRD A5 ▶ Keputusan 2026-11-04 (toko acuan: Perhitungan) dan A6 ▶ Keputusan 2026-11-04: untuk toko yang jadwal
 // tetapnya memakai toko acuan, draft memakai varian dan rata-rata toko acuan atas bulan periode sumber gudang yang menghitung
-// draft. Cakupan, kategori efektif, dan stok tetap milik toko itu. Golden `tests/golden/toko-acuan.json`.
+// draft. Cakupan, kategori efektif, dan stok tetap milik toko itu. Golden `tests/golden/toko-acuan.json`. Berkas ini memakai
+// gudang uji sendiri, supaya draft hanya memuat SMB, TOKO BARU, dan LMK, apa pun toko yang dihubungkan berkas test lain ke
+// gudang hasil seed.
 
 type Golden = {
   kasusKebutuhan: {
@@ -48,25 +50,26 @@ const KAMIS = parseTanggalBisnis(kasus.tanggalKirim);
 
 let idAdmin: string;
 let idOperator: string;
-let cibubur: number;
+let idGudang: number;
 let data: Awaited<ReturnType<typeof siapkanTokoAcuanUji>>;
 
 beforeAll(async () => {
   idAdmin = (await buatPenggunaUji("admin")).id;
   idOperator = (await buatPenggunaUji("viewer")).id;
-  cibubur = await idGudangUji("Gudang Cibubur");
-  data = await siapkanTokoAcuanUji({ idGudang: cibubur, idAdmin });
+  idGudang = (await buatGudangUji()).id;
+  data = await siapkanTokoAcuanUji({ idGudang, idAdmin });
 }, 120_000);
 
 afterAll(async () => {
-  await bersihkanTokoAcuanUji({ idGudang: cibubur, idToko: [data.smb.id, data.tokoBaru.id, data.lmk.id] });
+  await bersihkanTokoAcuanUji({ idGudang, idToko: [data.smb.id, data.tokoBaru.id, data.lmk.id] });
+  await hapusGudangUji(idGudang);
 });
 
 const hitung = async () =>
-  expect(await hitungDraftRencana({ idGudang: cibubur, tanggalKirim: KAMIS, idPengguna: idOperator })).toMatchObject({
+  expect(await hitungDraftRencana({ idGudang, tanggalKirim: KAMIS, idPengguna: idOperator })).toMatchObject({
     keadaan: "berhasil",
   });
-const tokoDi = async (idToko: number) => (await bacaDraftRencana(cibubur, KAMIS))?.toko.find((t) => t.id === idToko);
+const tokoDi = async (idToko: number) => (await bacaDraftRencana(idGudang, KAMIS))?.toko.find((t) => t.id === idToko);
 
 describe("TOKO BARU (tanpa data penjualan) meminjam varian dan rata-rata SMB, kirim Kamis 2026-10-29 (golden kasusKebutuhan)", () => {
   it("8 tanggal cakupan milik TOKO BARU dengan kategori efektif sesuai fixture; rata-rata SMB; kebutuhan 45", async () => {
@@ -83,7 +86,7 @@ describe("TOKO BARU (tanpa data penjualan) meminjam varian dan rata-rata SMB, ki
   it("draft mencatat toko acuan SMB untuk TOKO BARU, tanpa catatan data sendiri", async () => {
     const tokoAcuan = { id: data.smb.id, nama: data.smb.nama, catatanDataSendiri: false };
     expect((await tokoDi(data.tokoBaru.id))?.tokoAcuan).toEqual(tokoAcuan);
-    const ringkasan = await bacaRingkasanDraft(cibubur, KAMIS, data.tokoBaru.id);
+    const ringkasan = await bacaRingkasanDraft(idGudang, KAMIS, data.tokoBaru.id);
     expect(ringkasan?.toko.find((t) => t.id === data.tokoBaru.id)?.tokoAcuan).toEqual(tokoAcuan);
     expect(ringkasan?.tokoDibuka?.tokoAcuan).toEqual(tokoAcuan);
     // Toko tanpa toko acuan tidak berubah: tidak punya properti toko acuan.
@@ -104,7 +107,7 @@ describe("TOKO BARU (tanpa data penjualan) meminjam varian dan rata-rata SMB, ki
 
   it(`stok akhir ${kasus.jumlahKirim.stokAkhir} (tujuh besar) → stok target ${kasus.jumlahKirim.stokTarget}, jumlah kirim ${kasus.jumlahKirim.jumlahKirim}`, async () => {
     const stok = [{ kodeProduk: data.kode.gor, stokAkhir: kasus.jumlahKirim.stokAkhir }];
-    expect(await simpanStokToko({ idGudang: cibubur, tanggalKirim: KAMIS, tokoId: data.tokoBaru.id, stok })).toEqual({
+    expect(await simpanStokToko({ idGudang, tanggalKirim: KAMIS, tokoId: data.tokoBaru.id, stok })).toEqual({
       keadaan: "berhasil",
     });
     const gor = (await tokoDi(data.tokoBaru.id))?.baris.find((b) => b.kodeProduk === data.kode.gor);
@@ -160,10 +163,10 @@ describe("LMK (toko acuan SMB) yang sudah punya data penjualan sendiri di period
       { kodeProduk: data.kode.gor, stokAkhir: 20 },
       { kodeProduk: data.kode.nol, stokAkhir: 0 },
     ];
-    expect(await simpanStokToko({ idGudang: cibubur, tanggalKirim: KAMIS, tokoId: data.lmk.id, stok })).toEqual({ keadaan: "berhasil" });
+    expect(await simpanStokToko({ idGudang, tanggalKirim: KAMIS, tokoId: data.lmk.id, stok })).toEqual({ keadaan: "berhasil" });
     const versiDilihat = (await tokoDi(data.lmk.id))?.versi ?? "";
     expect(
-      await finalisasiRencanaToko({ idGudang: cibubur, tanggalKirim: KAMIS, tokoId: data.lmk.id, idPengguna: idOperator, versiDilihat }),
+      await finalisasiRencanaToko({ idGudang, tanggalKirim: KAMIS, tokoId: data.lmk.id, idPengguna: idOperator, versiDilihat }),
     ).toMatchObject({ keadaan: "berhasil" });
   });
 });
@@ -178,28 +181,28 @@ describe('toko acuan tersimpan berbeda dari jadwal tetap aktif → "Jadwal toko"
     const [draft] = await db
       .select({ id: draftRencana.id })
       .from(draftRencana)
-      .where(and(eq(draftRencana.gudangId, cibubur), eq(draftRencana.tanggalKirim, KAMIS)));
+      .where(and(eq(draftRencana.gudangId, idGudang), eq(draftRencana.tanggalKirim, KAMIS)));
     await db
       .update(tokoDraftRencana)
       .set({ tokoAcuanId: null })
       .where(and(eq(tokoDraftRencana.draftId, draft.id), eq(tokoDraftRencana.tokoId, data.tokoBaru.id)));
   };
   const tandaPerToko = async () =>
-    Object.fromEntries((await bacaDraftRencana(cibubur, KAMIS))?.toko.map((t) => [t.id, t.perluDihitungUlang]) ?? []);
+    Object.fromEntries((await bacaDraftRencana(idGudang, KAMIS))?.toko.map((t) => [t.id, t.perluDihitungUlang]) ?? []);
 
   it("toko acuan tersimpan sama dengan jadwal tetap aktif → tidak ditandai", async () => {
     await hitung();
-    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual([]);
+    expect((await bacaDraftRencana(idGudang, KAMIS))?.perluDihitungUlang).toEqual([]);
     expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: [], [data.lmk.id]: [] });
   });
 
   it("toko acuan tersimpan kosong, jadwal tetap aktif memakai SMB → hanya TOKO BARU ditandai jadwal; hilang setelah dihitung ulang", async () => {
     await jadikanDraftSebelumT151();
-    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual(["jadwal"]);
+    expect((await bacaDraftRencana(idGudang, KAMIS))?.perluDihitungUlang).toEqual(["jadwal"]);
     expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: ["jadwal"], [data.lmk.id]: [] });
 
     await hitung();
-    expect((await bacaDraftRencana(cibubur, KAMIS))?.perluDihitungUlang).toEqual([]);
+    expect((await bacaDraftRencana(idGudang, KAMIS))?.perluDihitungUlang).toEqual([]);
     expect(await tandaPerToko()).toEqual({ [data.smb.id]: [], [data.tokoBaru.id]: [], [data.lmk.id]: [] });
     expect((await tokoDi(data.tokoBaru.id))?.tokoAcuan).toMatchObject({ id: data.smb.id });
   });
@@ -213,14 +216,14 @@ describe("toko acuan tanpa varian di periode sumber (golden tokoAcuanTanpaVarian
   });
 
   it("periode sumber tanpa data SMB: TOKO BARU tanpa varian dan finalisasinya ditolak", async () => {
-    const hasil = await tetapkanPeriodeSumber({ idGudang: cibubur, bulan: [data.bulanTanpaSmb], idPengguna: idAdmin });
+    const hasil = await tetapkanPeriodeSumber({ idGudang, bulan: [data.bulanTanpaSmb], idPengguna: idAdmin });
     expect(hasil).toMatchObject({ keadaan: "berhasil" });
     await hitung();
     const tokoBaru = await tokoDi(data.tokoBaru.id);
     expect(tokoBaru).toMatchObject({ baris: [], tokoAcuan: { id: data.smb.id, nama: data.smb.nama, catatanDataSendiri: false } });
     expect(
       await finalisasiRencanaToko({
-        idGudang: cibubur,
+        idGudang,
         tanggalKirim: KAMIS,
         tokoId: data.tokoBaru.id,
         idPengguna: idOperator,
