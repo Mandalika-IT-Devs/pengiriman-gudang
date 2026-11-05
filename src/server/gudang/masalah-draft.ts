@@ -23,3 +23,12 @@ export const URUTAN_MASALAH = [
  * ▶ Keputusan 2026-10-11, T62). Toko yang hanya berisi produk manual tetap boleh.
  */
 export const MASALAH_TANPA_VARIAN = "Tidak ada varian dari periode sumber untuk toko ini";
+
+/**
+ * Masalah toko tanpa varian di draft (PRD A7 ▶ Keputusan 2026-10-11, T62). Toko yang memakai toko acuan (`tokoAcuan`)
+ * meminjam varian toko acuan, jadi masalahnya menyebut toko acuan itu (PRD A5 ▶ Keputusan 2026-11-04, T151). Keduanya
+ * menahan finalisasi.
+ */
+export function masalahTanpaVarian(tokoAcuan: { nama: string } | undefined): string {
+  return tokoAcuan === undefined ? MASALAH_TANPA_VARIAN : `Tidak ada varian dari periode sumber untuk toko acuan ${tokoAcuan.nama}.`;
+}

@@ -214,6 +214,17 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 - Toko yang sudah final untuk tanggal itu selalu "Dikirim" dan pilihannya tidak bisa diubah. Pengiriman di luar jadwal toko dua mingguan tidak punya pilihan ini, karena selalu dikirim. Toko pola lain juga tidak.
 - Setiap tanggal yang jatuh pada hari kirim toko dua mingguan adalah tanggal kirim rutinnya, jadi pilihan ini muncul setiap pekan. Contoh: BXC (Rabu, H−1) pada Rabu 21-10, 28-10, 04-11-2026, dan seterusnya. Teks cakupannya selalu menyebut dua minggu, misalnya "Cakupan 15 hari: persiapan 1 hari + 14 hari (dua minggu)".
 
+**Toko dengan toko acuan.** Toko yang jadwal tetapnya memakai toko acuan (diatur admin di Jadwal toko) meminjam varian dan rata-rata penjualan toko acuan itu:
+
+- Variannya adalah semua produk toko acuan di impor aktif periode sumber, termasuk yang penjualannya nol. Rata-ratanya adalah Rata-rata Ringkasan toko acuan atas bulan periode sumber gudang Anda, bukan periode sumber gudang toko acuan.
+- Yang tetap milik toko itu sendiri: tanggal kirim dan cakupan, kategori efektif (perubahan kategori khusus toko itu, bukan khusus toko acuan), stok akhir dan unggah stok, "Isi 0", "Dikirim pekan ini", finalisasi, dan rencana final. Buffer dan pemetaan keluarga aroma tidak berubah.
+- Contoh: TOKO BARU (mingguan Kamis, H−1) dengan toko acuan SMB, kirim Kamis 29-10-2026. Cakupannya Rabu 28-10 sampai Rabu 04-11-2026 (milik TOKO BARU), rata-rata `PW110P-GOR` milik SMB (Senin–Kamis 5, Jumat 5, Sabtu 8, Minggu 7), jadi kebutuhannya 45.
+- Kepala toko menampilkan "Rata-rata dipinjam dari toko acuan <toko>". Ikon bantuan di sampingnya menjelaskan istilah "Toko acuan".
+- Di panel rincian, "Rata-rata per kategori" diberi keterangan yang sama, dan angka rata-ratanya membuka Ringkasan untuk toko acuan.
+- Jika toko itu ternyata sudah punya data penjualan sendiri di periode sumber, kepala toko juga menampilkan catatan "Toko ini sudah punya data penjualan sendiri di periode sumber. Rata-rata tetap dipinjam dari toko acuan sampai admin menghapusnya di Jadwal toko." Catatan ini tidak menahan finalisasi.
+- Jika toko acuan tidak punya varian di periode sumber, toko itu tampil dengan masalah "Tidak ada varian dari periode sumber untuk toko acuan <toko>." dan tidak bisa difinalisasi.
+- Perubahan impor aktif atau periode sumber menandai draft "Perlu dihitung ulang" seperti biasa, termasuk saat rata-rata toko acuan berubah. Mengisi, mengganti, atau menghapus toko acuan menandainya dengan "Jadwal toko".
+
 **Mengisi stok.** Tekan "Buka toko" di "Ringkasan per toko".
 
 - Kepala toko tetap terlihat saat tabel digulir. Isinya nama toko, status, jumlah baris tertahan, dan tombol Finalisasi (atau alasan belum bisa difinalisasi).

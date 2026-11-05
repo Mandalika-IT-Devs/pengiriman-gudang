@@ -52,6 +52,11 @@ export const TEKS_BANTUAN_ISTILAH = {
     penjelasan:
       "Anda bisa melihat isi halaman ini, tetapi tidak bisa mengubah atau menjalankan tindakan. Hak tindakan diberikan admin lewat penugasan gudang.",
   },
+  tokoAcuan: {
+    judul: "Toko acuan",
+    penjelasan:
+      "Toko yang varian dan rata-rata penjualannya dipinjam toko ini, karena toko ini belum punya data penjualan. Diatur admin di jadwal tetap; jadwal, stok, dan kategori hari tetap milik toko ini.",
+  },
   periodeSumber: {
     judul: "Periode sumber",
     penjelasan:

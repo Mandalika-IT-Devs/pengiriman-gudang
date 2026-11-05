@@ -1021,6 +1021,16 @@ export const tokoDraftRencana = pgTable(
      * Draft sebelum T143 = tidak bertanda.
      */
     tambah3HariCakupan: boolean("tambah_3_hari_cakupan").notNull().default(false),
+    /**
+     * Toko acuan jadwal tetap toko saat dihitung (PRD A5 ▶ Keputusan 2026-11-04, T151): varian dan rata-rata baris toko
+     * ini berasal dari toko acuan itu. Kosong = varian dan rata-rata milik toko ini sendiri, termasuk draft sebelum T151.
+     */
+    tokoAcuanId: integer("toko_acuan_id").references(() => toko.id),
+    /**
+     * Toko yang memakai toko acuan sudah punya data penjualan sendiri di periode sumber saat dihitung (T151): kepala toko
+     * menampilkan catatan, tanpa menahan finalisasi. Selalu `false` tanpa toko acuan.
+     */
+    catatanDataSendiri: boolean("catatan_data_sendiri").notNull().default(false),
     /** Tanggal cakupan beserta kategori efektif dan sumbernya (T60). Kosong = draft dihitung sebelum T60. */
     cakupan: jsonb("cakupan").$type<TanggalCakupanDraft[]>(),
     /**
