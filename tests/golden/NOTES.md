@@ -8,14 +8,13 @@ Setiap aturan PRD punya satu berkas JSON, misalnya `jumlah-kirim.json`. Isinya k
 
 ## Golden yang digantikan
 
-- `klasifikasi-produk.json` mencatat aturan ADR-0007 (sebelum 2026-11-04). Penggantinya `klasifikasi-produk-2026-11-04.json` (ADR-0012, produk display menjadi manual). Test klasifikasi dipindah ke berkas pengganti oleh tiket yang mengimplementasikan aturan itu. Setelah itu berkas lama tidak dibaca test lagi.
+- `klasifikasi-produk.json` mencatat aturan ADR-0007 (sebelum 2026-11-04) dan tidak dibaca test lagi. Penggantinya `klasifikasi-produk-2026-11-04.json` (ADR-0012, produk display menjadi manual), dibaca test sejak T145.
 
 ## Golden yang belum dibaca test
 
-Berkas di bawah ini ditambahkan bersama keputusan pemilik, sebelum kodenya ada. Tiket yang mengimplementasikan aturannya menyambungkan berkas itu ke test.
+Berkas yang ditambahkan bersama keputusan pemilik, sebelum kodenya ada, dicatat di sini sampai tiket yang mengimplementasikan aturannya menyambungkan berkas itu ke test.
 
-- `klasifikasi-produk-2026-11-04.json`: PRD A6 ▶ Keputusan 2026-11-04.
-- `toko-acuan.json`: PRD A5 ▶ Keputusan 2026-11-04 (toko acuan).
+- Tidak ada. `klasifikasi-produk-2026-11-04.json` dibaca test sejak T145, dan `toko-acuan.json` sejak T149–T151.
 
 ## Aturan yang belum punya golden
 
