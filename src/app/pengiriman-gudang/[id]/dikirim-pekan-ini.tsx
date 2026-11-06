@@ -42,7 +42,7 @@ function AsalPilihan({ keadaan }: { keadaan: DikirimPekanIni }) {
   if (keadaan.dipilih === null) {
     return (
       <p data-asal-pilihan="otomatis" className="text-muted-foreground">
-        Otomatis dari kirim terakhir, belum dipilih operator.
+        Otomatis dari kirim terakhir, belum ada yang memilih.
       </p>
     );
   }

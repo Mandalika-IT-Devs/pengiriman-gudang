@@ -106,7 +106,7 @@ describe("draft: kirim terakhir dan pilihan Dikirim pekan ini", () => {
     const html = await bukaToko();
     const bagian = bagianPilihan(html);
     expect(teks(bagian)).toContain("Belum ada rencana final sebelumnya");
-    expect(teks(bagian)).toContain("Otomatis dari kirim terakhir, belum dipilih operator.");
+    expect(teks(bagian)).toContain("Otomatis dari kirim terakhir, belum ada yang memilih.");
     expect(bagian).toMatch(/<input[^>]*data-pilihan-dikirim="ya"[^>]*checked=""/);
     expect(html).not.toContain("data-tidak-dikirim-pekan-ini");
     expect(html).not.toContain("data-finalisasi-tidak-dikirim");
@@ -130,6 +130,7 @@ describe("draft: kirim terakhir dan pilihan Dikirim pekan ini", () => {
 
     const bagian = bagianPilihan(html);
     expect(teks(bagian)).toContain("Kirim terakhir: Rabu, 21-10-2026 (7 hari sebelumnya)");
+    expect(teks(bagian)).toContain("Otomatis dari kirim terakhir, belum ada yang memilih.");
     expect(bagian).toMatch(/<input[^>]*data-pilihan-dikirim="tidak"[^>]*checked=""/);
     expect(bagian).toContain("Simpan pilihan");
 
