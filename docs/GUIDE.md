@@ -205,7 +205,7 @@ Nama dan peran Anda di bawah sidebar, di atas "Keluar", adalah tautan ke halaman
 
 - Di sampingnya tampil kirim terakhir toko itu, misalnya "Kirim terakhir: Rabu, 21-10-2026 (7 hari sebelumnya)", atau "Belum ada rencana final sebelumnya". Kirim terakhir adalah tanggal kirim rencana final terakhir toko itu sebelum tanggal draft, dari gudang mana pun dan jenis pengiriman apa pun.
 - Nilai awalnya otomatis. "Dikirim" jika belum ada rencana final sebelumnya atau kirim terakhirnya 14 hari atau lebih sebelumnya; selain itu "Tidak dikirim pekan ini". Nilai awal mengikuti rencana final terbaru, kecuali operator sudah memilih sendiri.
-- Di bawahnya tertulis asal nilainya: "Otomatis dari kirim terakhir, belum dipilih operator.", atau "Dipilih <nama> pada <tanggal>".
+- Di bawahnya tertulis asal nilainya: "Otomatis dari kirim terakhir, belum ada yang memilih.", atau "Dipilih <nama> pada <tanggal>".
 - Operator yang punya hak Finalisasi di gudang itu bisa mengubahnya: pilih salah satu, lalu tekan "Simpan pilihan". Pilihan tetap berlaku walaupun draft dihitung ulang. Admin, viewer, dan operator tanpa hak Finalisasi hanya melihatnya.
 - Toko "Tidak dikirim pekan ini" diberi penanda "Tidak dikirim pekan ini" di "Ringkasan per toko" dan di kepala toko.
   - Kebutuhan dan jumlah kirimnya tetap tampil, dan stok tetap bisa diisi.

@@ -92,7 +92,7 @@ afterAll(async () => {
 });
 
 describe("nilai awal dari kirim terakhir", () => {
-  it("belum ada rencana final sebelumnya → Dikirim, kirim terakhir kosong, belum dipilih operator", async () => {
+  it("belum ada rencana final sebelumnya → Dikirim, kirim terakhir kosong, belum ada yang memilih", async () => {
     expect(await keadaan(RABU_28)).toEqual({ dikirim: true, kirimTerakhir: null, dipilih: null, sudahFinal: false });
   });
 
