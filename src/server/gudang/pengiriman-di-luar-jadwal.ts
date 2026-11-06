@@ -156,9 +156,11 @@ async function namaGudang(tx: Tx, idGudang: number) {
  * - `langsung`: yang dibuatnya langsung berlaku, dan pengiriman berlaku gudang itu boleh dibatalkannya dari halaman
  *   Kirim di luar jadwal. Admin di semua gudang (A5 ▶ Keputusan 2026-11-04), operator di gudang Pusat;
  * - `usulan`: menunggu persetujuan admin (operator gudang selain Pusat, A5 ▶ Revisi 2026-10-13).
+ * `namaGudang` `null` = belum ada gudang (halaman pilih gudang, T148-b): `langsung` hanya bila langsung di setiap gudang,
+ * yaitu bagi admin (A5 ▶ Keputusan 2026-11-05); operator `usulan`.
  * Hak `kelola-usulan-jadwal` di gudang itu diperiksa terpisah (`@/server/gudang/akses`).
  */
-export function jalurPengirimanDiLuarJadwal(peran: Peran, namaGudang: string): "langsung" | "usulan" {
+export function jalurPengirimanDiLuarJadwal(peran: Peran, namaGudang: string | null): "langsung" | "usulan" {
   return peran === "admin" || namaGudang === NAMA_GUDANG_PUSAT ? "langsung" : "usulan";
 }
 
