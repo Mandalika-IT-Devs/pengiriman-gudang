@@ -30,9 +30,6 @@ const judulPengiriman: Record<JalurPengiriman, string> = {
   usulan: "Usulkan pengiriman di luar jadwal",
 };
 
-/** Judul halaman daftar gudang. */
-export const JUDUL_DAFTAR_GUDANG = judulPengiriman.usulan;
-
 /** Id h1 halaman satu gudang; form di halaman itu memakainya sebagai nama (T103: form tidak mengulang h1). */
 export const ID_JUDUL_HALAMAN_JADWAL = "judul-halaman-jadwal";
 
@@ -44,10 +41,11 @@ export function judulHalamanJadwal(jalur: JalurPengiriman, namaGudang: string): 
 const kelasTautanKembali = tautanTombolVariants();
 
 /**
- * Gudang tempat pengguna berhak `kelola-usulan-jadwal`. Tanpa hak di gudang mana pun → 404; hanya satu gudang →
- * langsung diarahkan ke halaman gudang itu.
+ * Gudang tempat pengguna berhak `kelola-usulan-jadwal`, dengan judul halaman daftar gudang menurut jalur peran dari sesi
+ * sebelum gudang dipilih (`jalurPengirimanDiLuarJadwal`, T148-b, A5 ▶ Keputusan 2026-11-05): admin "Atur …", operator
+ * "Usulkan …". Tanpa hak di gudang mana pun → 404; hanya satu gudang → langsung diarahkan ke halaman gudang itu.
  */
-export async function muatDaftarGudangJadwal(): Promise<GudangDapatDilihat[]> {
+export async function muatDaftarGudangJadwal(): Promise<{ judul: string; daftarGudang: GudangDapatDilihat[] }> {
   let daftarGudang;
   try {
     daftarGudang = await wajibGudangDenganHak("kelola-usulan-jadwal");
@@ -56,7 +54,14 @@ export async function muatDaftarGudangJadwal(): Promise<GudangDapatDilihat[]> {
     throw galat;
   }
   if (daftarGudang.length === 1) redirect(`${HREF_HALAMAN_JADWAL}/${daftarGudang[0].id}`);
-  return daftarGudang;
+  const pengguna = await wajibMasuk();
+  return { judul: judulPengiriman[jalurPengirimanDiLuarJadwal(pengguna.peran, null)], daftarGudang };
+}
+
+/** Judul tab halaman daftar gudang: sama dengan h1, diakhiri judul aplikasi. Hak diperiksa seperti halamannya. */
+export async function metadataDaftarGudangJadwal(): Promise<Metadata> {
+  const { judul } = await muatDaftarGudangJadwal();
+  return { title: `${judul} — Dashboard Penjualan MANDALIKA` };
 }
 
 /** Zona kerja (DESIGN §1): daftar gudang berupa kartu, gaya yang sama dengan daftar Pengiriman Gudang. */

@@ -18,7 +18,7 @@ vi.mock("next/navigation", async (asli) => ({
 }));
 
 import HalamanUsulanJadwal, { generateMetadata as metadataUsulanJadwal } from "./[id]/page";
-import HalamanDaftarUsulanJadwal from "./page";
+import HalamanDaftarUsulanJadwal, { generateMetadata as metadataDaftarUsulanJadwal } from "./page";
 
 // T98 — DESIGN §6 ▶ Keputusan (2026-10-13, pemilik): halaman ini dibuka dari sidebar. T113 — DESIGN §6 ▶ 2026-10-13 sore
 // dan PRD A5 ▶ Revisi 2026-10-13: isinya pengiriman di luar jadwal (form + riwayat), bukan lagi form jadwal tetap. T128 (PRD A5 ▶ Revisi
@@ -158,6 +158,35 @@ for (const jenis of ["usulan"] as const) {
     });
   });
 }
+
+// T148-b — PRD A5 ▶ Keputusan 2026-11-05 (UAT U9.5): bagi admin, halaman pilih gudang berjudul sama dengan form admin,
+// karena bagi admin pengiriman selalu langsung berlaku. Bagi operator judulnya tidak berubah.
+describe("/usulan-jadwal: judul halaman pilih gudang (T148-b)", () => {
+  const judulTabDaftar = async () => (await metadataDaftarUsulanJadwal()).title;
+
+  it('admin tanpa penugasan: "Atur pengiriman di luar jadwal" dan daftar semua gudang aktif; gudang nonaktif tidak tampil', async () => {
+    kepala.cookie = (await kepalaPenggunaUji("admin")).cookie;
+    const nonaktif = await buatGudangUji({ aktif: false });
+    try {
+      const html = await bukaDaftar("usulan");
+      expect(judulHalaman(html)).toBe("Atur pengiriman di luar jadwal");
+      const nama = ["Pusat", "Gudang Bali", "Gudang Bandung", "Gudang Cibubur", "Gudang Jabodetabek"];
+      expect(kartuGudang(html, "/usulan-jadwal")).toEqual(
+        await Promise.all(nama.map(async (teks) => ({ id: await idGudangUji(teks), teks }))),
+      );
+      expect(await judulTabDaftar()).toBe("Atur pengiriman di luar jadwal — Dashboard Penjualan MANDALIKA");
+    } finally {
+      await hapusGudangUji(nonaktif.id);
+    }
+  });
+
+  it('operator yang berhak di dua gudang, termasuk Pusat: tetap "Usulkan pengiriman di luar jadwal"', async () => {
+    await masukOperator([pusat, ["kelola-usulan-jadwal"]], [cibubur, ["kelola-usulan-jadwal"]]);
+    const html = await bukaDaftar("usulan");
+    expect(judulHalaman(html)).toBe("Usulkan pengiriman di luar jadwal");
+    expect(await judulTabDaftar()).toBe("Usulkan pengiriman di luar jadwal — Dashboard Penjualan MANDALIKA");
+  });
+});
 
 const barisPengiriman = (html: string, id: number) => new RegExp(`<tr[^>]*data-pengiriman="${id}".*?</tr>`).exec(html)?.[0] ?? "";
 

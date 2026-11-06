@@ -127,6 +127,9 @@ test("Admin di gudang selain Pusat: Simpan → langsung Berlaku dengan nama admi
   await masuk(page, admin.email);
 
   await page.goto("/usulan-jadwal");
+  // T148-b (PRD A5 ▶ Keputusan 2026-11-05): halaman pilih gudang bagi admin berjudul sama dengan form admin.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Atur pengiriman di luar jadwal");
+  await expect(page).toHaveTitle("Atur pengiriman di luar jadwal — Dashboard Penjualan MANDALIKA");
   await page.locator(`a[data-id-gudang="${idGudang}"]`).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Atur pengiriman di luar jadwal — Gudang Cibubur");
   await expect(page.getByText("Pengiriman langsung berlaku. Jadwal tetap toko tidak berubah.")).toBeVisible();
